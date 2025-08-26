@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Entidad, UrlApi, UrlApiDynamics, cliente } from '../keys'
+import { Entidad, UrlApi, UrlApiDynamics, cliente, documentacionLufeYParametrizada } from '../keys'
 import toast from 'react-hot-toast';
 import { KeyboardReturnSharp } from '@mui/icons-material';
 
@@ -410,14 +410,12 @@ export const obtenerReferidor = (token) => async (dispatch) => {
 export const obtenerDestinoDeFondos = (token) => async () => {
 
     try {
-        debugger
         var entidad = 'new_destinodefondoses';
         var fetch = "<entity name='new_destinodefondos'>" +
             "<attribute name='new_destinodefondosid' />" +
             "<attribute name='new_name' />" +
             "<order attribute='new_name' descending='false'/>" +
             "</entity>"
-        debugger
         return new Promise((resolve, reject) => {
             axios.post(`${UrlApi}api/consultafetchs`,
                 {
@@ -576,7 +574,7 @@ const onboarding = (solicitud, files, token, dispatch, referidoId) => new Promis
                 type: PORCENTAJE_ONBOARDING,
                 porcentajeOnboarding: 50
             })
-
+            debugger
             if (solicitud?.entidadLufeEncontrada === false ||
                 solicitud?.entidadLufeEncontrada === undefined ||
                 solicitud?.entidadLufeEncontrada === null ||
@@ -676,6 +674,11 @@ const onboarding = (solicitud, files, token, dispatch, referidoId) => new Promis
                         // estadoOnboarding = "ERROR POST CUENTA"
                     })
             }
+
+            if (solicitud?.entidadLufeEncontrada === true) {
+                await generarIndicadoresYDocumentosLUFE(accountid, solicitud?.cuitCuilCdi, token)
+            }
+
             if (documentosNoCargados?.length > 0) {
                 let documentosNoCargadosAux = []
                 documentosNoCargadosAux = files.filter(item => documentosNoCargados?.includes(item?.name))
@@ -1029,3 +1032,34 @@ const crearErrorLog = (mensaje, error, token) => {
         }
     );
 };
+
+export const generarIndicadoresYDocumentosLUFE = (cuenta_id, cuit, token) =>
+    new Promise(async (resolve, reject) => {
+        try {
+            await axios
+                .post(
+                    `${UrlApi}api/lufe/consultarindicadoresydocumentosonboarding`,
+                    {
+                        Cuit: cuit || "",
+                        Socio_id: cuenta_id || "",
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
+                .then((data) => {
+                    if (data?.status == 200) {
+                        return resolve(data?.status);
+                    }
+                })
+                .catch((error) => {
+                    crearErrorLog("Error al generar indicadores y documentos lufe", `Error ${error}`, token)
+                    return reject(error);
+                });
+        } catch (error) {
+            crearErrorLog("Error al generar indicadores y documentos lufe", `Error ${error}`, token)
+            reject(error);
+        }
+    });

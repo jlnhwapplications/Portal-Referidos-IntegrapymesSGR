@@ -58,7 +58,7 @@ const Utilidades = ({ utilidad, onOpenModal }) => {
             onClick={(e) => {
               debugger;
               if (typeof onOpenModal === "function") {
-                onOpenModal(e);
+                onOpenModal(e); 
               }
             }}
             sx={buttonStyle}
@@ -68,12 +68,12 @@ const Utilidades = ({ utilidad, onOpenModal }) => {
         </Tooltip>
 
         {/* Folder */}
-        {utilidad?.utilidad?.new_vinculocompartido && (
+        {utilidad?.new_vinculocompartido && (
           <Tooltip title="Abrir Carpeta" arrow>
             <Badge badgeContent="✓" color="success" variant="dot">
               <IconButton
                 onClick={() =>
-                  window.open(utilidad.utilidad.new_vinculocompartido, "_blank")
+                  window.open(utilidad.new_vinculocompartido, "_blank")
                 }
                 sx={buttonStyle}
               >
@@ -84,11 +84,11 @@ const Utilidades = ({ utilidad, onOpenModal }) => {
         )}
 
         {/* Download */}
-        {utilidad?.utilidad?.new_urlplantilla && (
+        {utilidad?.new_urlplantilla && (
           <Tooltip title="Descargar Plantilla" arrow>
             <IconButton
               onClick={() =>
-                window.open(utilidad.utilidad.new_urlplantilla, "_blank")
+                window.open(utilidad.new_urlplantilla, "_blank")
               }
               sx={buttonStyle}
             >
@@ -98,11 +98,11 @@ const Utilidades = ({ utilidad, onOpenModal }) => {
         )}
 
         {/* Help */}
-        {utilidad?.utilidad?.new_descripcion && (
+        {utilidad?.new_descripcion && (
           <Tooltip
             title={
               <Typography variant="body2" sx={{ maxWidth: 200 }}>
-                {utilidad.utilidad.new_descripcion}
+                {utilidad.new_descripcion}
               </Typography>
             }
             arrow

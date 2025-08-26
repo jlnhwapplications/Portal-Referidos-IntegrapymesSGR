@@ -1,23 +1,28 @@
 import { AuthContext } from "@/context/AuthContext";
 import { useContext, useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { obtenerTareas } from "@/redux/Cuenta";
+import { inactivarTarea, obtenerTareas } from "@/redux/Cuenta";
 import moment from "moment";
 import 'moment/locale/es';
 moment.locale('es');
 
 const useGetNotificacionesReferidor = () => {
     const dispatch = useDispatch();
-    const { token, user  } = useContext(AuthContext);
+    const { token, user } = useContext(AuthContext);
     const [notificacionesReferidor, setNotificacionesReferidor] = useState(null)
     const [cantidadNotificacionesReferidor, setCantidadNotificacionesReferidor] = useState(0)
+    const [loadingInactivacion, setLoadingInactivacion] = useState(null)
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                debugger
-                dispatch(obtenerTareas(user?.accountid, token))
-                    .then(data => {
+        if (user?.accountid, token) {
+            fetchData(user?.accountid, token);
+        }
+    }, [user, token]);
+
+    const fetchData = (accountid, token) => {
+        try {
+            dispatch(obtenerTareas(accountid, token))
+                .then(data => {
                     if (data?.length > 0) {
                         var array = []
                         data.forEach(item => {
@@ -39,23 +44,40 @@ const useGetNotificacionesReferidor = () => {
                         });
                         setNotificacionesReferidor(array)
                         setCantidadNotificacionesReferidor(array.length)
-                    }})
-            } catch (error) {
-                console.log(error)
-            }
-        };
-
-        if(token != null && token != ''){
-            if(!notificacionesReferidor){
-                fetchData()
-            }
+                    } else {
+                        setNotificacionesReferidor([]);
+                        setCantidadNotificacionesReferidor(0);
+                    }
+                })
+                .catch((error) => {
+                    setNotificacionesReferidor([]);
+                    setCantidadNotificacionesReferidor(0);
+                });
+            // console.log(err)
+        } catch (error) {
+            console.log(error);
         }
+    };
 
-    }, [notificacionesReferidor]);
+
+    function inactivarNotificacion(accountid, id, token) {
+        return new Promise((resolve, reject) => {
+            dispatch(inactivarTarea(id, token))
+                .then(() => {
+                    return fetchData(accountid, token);
+                })
+                .then(() => {
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    }
 
     const memoData = useMemo(() => notificacionesReferidor, [notificacionesReferidor])
 
-    return { notificacionesReferidor: memoData, cantidadNotificacionesReferidor };
+    return { notificacionesReferidor: memoData, cantidadNotificacionesReferidor, inactivarNotificacion };
 };
 
 export default useGetNotificacionesReferidor;

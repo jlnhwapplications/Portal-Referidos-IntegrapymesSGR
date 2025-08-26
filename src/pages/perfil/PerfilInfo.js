@@ -243,7 +243,7 @@ const PerfilInfo = ({ data }) => {
                         />
                       </Grid>
 
-                      <Grid item xs={12} sm={3}>
+                      <Grid item xs={12} sm={3} sx={{ mt: { xs: 2, md: 0 } }}>
                         <TextField
                           name="new_nmerodedocumento"
                           label="CUIT / CUIL"
@@ -252,7 +252,7 @@ const PerfilInfo = ({ data }) => {
                           defaultValue={data?.new_nmerodedocumento || ""}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={3}>
+                      <Grid item xs={12} sm={3} sx={{ mt: { xs: 2, md: 0 } }}>
                         <TextField
                           name="emailaddress1"
                           label="Email Principal"
@@ -261,7 +261,7 @@ const PerfilInfo = ({ data }) => {
                           defaultValue={data?.emailaddress1 || ""}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={3}>
+                      <Grid item xs={12} sm={3} sx={{ mt: { xs: 2, md: 0 } }}>
                         <TextField
                           name="telephone1"
                           label="Teléfono Principal"

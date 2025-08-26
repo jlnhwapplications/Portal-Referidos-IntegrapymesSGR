@@ -9,10 +9,10 @@ const UnidadDeNegocio = `${process.env.NEXT_PUBLIC_UNIDADNEGOCIO}`
 const onboardingHabilitado = true
 const readOnlyDatos = false
 const referidorOnboarding = true
-const lufeHabilitado = false
+const lufeHabilitado = true
 const DireccionOnbHabilitado = false
 const LineaDeCreditoHabilitado = true
-const documentacionLufeYParametrizada = false
+const documentacionLufeYParametrizada = true
 const cliente = 'SOC SANDBOX'
 
 //Sacar times new roman - sacar requerido - achicar onboarding - sacar plazo de gracia en meses

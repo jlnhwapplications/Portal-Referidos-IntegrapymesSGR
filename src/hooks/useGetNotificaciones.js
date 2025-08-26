@@ -1,7 +1,7 @@
 import { AuthContext } from "@/context/AuthContext";
 import { useContext, useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { obtenerTareas } from "@/redux/Cuenta";
+import { inactivarTarea, obtenerTareas } from "@/redux/Cuenta";
 import moment from "moment";
 import 'moment/locale/es';
 moment.locale('es');
@@ -9,21 +9,19 @@ moment.locale('es');
 const UseGetNotificaciones = () => {
     const dispatch = useDispatch();
     const { token, referido } = useContext(AuthContext);
-    const tareasSelector = useSelector(store => store.cuenta.tareas)
     const [notificaciones, setNotificaciones] = useState(null)
     const [cantidadNotificaciones, setCantidadNotificaciones] = useState(0)
 
-    // useEffect(() => {
-    //     if (token != null && token != '') {
-    //         dispatch(obtenerTareas(referido?.accountid, token))
-    //     }
-    // }, [token]);
-
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                dispatch(obtenerTareas(referido?.accountid, token))
-                    .then(data => {
+        if (referido?.accountid, token) {
+            fetchData(referido?.accountid, token);
+        }
+    }, [referido, token]);
+
+    const fetchData = (accountid, token) => {
+        try {
+            dispatch(obtenerTareas(accountid, token))
+                .then(data => {
                     if (data?.length > 0) {
                         var array = []
                         data.forEach(item => {
@@ -45,26 +43,39 @@ const UseGetNotificaciones = () => {
                         });
                         setNotificaciones(array)
                         setCantidadNotificaciones(array.length)
-                        // if (inactivarTareaSelector === "EXITO") {
-                        //     setCantidadNotificaciones('1')
-                        // }
-                    }})
-            } catch (error) {
-                console.log(error)
-            }
-        };
-
-        if(token != null && token != ''){
-            if(!notificaciones){
-                fetchData()
-            }
+                    } else {
+                        setNotificaciones([]);
+                        setCantidadNotificaciones(0);
+                    }
+                })
+                .catch((error) => {
+                    setNotificaciones([]);
+                    setCantidadNotificaciones(0);
+                });
+            // console.log(err)
+        } catch (error) {
+            console.log(error);
         }
-
-    }, [notificaciones]);
+    };
 
     const memoData = useMemo(() => notificaciones, [notificaciones])
 
-    return { notificaciones: memoData, cantidadNotificaciones };
+    function inactivarNotificacion(accountid, id, token) {
+        return new Promise((resolve, reject) => {
+            dispatch(inactivarTarea(id, token))
+                .then(() => {
+                    return fetchData(accountid, token);
+                })
+                .then(() => {
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    }
+
+    return { notificaciones: memoData, cantidadNotificaciones, inactivarNotificacion };
 };
 
 export default UseGetNotificaciones;

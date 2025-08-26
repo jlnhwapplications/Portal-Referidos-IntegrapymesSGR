@@ -48,6 +48,7 @@ import { useToast } from "@/@core/components/toast/ToastProvider"
 import { useAuth } from "@/hooks/useAuth"
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 // Styled Components
+
 const LoginContainer = styled(Box)(({ theme }) => ({
     minHeight: "100vh",
     display: "flex",
@@ -132,7 +133,6 @@ const GradientButton = styled(Button)(({ theme, darkMode }) => ({
         boxShadow: "none",
     },
 }))
-
 
 const LoginCard = styled(Paper)(({ theme, esPantallaChica }) => ({
     padding: theme.spacing(esPantallaChica ? 4 : 6),
@@ -230,9 +230,7 @@ const Register = ({ onSwitchToLogin }) => {
     const steps = ["Correo", "Credenciales", "Confirmación"]
 
     const onSubmit = async (data) => {
-        debugger
         const { email, password, usuario } = data;
-
         try {
             if (!robot) {
                 toast.error('Debes confirmar que no eres un robot!', {
@@ -246,16 +244,18 @@ const Register = ({ onSwitchToLogin }) => {
                     progress: undefined,
                 });
                 setLoading(false)
-                return
             }
             setLoading(true)
-            // Llama a la función de registro en el contexto de autenticación
-            await auth.register({ email, password, nombreUsuario: usuario });
-            setLoading(false)
-            setRegiterSuccess(true)
-            setShowSuccess(true)
+            const result = await auth.register({ email, password, nombreUsuario: usuario });
+            if (result.success) {
+                setRegiterSuccess(true)
+                setShowSuccess(true)
+                handleNext()
+                setLoading(false)
+            }
         } catch (error) {
             setLoading(false)
+            setRegiterSuccess(false)
             let errorMessage = 'Error desconocido';
             // Maneja errores de Firebase Auth aquí
             switch (error.code) {
@@ -434,13 +434,6 @@ const Register = ({ onSwitchToLogin }) => {
         password: "",
         confirmPassword: "",
     }
-    // const schema = yup.object().shape({
-    //     email: yup.string().email('El correo electrónico no es válido').required('El correo electrónico es requerido'),
-    //     password: yup.string().min(4, 'La contraseña debe tener al menos 4 caracteres').
-    //         max(15, 'La contraseña no puede serperar los 15 caracteres').required('La contraseña es requerida'),
-    //     repassword: yup.string().oneOf([yup.ref('password'), 'Las contraseñas deben coincidir']).
-    //         max(15, 'La contraseña no puede serperar los 15 caracteres').required('La contraseña es requerida'),
-    // });
 
     const {
         control,
@@ -524,7 +517,7 @@ const Register = ({ onSwitchToLogin }) => {
                                             label="Correo Electrónico"
                                             type="email"
                                             error={!!errors.email}
-                                            autoFocus
+                                            // autoFocus
                                             helperText={errors.email?.message}
                                             InputProps={{
                                                 startAdornment: (
@@ -630,7 +623,7 @@ const Register = ({ onSwitchToLogin }) => {
                                             control={control}
                                             render={({ field }) => (
                                                 <FormControl fullWidth error={!!errors.confirmPassword}>
-                                                    <InputLabel>Confirmar Contraseña</InputLabel>   
+                                                    <InputLabel>Confirmar Contraseña</InputLabel>
                                                     <OutlinedInput
                                                         {...field}
                                                         type={showConfirmPassword ? "text" : "password"}
@@ -699,9 +692,7 @@ const Register = ({ onSwitchToLogin }) => {
     const handleNext = async () => {
         const isStepValid = await trigger()
         if (isStepValid) {
-            if (activeStep === steps.length - 1) {
-                handleRegister()
-            } else {
+            if (activeStep !== steps.length - 1) {
                 setActiveStep((prevStep) => prevStep + 1)
             }
         }
@@ -711,152 +702,123 @@ const Register = ({ onSwitchToLogin }) => {
         setActiveStep((prevStep) => prevStep - 1)
     }
 
-    // const handleNext = () => {
-    //     if (activeStep === 0) {
-    //         if (!email) {
-    //             toast.error("El correo es requerido")
-    //             return
-    //         }
-    //         if (!validateEmail(email)) {
-    //             toast.error("Por favor ingresa un email válido")
-    //             return
-    //         }
-    //     }
-
-    //     if (activeStep === 1) {
-    //         if (!robot) {
-    //             toast.error("Debes confirmar que no eres un robot")
-    //             return
-    //         }
-    //         debugger
-    //         handleForgotPasswordSubmit()
-    //         return
-    //     }
-
-    //     setActiveStep((prevStep) => prevStep + 1)
-    // }
-
-    // const handleBack = () => {
-    //     setActiveStep((prevStep) => prevStep - 1)
-    // }
-
-
     return (
         <LoginContainer>
             <GlassCard>
                 <Fade in={true} timeout={400}>
                     <div style={{ width: "100%" }}>
-                            <Fade in={showForm} timeout={400}>
-                                <div>
-                                    <Box sx={{ mb: 4 }}>
-                                        <Stepper
-                                            activeStep={activeStep}
-                                            alternativeLabel={!isMobile}
-                                            // orientation={isMobile ? "vertical" : "horizontal"}
-                                            orientation={"horizontal"}
-                                            sx={{
-                                                "& .MuiStepLabel-label": {
-                                                    fontSize: 12,
+                        <Fade in={showForm} timeout={400}>
+                            <div>
+                                <Box sx={{ mb: 4 }}>
+                                    <Stepper
+                                        activeStep={activeStep}
+                                        alternativeLabel={!isMobile}
+                                        // orientation={isMobile ? "vertical" : "horizontal"}
+                                        orientation={"horizontal"}
+                                        sx={{
+                                            "& .MuiStepLabel-label": {
+                                                fontSize: 12,
+                                                color: darkMode ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.6)",
+                                                "&.Mui-active": {
+                                                    color: darkMode ? "#667eea" : "#2196F3",
+                                                },
+                                                "&.Mui-completed": {
+                                                    color: "#4caf50",
+                                                },
+                                            },
+                                            "& .MuiStepIcon-root": {
+                                                color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.3)",
+                                                "&.Mui-active": {
+                                                    color: darkMode ? "#667eea" : "#2196F3",
+                                                },
+                                                "&.Mui-completed": {
+                                                    color: "#4caf50",
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        {steps.map((label) => (
+                                            <Step key={label}>
+                                                <StepLabel>{label}</StepLabel>
+                                            </Step>
+                                        ))}
+                                    </Stepper>
+                                </Box>
+                                <Slide direction="up" in={showForm} timeout={400}>
+                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                        <Box sx={{ minHeight: 250 }}>{renderStepContent(activeStep)}</Box>
+                                        {
+                                            (!registerSuccess || loading) && (
+                                                <Box textAlign="center">
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Ya tienes una cuenta?{" "}
+                                                        <Link href="/login" style={{ textDecoration: 'none' }} passHref>
+                                                            <Typography
+                                                                component="span"
+                                                                color="primary"
+                                                                fontWeight={600}
+                                                                sx={{
+                                                                    fontSize: { xs: 14, xl: 16 },
+                                                                    textDecoration: "none",
+                                                                    "&:hover": { textDecoration: "underline" },
+                                                                }}
+                                                            >
+                                                                Inicia Sesión
+                                                            </Typography>
+                                                        </Link>
+                                                    </Typography>
+                                                </Box>
+                                            )
+                                        }
+                                        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
+                                            <Button
+                                                disabled={activeStep === 0 || activeStep === 2 || loading}
+                                                onClick={handleBack}
+                                                sx={{
                                                     color: darkMode ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.6)",
-                                                    "&.Mui-active": {
-                                                        color: darkMode ? "#667eea" : "#2196F3",
+                                                    "&:hover": {
+                                                        backgroundColor: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
                                                     },
-                                                    "&.Mui-completed": {
-                                                        color: "#4caf50",
-                                                    },
-                                                },
-                                                "& .MuiStepIcon-root": {
-                                                    color: darkMode ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.3)",
-                                                    "&.Mui-active": {
-                                                        color: darkMode ? "#667eea" : "#2196F3",
-                                                    },
-                                                    "&.Mui-completed": {
-                                                        color: "#4caf50",
-                                                    },
-                                                },
-                                            }}
-                                        >
-                                            {steps.map((label) => (
-                                                <Step key={label}>
-                                                    <StepLabel>{label}</StepLabel>
-                                                </Step>
-                                            ))}
-                                        </Stepper>
-                                    </Box>
-                                    <Slide direction="up" in={showForm} timeout={400}>
-                                        <form onSubmit={handleSubmit(onSubmit)}>
-                                            <Box sx={{ minHeight: 250 }}>{renderStepContent(activeStep)}</Box>
-                                            <Box textAlign="center">
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Ya tienes una cuenta?{" "}
-                                                    <Link href="/login" style={{ textDecoration: 'none' }} passHref>
-                                                        <Typography
-                                                            component="span"
-                                                            color="primary"
-                                                            fontWeight={600}
-                                                            sx={{
-                                                                fontSize: { xs: 14, xl: 16 },
-                                                                textDecoration: "none",
-                                                                "&:hover": { textDecoration: "underline" },
-                                                            }}
-                                                        >
-                                                            Inicia Sesión
-                                                        </Typography>
-                                                    </Link>
-                                                </Typography>
-                                            </Box>
-                                        </form>
-
-                                    </Slide>
-                                </div>
-                            </Fade>
-                            {/* )} */}
-                            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
-                                <Button
-                                    disabled={activeStep === 0 || activeStep === 2}
-                                    onClick={handleBack}
-                                    sx={{
-                                        color: darkMode ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.6)",
-                                        "&:hover": {
-                                            backgroundColor: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)",
-                                        },
-                                    }}
-                                >
-                                    Atrás
-                                </Button>
-
-                                {activeStep < 2 && (
-
-                                    <GradientButton onClick={activeStep === 1 ? onSubmit : handleNext} disabled={loading} darkMode={darkMode} sx={{ position: "relative" }}>
-                                        {loading ? (
-                                            <CircularProgress size={24} sx={{ color: "white" }} />
-                                        ) : activeStep === 1 ? (
-                                            "Registrarse"
-                                        ) : (
-                                            "Continuar"
-                                        )}
-                                    </GradientButton>
-                                )}
-
-                                {activeStep === 2 && (
-                                    <GradientButton onClick={() => (window.location.href = "/login")} darkMode={darkMode}>
-                                        Volver al login
-                                    </GradientButton>
-                                )}
-                            </Box>
-                        {/* </LoginCard> */}
+                                                }}
+                                            >
+                                                Atrás
+                                            </Button>
+                                            {activeStep < 2 && (
+                                                activeStep === 1 ? (
+                                                    <SubmitButton
+                                                        type="submit"
+                                                        variant="contained"
+                                                        size="large"
+                                                        disabled={loading || !isValid}
+                                                        sx={{ mb: 3, position: "relative" }}
+                                                    >
+                                                        {loading ? <CircularProgress size={24} color="inherit" /> : "Registrarse"}
+                                                    </SubmitButton>
+                                                ) : (
+                                                    <GradientButton onClick={handleNext} disabled={loading} darkMode={darkMode} sx={{ position: "relative" }}>
+                                                        Continuar
+                                                    </GradientButton>
+                                                )
+                                            )}
+                                            {(activeStep === 2 && !registerSuccess) && (
+                                                <GradientButton onClick={() => (window.location.href = "/login")} darkMode={darkMode}>
+                                                    Volver al login
+                                                </GradientButton>
+                                            )}
+                                        </Box>
+                                    </form>
+                                </Slide>
+                            </div>
+                        </Fade>
                     </div>
                 </Fade>
-            </GlassCard>
-            {/* </Box> */}
-
-            {/* Version Info */}
+            </GlassCard >
             <Box position="absolute" bottom={16} left={16} sx={{ opacity: 0.6 }}>
                 <Typography variant="caption" color="text.secondary">
                     v1.0.10
                 </Typography>
             </Box>
-        </LoginContainer>
+        </LoginContainer >
     )
 }
 Register.getLayout = page => <BlankLayout>{page}</BlankLayout>

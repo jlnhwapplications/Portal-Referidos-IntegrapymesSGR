@@ -23,31 +23,36 @@ const TablaCargaMasiva = () => {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                dispatch(obtenerDetalle(referido.accountid, token))
-                    .then(data => {
-                        var opciones = []
-                        data.forEach(item => {
-                            var importador = {
-                                id: item.new_importacionesid,
-                                new_name: item["nota.filename"] ? item["nota.filename"] : "",
-                                createdon: moment(new Date(item["createdon"])).format('DD/MM/yyyy HH:mm'),
-                                new_detalledeejecucion: item?.new_detalledeejecucion
-                            }
-                            opciones.push(importador);
-                        });
-                        if (opciones?.length > 0) {
-                            setImportaciones(opciones)
-                            setLoading(false)
-                        } else {
-                            setImportaciones([])
-                            setLoading(false)
-                        }
-                    })
-                    .catch(error => {
-                        setImportaciones([])
-                        setLoading(false)
-                        dispatch(registrarError("Error al cargar del detalle de cheques", error?.data, "SGROneClick", token))
-                    })
+                // dispatch(obtenerDetalle(referido.accountid, token))
+                //     .then(data => {
+                //         var opciones = []
+                //         data.forEach(item => {
+                //             var importador = {
+                //                 id: item.new_importacionesid,
+                //                 new_name: item["nota.filename"] ? item["nota.filename"] : "",
+                //                 createdon: moment(new Date(item["createdon"])).format('DD/MM/yyyy HH:mm'),
+                //                 new_detalledeejecucion: item?.new_detalledeejecucion
+                //             }
+                //             opciones.push(importador);
+                //         });
+                //         if (opciones?.length > 0) {
+                //             setImportaciones(opciones)
+                //             setLoading(false)
+                //         } else {
+                //             setImportaciones([])
+                //             setLoading(false)
+                //         }
+                //     })
+                //     .catch(error => {
+                //         setImportaciones([])
+                //         setLoading(false)
+                //         dispatch(registrarError("Error al cargar del detalle de cheques", error?.data, "SGROneClick", token))
+                //     })
+
+                setTimeout(() => {
+                    setImportaciones([])
+                    setLoading(false)
+                }, 2000);
             } catch (error) {
                 registrarError("Error al cargar del detalle de cheques", error, "SGROneClick", token)
                 setLoading(false)

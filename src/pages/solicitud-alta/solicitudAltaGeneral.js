@@ -14,7 +14,7 @@ import { Alert, alpha, Avatar, Box, Card, Chip, Container, Divider, Fade, Typogr
 import { AccountBalance, Business, CheckCircle, CorporateFare, Info, Person, Warning } from '@mui/icons-material';
 import { Controller } from 'react-hook-form';
 
-const SolicitudAltaGeneral = ({ token, lufeConsultado, theme, control, setValue, error }) => {
+const SolicitudAltaGeneral = ({ personeria, lufeConsultado, theme, control, setValue, error }) => {
     const { tiposDocumentos } = useGetTipoDocumentos()
     const isDark = theme.palette.mode === "dark"
     const [person, setPerson] = useState('')
@@ -40,9 +40,18 @@ const SolicitudAltaGeneral = ({ token, lufeConsultado, theme, control, setValue,
         }
     }, [])
 
+    useEffect(() => {
+        // var currentData = localStorage.getItem("formValues")
+        // currentData = currentData ? JSON.parse(currentData) : {};
+        // setPerson(currentData.personeria)
+        debugger
+        if (personeria === '100000001' || personeria === '100000000') {
+            personeriaOnChange(personeria)
+        }
+    }, [lufeConsultado])
+
     // Componente para secciones del formulario
     function FormSection({ title, icon: IconComponent, children, alert = null, theme, isDark }) {
-
         return (
             <Box sx={{ mb: { xs: 2, xl: 4 } }}>
                 {alert && (
@@ -187,33 +196,54 @@ const SolicitudAltaGeneral = ({ token, lufeConsultado, theme, control, setValue,
                         </Box>
                     </Box>
                     <Divider sx={{ mb: { xs: 1, xl: 3 }, borderColor: isDark ? "#4A4063" : "#e0e0e0" }} />
-                    {/* <Grid container spacing={2}> */}
-                    <FormSection
-                        title="Tipo de Personería"
-                        icon={CorporateFare}
-                        alert={{
-                            severity: "info",
-                            message: "Selecciona si se trata de una persona física o jurídica",
-                        }}
-                    >
-                        {personeriaOpciones.map((option) => (
-                            <Grid item xs={6} key={option.value} >
-                                <PersoneriaCard
-                                    option={option}
-                                    selected={person === option.value}
-                                    onClick={() => personeriaOnChange(option.value)}
-                                />
-                            </Grid>
-                        ))}
-                        {
-                            (error?.formState?.errors?.personeria?.message && !personeriaSeleccionada) ?
-                                <Typography sx={{ ml: 2, fontSize: { xs: 11, xl: 12 }, color: theme.palette.error.dark }}>
-                                    La personeria es requerida
-                                </Typography> : null
-
-                        }
-                    </FormSection>
-                    <Fade in={personeriaSeleccionada} timeout={600}>
+                    {
+                        (lufeHabilitado && !lufeConsultado) &&
+                            <Alert
+                                severity={"warning"}
+                                icon={alert.severity === "warning" ? <Warning /> : <Info />}
+                                sx={{
+                                    mb: { xs: 2, xl: 3 },
+                                    bgcolor: isDark
+                                        ? alpha(alert.severity === "warning" ? "#ff9800" : "#2196f3", 0.1)
+                                        : alpha(alert.severity === "warning" ? "#ff9800" : "#2196f3", 0.05),
+                                    border: `1px solid ${isDark
+                                        ? alpha(alert.severity === "warning" ? "#ff9800" : "#2196f3", 0.3)
+                                        : alpha(alert.severity === "warning" ? "#ff9800" : "#2196f3", 0.2)
+                                        }`,
+                                    borderRadius: 2,
+                                }}
+                            >
+                                <Typography variant="body2" fontWeight="medium">
+                                    Ingresa los siguintes datos para validar la entidad en nuestros sistemas
+                                </Typography>
+                            </Alert>
+                    }
+                    {(lufeConsultado === true || !lufeHabilitado) &&
+                        <FormSection
+                            title="Tipo de Personería"
+                            icon={CorporateFare}
+                            alert={{
+                                severity: "info",
+                                message: "Selecciona si se trata de una persona física o jurídica",
+                            }}
+                        >
+                            {personeriaOpciones.map((option) => (
+                                <Grid item xs={6} key={option.value} >
+                                    <PersoneriaCard
+                                        option={option}
+                                        selected={person === option.value}
+                                        onClick={() => personeriaOnChange(option.value)}
+                                    />
+                                </Grid>
+                            ))}
+                            {
+                                (error?.formState?.errors?.personeria?.message && !personeriaSeleccionada) ?
+                                    <Typography sx={{ ml: 2, fontSize: { xs: 11, xl: 12 }, color: theme.palette.error.dark }}>
+                                        La personeria es requerida
+                                    </Typography> : null
+                            }
+                        </FormSection>}
+                    <Fade in={personeriaSeleccionada || lufeHabilitado} timeout={600}>
                         <Grid container spacing={1}>
                             {
                                 (lufeConsultado === true || !lufeHabilitado) ?
@@ -228,7 +258,7 @@ const SolicitudAltaGeneral = ({ token, lufeConsultado, theme, control, setValue,
                                         />
                                     </Grid> : null
                             }
-                            <Grid xs={12} sm={4} item sx={{ pt: 0, pb: 0 }}>
+                            <Grid xs={12} sm={(lufeHabilitado && !lufeConsultado) ? 6 : 4} item sx={{ pt: 0, pb: 0 }}>
                                 <CustomSearchSelect
                                     name="tipoDeDocumento"
                                     lab="Tipo de documento"
@@ -240,7 +270,7 @@ const SolicitudAltaGeneral = ({ token, lufeConsultado, theme, control, setValue,
                                     sx={{ fontWeight: 400 }}
                                 />
                             </Grid>
-                            <Grid xs={12} sm={4} item sx={{ pt: 0, pb: 0 }}>
+                            <Grid xs={12} sm={(lufeHabilitado && !lufeConsultado) ? 6 : 4} item sx={{ pt: 0, pb: 0 }}>
                                 <CustomTextField
                                     Component={TextField}
                                     label="CUIT/CUIL"

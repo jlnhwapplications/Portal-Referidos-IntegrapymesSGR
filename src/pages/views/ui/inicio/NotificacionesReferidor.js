@@ -41,6 +41,7 @@ import useGetNotificaciones from '@/hooks/useGetNotificaciones'
 import { inactivarTarea, obtenerTareas } from '@/redux/Cuenta'
 import { AuthContext } from '@/context/AuthContext'
 import useGetNotificacionesReferidor from '@/hooks/useGetNotificacionesReferidor'
+import { useAuth } from '@/hooks/useAuth'
 
 // Styled components with modern design
 const StyledMenu = ({ children, ...props }) => (
@@ -147,7 +148,7 @@ const NotificationItem = ({
                 fontWeight: 600,
                 lineHeight: 1.3,
                 flex: 1,
-                fontSize: {xs: 12, xl: 13}
+                fontSize: { xs: 12, xl: 13 }
               }}
             >
               {notification.title}
@@ -156,7 +157,7 @@ const NotificationItem = ({
               color="text.secondary"
               sx={{
                 whiteSpace: 'nowrap',
-                fontSize: {xs: 11, xl: 12}
+                fontSize: { xs: 11, xl: 12 }
               }}
             >
               {notification.createdAt}
@@ -169,7 +170,7 @@ const NotificationItem = ({
           sx={{
             mb: 2,
             lineHeight: 1.4,
-            fontSize: {xs: 11, xl: 12}
+            fontSize: { xs: 11, xl: 12 }
           }}
         >
           {notification.description}
@@ -232,8 +233,9 @@ const NotificacionesReferidor = () => {
   const theme = useTheme()
   const dispatch = useDispatch()
   const router = useRouter()
-  const { token, referido } = useContext(AuthContext)
-  const { notificacionesReferidor, loading } = useGetNotificacionesReferidor()
+  const { token } = useContext(AuthContext)
+  const { user } = useAuth()
+  const { notificacionesReferidor, loading, inactivarNotificacion } = useGetNotificacionesReferidor()
   const inactivarTareaSelector = useSelector(store => store.cuenta.inactivarTarea)
 
   const [anchorEl, setAnchorEl] = useState(null)
@@ -245,6 +247,7 @@ const NotificacionesReferidor = () => {
 
   // Memoized filtered notifications
   const { pendingNotifications, completedNotifications, totalPending } = useMemo(() => {
+    debugger
     if (!notificacionesReferidor) return { pendingNotifications: [], completedNotifications: [], totalPending: 0 }
 
     const pending = notificacionesReferidor.filter(item => item.statecode === 0)
@@ -271,11 +274,12 @@ const NotificacionesReferidor = () => {
 
   const handleMarkAsRead = useCallback((id) => {
     setLoadingIds(prev => new Set(prev).add(id))
-    dispatch(inactivarTarea(id, token))
+    // dispatch(inactivarTarea(id, token))
+    inactivarNotificacion(user?.accountid, id, token)
   }, [dispatch, token])
 
   const handleNavigate = useCallback((type) => {
-    const routes = {
+    const routes = {  
       100000006: '/perfil',
       100000000: '/carpeta-digital',
       100000001: '/lineas',
@@ -292,14 +296,24 @@ const NotificacionesReferidor = () => {
   }, [router, handleDropdownClose])
 
   // Handle task completion response
-  useEffect(() => {
-    if (inactivarTareaSelector === "EXITO") {
-      setLoadingIds(new Set())
-      dispatch(obtenerTareas(referido?.accountid, token))
-    } else if (inactivarTareaSelector === "ERROR") {
-      setLoadingIds(new Set())
-    }
-  }, [inactivarTareaSelector, dispatch, referido?.accountid, token])
+  // useEffect(() => {
+  //   if (inactivarTareaSelector === "EXITO") {
+  //     setLoadingIds(new Set())
+  //     dispatch(obtenerTareas(referido?.accountid, token))
+  //   } else if (inactivarTareaSelector === "ERROR") {
+  //     setLoadingIds(new Set())
+  //   }
+  // }, [inactivarTareaSelector, dispatch, referido?.accountid, token])
+
+  // useEffect(() => {
+  //   debugger
+  //   if (inactivarTareaSelector === "EXITO") {
+  //     setLoadingIds(new Set())
+  //     dispatch(obtenerTareas(user?.accountid, token))
+  //   } else if (inactivarTareaSelector === "ERROR") {
+  //     setLoadingIds(new Set())
+  //   }
+  // }, [inactivarTareaSelector])
 
   return (
     <Fragment>
@@ -316,7 +330,7 @@ const NotificacionesReferidor = () => {
           }}
         >
           <Badge
-            sx={{ "& .MuiBadge-badge": { fontSize: 8, height: 15, minWidth: 15 }  }}
+            sx={{ "& .MuiBadge-badge": { fontSize: 8, height: 15, minWidth: 15 } }}
             badgeContent={totalPending}
             color="error"
             variant={totalPending > 0 ? 'standard' : 'dot'}

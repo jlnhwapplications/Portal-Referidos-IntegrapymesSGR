@@ -187,7 +187,6 @@ const GarantiaIndex = () => {
         title="Mís Garantías"
         subtitle="Administración completa del portafolio de garantías"
         variant="compact"
-
       />
       <Box sx={{ py: 3 }}>
         {/* <GarantiasStatsCards stats={statsData} loading={loading} onCardClick={handleCardClick} /> */}

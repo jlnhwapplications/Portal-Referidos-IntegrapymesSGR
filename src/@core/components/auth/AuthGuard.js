@@ -1,5 +1,5 @@
 // ** React Imports
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 
 // ** Next Import
 import { useRouter } from 'next/router'
@@ -13,21 +13,34 @@ const AuthGuard = props => {
   const router = useRouter()
 
   useEffect(() => {
-    if (!router.isReady) {
+    if (!router.isReady || auth.loadingAuth) {
       return
     }
-    // Si el usuario no está autenticado y no se encuentra en la página de inicio de sesión, redirigirlo.
-    if (
-      auth.user === null &&
-      !window.localStorage.getItem('userData') &&
-      router.route !== '/login' &&
-      router.route !== '/olvidaste-contrasena' &&
-      router.route !== '/registro' &&
-      router.route !== '/solicitud-alta' &&
-      router.route !== '/404' &&
-      router.route !== '/401'
-    ) {
-      router.replace('/login'); // Redirigir a la página de error 401 en caso de no autenticación
+    
+    const isSocio = !!auth.user || !!localStorage.getItem('userData')
+    const route = router.route
+
+    // Rutas públicas
+    const publicRoutes = [
+      '/login',
+      '/olvidaste-contrasena',
+      '/registro',
+      '/404',
+      '/401',
+    ]
+
+    // 🔒 Usuario no autenticado intenta acceder a ruta privada
+    if (!isSocio && !publicRoutes.includes(route)) {
+      router.replace('/login')
+      return
+    }
+
+    // ✅ Usuario socio autenticado
+    if (isSocio) {
+      // Si está en página pública y logueado, redirigir al home
+      if (publicRoutes.includes(route)) {
+        router.replace('/')
+      }
     }
   }, [router.isReady, router.route, auth.user])
 

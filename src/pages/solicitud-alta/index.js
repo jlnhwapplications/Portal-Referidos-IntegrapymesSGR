@@ -469,7 +469,7 @@ const SolicitudAlta = (props) => {
     //     resolver: yupResolver(schema),
     //     mode: "onChange",
     //   })
-    
+
 
     const methods = useForm({
         shouldUnregister: false,
@@ -501,7 +501,6 @@ const SolicitudAlta = (props) => {
     const formData = methods.watch();
 
     const resetOnb = () => {
-        RefrescarReferidos()
         methods.reset({
             servicio: '100000000',
             personeria: '',
@@ -538,6 +537,11 @@ const SolicitudAlta = (props) => {
             destinoLineaDeCredito: null,
             lineaDeCredito: null,
         })
+        localStorage.removeItem("docsValues");
+        localStorage.removeItem("formValues");
+        localStorage.removeItem("documentosLufe");
+        localStorage.removeItem("accionistasLufe");
+        RefrescarReferidos()
     }
 
     React.useEffect(() => {
@@ -688,6 +692,7 @@ const SolicitudAlta = (props) => {
             dispatch(cargarSolicitudDeAlta(datosFinales, archivos, token, user?.accountid))
             // setActiveStep((prevActiveStep) => prevActiveStep + 1);   
         } catch (error) {
+            debugger
             envioConfirmado.current = false
         }
     }
@@ -764,6 +769,7 @@ const SolicitudAlta = (props) => {
     };
 
     const handleRemoveAllFiles = () => {
+        debugger
         setSelectedFiles([]);
         setUploadProgress({})
     };
@@ -772,11 +778,12 @@ const SolicitudAlta = (props) => {
         const uploadedFiles = selectedFiles;
         const filtered = uploadedFiles.filter((i) => i.name !== file.name);
         setSelectedFiles([...filtered]);
-        setUploadProgress((prev) => {
-            const newProgress = { ...prev }
-            delete newProgress[index]
-            return newProgress
-        })
+        setUploadProgress({})
+        // setUploadProgress((prev) => {
+        //     const newProgress = { ...prev }
+        //     delete newProgress[index]
+        //     return newProgress
+        // })
     };
 
     const fileList = selectedFiles.map((file) => (
@@ -847,7 +854,7 @@ const SolicitudAlta = (props) => {
         }
         debugger
         if ((personeria == "100000001") && accionistas.length > 0) {
-            
+
             setAccionistas([])
             var currentData = localStorage.getItem("docsValues")
             currentData = currentData ? JSON.parse(currentData) : {};
@@ -997,9 +1004,11 @@ const SolicitudAlta = (props) => {
             dispatch(setearRobot(false))
             setDeshabilitadoEnvio(false)
         } else if (estadoOnboardingSelector === "ERROR") {
+            debugger
+            envioConfirmado.current = false
             setDeshabilitadoEnvio(false)
             dispatch(setearRobot(false))
-            setActiveStep((prevActiveStep) => prevActiveStep - 1);
+            // setActiveStep((prevActiveStep) => prevActiveStep - 1);
         }
     }, [estadoOnboardingSelector]);
 
@@ -1249,7 +1258,7 @@ const SolicitudAlta = (props) => {
                         razonSocial: data.razonSocial || '',
                         nombre: data.nombre || '',
                         apellido: data.apellido || '',
-                        porcentaje:  Number(item.porcentaje) > 0 ? Number(item.porcentaje).toFixed(2).toString() : 0,
+                        porcentaje: porcentajeActual > 0 ? porcentajeActual.toFixed(2).toString() : 0,
                         tipoRelacionAccionista: data.relacionAccionista || '',
                         tipoRelacion: '100000001',
                         relacionDirecta: habilitarEdicion,
@@ -1294,7 +1303,7 @@ const SolicitudAlta = (props) => {
                 razonSocial: data.person === "100000000" ? data.razonSocial : '',
                 nombre: data.person === "100000001" ? data.nombre : '',
                 apellido: data.person === "100000001" ? data.apellido : '',
-                porcentaje:  Number(item.porcentaje) > 0 ? Number(item.porcentaje).toFixed(2).toString() : 0,
+                porcentaje: Number(item.porcentaje) > 0 ? Number(item.porcentaje).toFixed(2).toString() : 0,
                 tipoRelacion: "100000001", // Accionista
                 tipoRelacionAccionista: data.relacionAccionista || '',
                 relacionDirecta: false,
@@ -1428,7 +1437,7 @@ const SolicitudAlta = (props) => {
                 razonSocial: razonSocial,
                 nombre: nombre,
                 apellido: apellido,
-                porcentaje:  Number(item.porcentaje) > 0 ? Number(item.porcentaje).toFixed(2).toString() : 0,
+                porcentaje: Number(item.porcentaje) > 0 ? Number(item.porcentaje).toFixed(2).toString() : 0,
                 tipoRelacionAccionista: item.tipoRelacionAccionista,
                 // descripcion: item.descripcion,
                 tipoRelacion: '100000001',
@@ -1444,7 +1453,9 @@ const SolicitudAlta = (props) => {
 
     //####Modifica al accionista y lo actualiza con los nuevos valores
     const modificarAccionista = (e) => {
+
         e.preventDefault()
+        debugger
         var porcentajeAccionista = percentaje != null ? Number(percentaje).toFixed(2) : porcentajeAux
         if (person === '') {
             toast.error('La personeria es requerida!');
@@ -2419,6 +2430,7 @@ const SolicitudAlta = (props) => {
                             desabilitadoDocumento={desabilitadoDocumento}
                             uploadProgress={uploadProgress}
                             handleRemoveFile={handleRemoveFile}
+                            handleRemoveAllFile={handleRemoveAllFiles}
                         />
                         <ModalAccionistas
                             open2={open2}

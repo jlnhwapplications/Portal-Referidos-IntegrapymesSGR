@@ -24,6 +24,7 @@ const defaultProvider = {
   user: null,
   loading: true,
   loadingReferidos: true,
+  loadingAuth: true,
   setUser: () => null,
   setLoading: () => Boolean,
   setLoadingReferidos: () => Boolean,
@@ -46,6 +47,7 @@ const AuthProvider = ({ children }) => {
   const [referido, setReferido] = useState({});
   const [referidos, setReferidos] = useState([]);
   const [retrieveReferidos, setRetrieveReferidos] = useState(false);
+  const [loadingAuth, setLoadingAuth] = useState(false);
   // ** Hooks
   const router = useRouter()
 
@@ -197,6 +199,7 @@ const AuthProvider = ({ children }) => {
 
   const handleRegister = async (params) => {
     try {
+      setLoadingAuth(true);
       let respMail = null;
       var entidad = "accounts"
       var fetch = "<fetch mapping='logical'>" +
@@ -210,6 +213,9 @@ const AuthProvider = ({ children }) => {
         "<filter type='and'>" +
         "<condition attribute='emailaddress1' operator='eq' value='" + params.email + "' />" +
         "<condition attribute='statecode' operator='eq' value='0' />" +
+        "<condition attribute='new_relacionamientoconlasgr' operator='contain-values'>" +
+        "<value>100000004</value>" +
+        "</condition>" +
         "</filter>" +
         "</entity>" +
         "</fetch>";
@@ -220,7 +226,6 @@ const AuthProvider = ({ children }) => {
       var name = ''
       var estado = ''
       var cuit = ''
-
       try {
         respMail = await axios.post(
           `${UrlApi}api/consultafetch`,
@@ -235,13 +240,11 @@ const AuthProvider = ({ children }) => {
           }
         );
       } catch (error) {
+        setLoadingAuth(false);
         throw error
       }
+      debugger
       if (respMail && respMail?.data.length > 0) {
-        // if (respMail.data.length == 0) {
-        //   reject('No existe una cuenta con ese correo en nuestro sistema')
-        //   return
-        // }
         accountid = respMail.data[0].accountid;
         personeria = respMail.data[0].new_personeria
         name = respMail.data[0].name
@@ -272,9 +275,14 @@ const AuthProvider = ({ children }) => {
         });
 
         setTimeout(() => {
+          setLoadingAuth(false);
           router.replace('/');
         }, 2500);
+        return {
+          success: true
+        }
       } else {
+        setLoadingAuth(false);
         toast.error('No existe una cuenta con ese correo en nuestro sistema.', {
           theme: "dark",
           position: "top-center",
@@ -287,31 +295,25 @@ const AuthProvider = ({ children }) => {
         });
       }
     } catch (error) {
+      setLoadingAuth(false);
       throw error;
     }
   };
 
   const handleLogin = async (params) => {
     try {
+      setLoadingAuth(true);
       const response = await signInWithEmailAndPassword(auth, params.email, params.password);
-      // Guardar datos en el local storage si rememberMe es verdadero
       if (params.recordar) {
         window.localStorage.setItem('userData', dataEncrpt(JSON.stringify(response.user)));
       }
-
-      // Obtener el UID del usuario actual
       const uid = response.user.uid;
-
-      // Obtener el documento del usuario desde Firestore
       const usuariosCollection = collection(firestore, 'usuarios'); // Acceder a la colección
       const usuarioDoc = query(usuariosCollection, where('uid', '==', uid)); // Crear una consulta
-
       const querySnapshot = await getDocs(usuarioDoc);
-
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
         const { correo, accountid, nombreUsuario, uid, photoURL, photoPORTADA, Estado } = userData;
-
         setUser({
           correo,
           accountid,
@@ -323,31 +325,39 @@ const AuthProvider = ({ children }) => {
         });
       }
       setTimeout(() => {
+        setLoadingAuth(false);
         router.replace('/');
       }, 2500);
+      return {
+        success: true
+      }
     } catch (error) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || 'auth/invalid-login-credentials') {
-        toast.error('El correo electrónico o la contraseña no son válidos', {
-          theme: "dark",
-          position: "top-center",
-          autoClose: 1500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        let message = error.message
+        if (
+          error.code === "auth/user-not-found" ||
+          error.code === "auth/wrong-password" ||
+          error.code === "auth/invalid-login-credentials"
+        ) {
+          message = "El correo electrónico o la contraseña no son válidos"
+        }
+        setLoadingAuth(false);
+        return {
+          success: false,
+          error: {
+            code: error.code || "unknown",
+            message,
+          },
+        }
       } else {
-        toast.error(error.code, {
-          theme: "dark",
-          position: "top-center",
-          autoClose: 1500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        setLoadingAuth(false);
+        return {
+          success: false,
+          error: {
+            code: error.code || "unknown",
+            message,
+          },
+        }
       }
     }
   };
@@ -476,6 +486,7 @@ const AuthProvider = ({ children }) => {
     user,
     loading,
     loadingReferidos,
+    loadingAuth,
     token, // Agregamos el token aquí
     setUser,
     setLoading,

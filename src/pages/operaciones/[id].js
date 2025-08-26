@@ -80,7 +80,7 @@ const IdOperacion = () => {
 
   const dollarFormatter = new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "USD",
+    currency: "ARS",
   })
 
   useEffect(() => {
@@ -121,8 +121,8 @@ const IdOperacion = () => {
             sx={{
               backgroundColor: alpha(theme.palette[color].main, 0.1),
               color: theme.palette[color].main,
-              width: {xs: 30, xl: 40},
-              height: {xs: 30, xl: 40},
+              width: { xs: 30, xl: 40 },
+              height: { xs: 30, xl: 40 },
             }}
           >
             <Icon />
@@ -130,7 +130,7 @@ const IdOperacion = () => {
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               sx={{
-                fontSize: {xs: 14, xl: 16},
+                fontSize: { xs: 14, xl: 16 },
                 fontWeight: 500,
                 color: theme.palette.text.secondary,
                 mb: 0.5,
@@ -140,7 +140,7 @@ const IdOperacion = () => {
             </Typography>
             <Typography
               sx={{
-                fontSize: {xs: 14, xl: 16},
+                fontSize: { xs: 14, xl: 16 },
                 fontWeight: 600,
                 color: theme.palette.text.primary,
                 wordBreak: "break-word",
@@ -263,7 +263,7 @@ const IdOperacion = () => {
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Breadcrumbs y Header */}
       <Box sx={{ mb: 4 }}>
-        <Breadcrumbs sx={{ mb: 2 }}>
+        {/* <Breadcrumbs sx={{ mb: 2 }}>
           <Link
             underline="hover"
             color="inherit"
@@ -277,7 +277,7 @@ const IdOperacion = () => {
             <AssignmentIcon fontSize="small" />
             {currentOperation.new_name}
           </Typography>
-        </Breadcrumbs>
+        </Breadcrumbs> */}
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
           <Tooltip title="Volver a operaciones" arrow>
@@ -298,10 +298,10 @@ const IdOperacion = () => {
           </Tooltip>
 
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
               {currentOperation.new_name}
             </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
+            {/* <Stack direction="row" spacing={1} flexWrap="wrap">
               <Chip
                 label={currentOperation.statuscode || "Pendiente"}
                 color="primary"
@@ -309,7 +309,7 @@ const IdOperacion = () => {
                 size="small"
               />
               <Chip label={`ID: ${currentOperation.id}`} variant="outlined" size="small" />
-            </Stack>
+            </Stack> */}
           </Box>
         </Box>
       </Box>
@@ -543,11 +543,14 @@ const IdOperacion = () => {
               </Grid>
 
               {/* Tabla de Garantías */}
-              <Card sx={{ borderRadius: 3 }}>
-                <CardContent>
-                  <Table data={filteredGarantias} columns={COLUMNSGOPERACIONES} />
-                </CardContent>
-              </Card>
+              {/* <Card sx={{ borderRadius: 3 }}> */}
+              {/* <CardContent> */}
+              <Box>
+                <Table data={filteredGarantias} columns={COLUMNSGOPERACIONES} />
+              </Box>
+
+              {/* </CardContent> */}
+              {/* </Card> */}
             </Box>
           </Fade>
         </TabPanel>
@@ -555,29 +558,31 @@ const IdOperacion = () => {
         {/* Panel 3: Documentos */}
         <TabPanel value="2" sx={{ p: 0 }}>
           <Fade in={activeTab === "2"} timeout={300}>
-            <Card sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                  <Avatar
-                    sx={{
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    <DescriptionIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Documentación de la Operación
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {filteredDocumentos.length} documentos encontrados
-                    </Typography>
-                  </Box>
+            {/* <Card sx={{ borderRadius: 3 }}>
+              <CardContent> */}
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                <Avatar
+                  sx={{
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  <DescriptionIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Documentación de la Operación
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {filteredDocumentos.length} documentos encontrados
+                  </Typography>
                 </Box>
-                <Table data={filteredDocumentos} columns={columns_adjuntos_operaciones} />
-              </CardContent>
-            </Card>
+              </Box>
+              <Table data={filteredDocumentos} columns={columns_adjuntos_operaciones} />
+            </Box>
+            {/* </CardContent>
+            </Card> */}
           </Fade>
         </TabPanel>
       </TabContext>

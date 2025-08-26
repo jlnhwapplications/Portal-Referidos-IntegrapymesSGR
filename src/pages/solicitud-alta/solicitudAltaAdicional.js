@@ -1,35 +1,21 @@
-import React, { useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useEffect, useState } from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import TextField from '@mui/material/TextField';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import { ListItemIcon, Typography, Divider, ListItemSecondaryAction, Fade, alpha, Container, Stack, LinearProgress, Chip, useMediaQuery } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
-import FolderIcon from '@mui/icons-material/Folder';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import { styled } from '@mui/material/styles';
 import CustomTextField from '../../@core/components/customFields/CustomTextField';
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import PersonPinIcon from '@mui/icons-material/PersonPin';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
-import CheckIcon from '@mui/icons-material/Check';
 import { green } from '@mui/material/colors';
 import { Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material/styles';
-import StorageIcon from '@mui/icons-material/Storage';
 import Tooltip from '@mui/material/Tooltip';
-import Checkbox from '@mui/material/Checkbox';
-import ReCAPTCHA from 'react-google-recaptcha'
 import { RecaptchaKey, documentacionLufeYParametrizada } from '@/keys'
 import { setearRobot } from '@/redux/DatosSolicitudAlta'
 import DownloadIcon from '@mui/icons-material/Download';
@@ -57,18 +43,15 @@ const SolicitudAltaAdicional = (
         entidadLufeEncontrada
     }) => {
 
-    const dispatch = useDispatch()
     const [dense, setDense] = useState(false);
     const [documentos, setDocumentos] = useState([])
     const [cargoStorage, setCargoStorage] = useState(false)
-    const [robot, setRobot] = useState(false)
-    const robotS = useSelector(store => store.datos.robot)
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
     const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
+    const [documentosAPILufe, setDocumentosAPILufe] = useState([])
 
-    
-    React.useEffect(() => {
+    useEffect(() => {
         if (!entidadLufeEncontrada || documentacionLufeYParametrizada) {
             if ((documentosFiltrados == undefined || documentosFiltrados.length == 0) && storage != null && storage?.docsDTOs?.length > 0) {
                 if (condicionesAFIP != undefined) {
@@ -84,14 +67,14 @@ const SolicitudAltaAdicional = (
                     setDocumentos(docsFiltrados)
                 }
             }
-        } else {
-            if (documentosLufe?.length > 0) {
-                setDocumentos(documentosLufe)
-            } else {
-                var currentData = localStorage.getItem("documentosLufe")
-                currentData = currentData ? JSON.parse(currentData) : {};
-                setDocumentos(currentData)
-            }
+        }
+        if (entidadLufeEncontrada && documentosLufe?.length > 0) {
+            setDocumentosAPILufe(documentosLufe)
+        }
+        else {
+            var currentData = localStorage.getItem("documentosLufe")
+            currentData = currentData ? JSON.parse(currentData) : {};
+            setDocumentosAPILufe(currentData)
         }
         if (personeria !== '') {
             if (personeria === '100000000') {
@@ -100,23 +83,6 @@ const SolicitudAltaAdicional = (
             }
         }
     }, [personeria, condicionImpositiva, accionistas, condicionesAFIP, entidadLufeEncontrada])
-
-    const filtrarDocumentos = (docs, condicionImpositiva) => {
-        var documentosFiltrados = []
-        docs.forEach(doc => {
-            if (doc.new_condicionimpositiva != null) {
-                var condiciones = doc.new_condicionimpositiva.split(',')
-                condiciones.forEach(item => {
-                    if (item === condicionImpositiva) {
-                        documentosFiltrados.push(doc)
-                    }
-                })
-            } else {
-                documentosFiltrados.push(doc)
-            }
-        })
-        return documentosFiltrados
-    }
 
     const filtrarDocumentosPorCondicionAFIP = (condiciones, docs, condicionImpositiva) => {
         var documentosFiltrados = []
@@ -195,19 +161,6 @@ const SolicitudAltaAdicional = (
         return peso
     }
 
-    // const robotOnChange = (value) => {
-    //     var valor = ""
-    //     if (value) {
-    //         valor = "True"
-    //         setRobot(true)
-    //         dispatch(setearRobot(true))
-    //     } else {
-    //         valor = "False"
-    //         setRobot(false)
-    //         dispatch(setearRobot(false))
-    //     }
-    // }
-
     const actionButtonStyle = {
         width: 40,
         height: 40,
@@ -264,278 +217,444 @@ const SolicitudAltaAdicional = (
                             </Box>
                         </Box>
                         <Divider sx={{ mb: 3, borderColor: isDark ? "#4A4063" : "#e0e0e0" }} />
-                        <List dense={dense} sx={{ py: 0 }}>
-                            {documentos?.map((item, index) =>
-                                <Paper
-                                    key={(!entidadLufeEncontrada || documentacionLufeYParametrizada) ? item.new_name : item.nombre}
-                                    elevation={isDark ? 2 : 1}
-                                    sx={{
-                                        mb: 1,
-                                        borderRadius: 3,
-                                        bgcolor: isDark ? alpha("#000", 0.2) : "#ffffff",
-                                        border: isDark ? alpha("#000", 0.5) : "1px solid #e0e0e0",
-                                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                        "&:hover": {
-                                            transform: "translateY(-1px)",
-                                            boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
-                                        },
-                                    }}
-                                >
-                                    <ListItem
-                                        sx={{
-                                            py: dense ? 1 : 1.5,
-                                            px: 2,
-                                        }}
-                                    >
-                                        {/* Checkbox y estado */}
-                                        <ListItemIcon sx={{ minWidth: 48 }}>
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                                {(!entidadLufeEncontrada || documentacionLufeYParametrizada) &&
-                                                    (
+                        <Box
+                            sx={{
+                                maxHeight: {
+                                    xs: 200,  // móviles
+                                    sm: 300,  // tablets
+                                    xl: 500,  // pantallas grandes
+                                },
+                                overflowY: "auto",
+                                overflowX: "hidden",
+                                pr: 0.5, // Small padding to prevent content from touching scrollbar
+
+                                // Custom scrollbar styles
+                                "&::-webkit-scrollbar": {
+                                    width: "8px",
+                                },
+                                "&::-webkit-scrollbar-track": {
+                                    background: isDark ? alpha("#ffffff", 0.05) : alpha("#000000", 0.03),
+                                    borderRadius: "10px",
+                                    margin: "4px",
+                                },
+                                "&::-webkit-scrollbar-thumb": {
+                                    background: isDark
+                                        ? `linear-gradient(135deg, ${alpha("#64b5f6", 0.6)} 0%, ${alpha("#1976d2", 0.8)} 100%)`
+                                        : `linear-gradient(135deg, ${alpha("#1976d2", 0.6)} 0%, ${alpha("#0d47a1", 0.8)} 100%)`,
+                                    borderRadius: "10px",
+                                    border: isDark ? `2px solid ${alpha("#ffffff", 0.1)}` : `2px solid ${alpha("#000000", 0.05)}`,
+                                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                },
+                                "&::-webkit-scrollbar-thumb:hover": {
+                                    background: isDark
+                                        ? `linear-gradient(135deg, ${alpha("#64b5f6", 0.8)} 0%, ${alpha("#1976d2", 1)} 100%)`
+                                        : `linear-gradient(135deg, ${alpha("#1976d2", 0.8)} 0%, ${alpha("#0d47a1", 1)} 100%)`,
+                                    transform: "scale(1.1)",
+                                    boxShadow: isDark ? `0 0 10px ${alpha("#64b5f6", 0.4)}` : `0 0 10px ${alpha("#1976d2", 0.3)}`,
+                                },
+                                "&::-webkit-scrollbar-thumb:active": {
+                                    background: isDark
+                                        ? `linear-gradient(135deg, ${alpha("#42a5f5", 0.9)} 0%, ${alpha("#1565c0", 1)} 100%)`
+                                        : `linear-gradient(135deg, ${alpha("#1565c0", 0.9)} 0%, ${alpha("#0a3d62", 1)} 100%)`,
+                                },
+
+                                // Firefox scrollbar styles
+                                scrollbarWidth: "thin",
+                                scrollbarColor: isDark
+                                    ? `${alpha("#64b5f6", 0.6)} ${alpha("#ffffff", 0.05)}`
+                                    : `${alpha("#1976d2", 0.6)} ${alpha("#000000", 0.03)}`,
+
+                                // Smooth scrolling
+                                scrollBehavior: "smooth",
+                            }}
+                        >
+                            <List dense={dense}
+                            >
+                                {
+                                    documentos?.length > 0 &&
+                                    documentos?.map((item, index) =>
+                                        <Paper
+                                            key={(!entidadLufeEncontrada || documentacionLufeYParametrizada) ? item.new_name : item.nombre}
+                                            elevation={isDark ? 2 : 1}
+                                            sx={{
+                                                mb: 1,
+                                                borderRadius: 3,
+                                                bgcolor: isDark ? alpha("#000", 0.2) : "#ffffff",
+                                                border: isDark ? alpha("#000", 0.5) : "1px solid #e0e0e0",
+                                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                "&:hover": {
+                                                    transform: "translateY(-1px)",
+                                                    boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
+                                                },
+                                            }}
+                                        >
+                                            <ListItem
+                                                sx={{
+                                                    py: dense ? 1 : 1.5,
+                                                    px: 2,
+                                                }}
+                                            >
+                                                {/* Checkbox y estado */}
+                                                <ListItemIcon sx={{ minWidth: 48 }}>
+                                                    <Stack direction="row" spacing={1} alignItems="center">
+                                                        {(!entidadLufeEncontrada || documentacionLufeYParametrizada) &&
+                                                            (
+                                                                <Tooltip
+                                                                    title={
+                                                                        <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
+                                                                            Estado: {item.documentoCargado ? "Completado" : (
+                                                                                item.new_requeridoenporta ? "Requerido" : "Pendiente")}
+                                                                        </Typography>
+                                                                    }
+                                                                    arrow
+                                                                >
+                                                                    {item.documentoCargado ?
+                                                                        <Avatar
+                                                                            sx={{
+                                                                                width: { xs: 28, xl: 32 },
+                                                                                height: { xs: 28, xl: 32 },
+                                                                                bgcolor: alpha("#4caf50", 0.1),
+                                                                                border: `2px solid ${alpha("#4caf50", 0.3)}`,
+                                                                            }}
+                                                                        >
+                                                                            <CheckCircle sx={{ fontSize: 18, color: '#4caf50' }} />
+                                                                            {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
+                                                                        </Avatar> : (
+                                                                            item.new_requeridoenportal ?
+                                                                                <Avatar
+                                                                                    sx={{
+                                                                                        width: { xs: 28, xl: 32 },
+                                                                                        height: { xs: 28, xl: 32 },
+                                                                                        bgcolor: alpha("#f44336", 0.1),
+                                                                                        border: `2px solid ${alpha("#f44336", 0.3)}`,
+                                                                                    }}
+                                                                                >
+                                                                                    <Error sx={{ fontSize: 18, color: '#f44336' }} />
+                                                                                    {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
+                                                                                </Avatar>
+                                                                                :
+                                                                                <Avatar
+                                                                                    sx={{
+                                                                                        width: { xs: 28, xl: 32 },
+                                                                                        height: { xs: 28, xl: 32 },
+                                                                                        bgcolor: alpha("#ff9800", 0.1),
+                                                                                        border: `2px solid ${alpha("#ff9800", 0.3)}`,
+                                                                                    }}
+                                                                                >
+                                                                                    <Warning sx={{ fontSize: 18, color: '#ff9800' }} />
+                                                                                    {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
+                                                                                </Avatar>)}
+                                                                </Tooltip>
+                                                            )}
+                                                    </Stack>
+                                                </ListItemIcon>
+                                                {/* Contenido del documento */}
+                                                <ListItemText
+                                                    primary={
+                                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                            <Typography
+                                                                sx={{
+                                                                    fontSize: { xs: 12, xl: 14 },
+                                                                    fontWeight: "bold",
+                                                                    // color: item.new_requeridoenportal ? "#f44336" : "text.primary",
+                                                                }}
+                                                            >
+                                                                {(!entidadLufeEncontrada || documentacionLufeYParametrizada) ? item.new_name : item.nombre}
+                                                                {item.new_requeridoenportal && (
+                                                                    <Chip
+                                                                        label="Requerido"
+                                                                        size="small"
+                                                                        color="error"
+                                                                        sx={{
+                                                                            ml: 1,
+                                                                            height: 20,
+                                                                            fontSize: "0.7rem",
+                                                                            fontWeight: "bold",
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </Typography>
+                                                        </Box>
+                                                    }
+
+                                                    secondary={
+                                                        (!entidadLufeEncontrada || documentacionLufeYParametrizada) &&
+                                                        item.new_descripcion && (
+                                                            !esPantallaChica ? (
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    color="text.secondary"
+                                                                    sx={{
+                                                                        display: "-webkit-box",
+                                                                        WebkitLineClamp: 2,
+                                                                        WebkitBoxOrient: "vertical",
+                                                                        overflow: "hidden",
+                                                                        mt: 0.5,
+                                                                    }}
+                                                                >
+                                                                    {item.new_descripcion}
+                                                                </Typography>
+                                                            ) : null
+                                                        )
+                                                    }
+                                                />
+
+                                                {/* Acciones */}
+                                                {(!entidadLufeEncontrada || documentacionLufeYParametrizada) && (
+                                                    <Stack direction="row" spacing={1} alignItems="center">
+                                                        {/* Botón de ayuda */}
+                                                        {item.new_descripcion && (
+                                                            <Tooltip
+                                                                title={
+                                                                    <Box>
+                                                                        <Typography variant="body2" fontWeight="bold" sx={{ color: "#fff" }}>
+                                                                            Información del Documento
+                                                                        </Typography>
+                                                                        <Typography variant="caption" sx={{ color: "#fff", opacity: 0.9 }}>
+                                                                            {item.new_descripcion}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                }
+                                                                arrow
+                                                                placement="top"
+                                                            >
+                                                                <IconButton
+                                                                    sx={{
+                                                                        ...actionButtonStyle,
+                                                                        bgcolor: isDark ? alpha("#9c27b0", 0.1) : alpha("#9c27b0", 0.08),
+                                                                        border: `1px solid ${isDark ? alpha("#9c27b0", 0.3) : alpha("#9c27b0", 0.2)}`,
+                                                                        color: isDark ? "#ba68c8" : "#7b1fa2",
+                                                                        "&::before": {
+                                                                            background: isDark
+                                                                                ? "linear-gradient(135deg, rgba(156, 39, 176, 0.2) 0%, rgba(186, 104, 200, 0.1) 100%)"
+                                                                                : "linear-gradient(135deg, rgba(123, 31, 162, 0.1) 0%, rgba(156, 39, 176, 0.05) 100%)",
+                                                                        },
+                                                                        "&:hover": {
+                                                                            ...actionButtonStyle["&:hover"],
+                                                                            boxShadow: isDark ? "0 8px 25px rgba(156, 39, 176, 0.3)" : "0 8px 25px rgba(123, 31, 162, 0.2)",
+                                                                        },
+                                                                    }}
+                                                                >
+                                                                    <HelpOutline fontSize="small" />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+
+                                                        {/* Botón de descarga de plantilla */}
+                                                        {item.new_urlplantilla && (
+                                                            <Tooltip
+                                                                title={
+                                                                    <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
+                                                                        Descargar Plantilla
+                                                                    </Typography>
+                                                                }
+                                                                arrow
+                                                            >
+                                                                <IconButton
+                                                                    onClick={() => window.open(item.new_urlplantilla, "_blank")}
+                                                                    // disabled={loadingStates.download}
+                                                                    sx={{
+                                                                        ...actionButtonStyle,
+                                                                        bgcolor: isDark ? alpha("#2196f3", 0.1) : alpha("#2196f3", 0.08),
+                                                                        border: `1px solid ${isDark ? alpha("#2196f3", 0.3) : alpha("#2196f3", 0.2)}`,
+                                                                        color: isDark ? "#64b5f6" : "#1976d2",
+                                                                        "&::before": {
+                                                                            background: isDark
+                                                                                ? "linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(100, 181, 246, 0.1) 100%)"
+                                                                                : "linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%)",
+                                                                        },
+                                                                        "&:hover": {
+                                                                            ...actionButtonStyle["&:hover"],
+                                                                            boxShadow: isDark ? "0 8px 25px rgba(33, 150, 243, 0.3)" : "0 8px 25px rgba(25, 118, 210, 0.2)",
+                                                                        },
+                                                                    }}
+                                                                >
+                                                                    <GetApp fontSize="small" />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+
+                                                        {/* Botón de abrir carpeta */}
                                                         <Tooltip
                                                             title={
                                                                 <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
-                                                                    Estado: {item.documentoCargado ? "Completado" : (
-                                                                        item.new_requeridoenporta ? "Requerido" : "Pendiente")}
+                                                                    Abrir Carpeta Digital
                                                                 </Typography>
                                                             }
                                                             arrow
                                                         >
-                                                            {item.documentoCargado ?
-                                                                <Avatar
+                                                            <IconButton
+                                                                onClick={() => obtenerCarpeta(item.new_documentacionid)}
+                                                                // disabled={loadingStates.folder}
+                                                                sx={{
+                                                                    ...actionButtonStyle,
+                                                                    bgcolor: isDark ? alpha("#ff9800", 0.1) : alpha("#ff9800", 0.08),
+                                                                    border: `1px solid ${isDark ? alpha("#ff9800", 0.3) : alpha("#ff9800", 0.2)}`,
+                                                                    color: isDark ? "#ffb74d" : "#f57c00",
+                                                                    "&::before": {
+                                                                        background: isDark
+                                                                            ? "linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.1) 100%)"
+                                                                            : "linear-gradient(135deg, rgba(245, 124, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%)",
+                                                                    },
+                                                                    "&:hover": {
+                                                                        ...actionButtonStyle["&:hover"],
+                                                                        boxShadow: isDark ? "0 8px 25px rgba(255, 152, 0, 0.3)" : "0 8px 25px rgba(245, 124, 0, 0.2)",
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <FolderOpen fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+
+                                                        {/* Botón de subir archivo */}
+                                                        <Tooltip
+                                                            title={
+                                                                <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
+                                                                    Subir Archivo
+                                                                </Typography>
+                                                            }
+                                                            arrow
+                                                        >
+                                                            <IconButton
+                                                                onClick={() => obtenerDocumento(item.new_documentacionid)}
+                                                                // disabled={loadingStates.upload}
+                                                                sx={{
+                                                                    ...actionButtonStyle,
+                                                                    bgcolor: isDark ? alpha("#4caf50", 0.1) : alpha("#4caf50", 0.08),
+                                                                    border: `1px solid ${isDark ? alpha("#4caf50", 0.3) : alpha("#4caf50", 0.2)}`,
+                                                                    color: isDark ? "#66bb6a" : "#2e7d32",
+                                                                    "&::before": {
+                                                                        background: isDark
+                                                                            ? "linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(102, 187, 106, 0.1) 100%)"
+                                                                            : "linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)",
+                                                                    },
+                                                                    "&:hover": {
+                                                                        ...actionButtonStyle["&:hover"],
+                                                                        boxShadow: isDark ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 8px 25px rgba(46, 125, 50, 0.2)",
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <CloudUpload fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                )}
+                                            </ListItem>
+                                        </Paper>
+                                    )}
+                                {
+                                    documentosAPILufe?.length > 0 &&
+                                    documentosAPILufe?.map((item, index) =>
+                                        <Paper
+                                            key={item.nombre}
+                                            elevation={isDark ? 2 : 1}
+                                            sx={{
+                                                mb: 1,
+                                                borderRadius: 3,
+                                                bgcolor: isDark ? alpha("#000", 0.2) : "#ffffff",
+                                                border: isDark ? alpha("#000", 0.5) : "1px solid #e0e0e0",
+                                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                "&:hover": {
+                                                    transform: "translateY(-1px)",
+                                                    boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
+                                                },
+                                            }}
+                                        >
+                                            <ListItem
+                                                sx={{
+                                                    py: dense ? 1 : 1.5,
+                                                    px: 2,
+                                                }}
+                                            >
+                                                {/* Checkbox y estado */}
+                                                <ListItemIcon sx={{ minWidth: 48 }}>
+                                                    <Stack direction="row" spacing={1} alignItems="center">
+                                                        <Tooltip
+                                                            title={
+                                                                <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
+                                                                    Estado: {"Completado"}
+                                                                </Typography>
+                                                            }
+                                                            arrow
+                                                        >
+                                                            <Avatar
+                                                                sx={{
+                                                                    width: { xs: 28, xl: 32 },
+                                                                    height: { xs: 28, xl: 32 },
+                                                                    bgcolor: alpha("#4caf50", 0.1),
+                                                                    border: `2px solid ${alpha("#4caf50", 0.3)}`,
+                                                                }}
+                                                            >
+                                                                <CheckCircle sx={{ fontSize: 18, color: '#4caf50' }} />
+                                                                {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
+                                                            </Avatar>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                </ListItemIcon>
+                                                {/* Contenido del documento */}
+                                                <ListItemText
+                                                    primary={
+                                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                            <Typography
+                                                                sx={{
+                                                                    fontSize: { xs: 12, xl: 14 },
+                                                                    fontWeight: "bold",
+                                                                    // color: item.new_requeridoenportal ? "#f44336" : "text.primary",
+                                                                }}
+                                                            >
+                                                                {item.nombre}
+                                                            </Typography>
+                                                        </Box>
+                                                    }
+                                                />
+
+                                                {/* Acciones */}
+                                                {(!entidadLufeEncontrada || documentacionLufeYParametrizada) && (
+                                                    <Stack direction="row" spacing={1} alignItems="center">
+                                                        {/* Botón de ayuda */}
+                                                        {item.new_descripcion && (
+                                                            <Tooltip
+                                                                title={
+                                                                    <Box>
+                                                                        <Typography variant="body2" fontWeight="bold" sx={{ color: "#fff" }}>
+                                                                            Información del Documento
+                                                                        </Typography>
+                                                                        <Typography variant="caption" sx={{ color: "#fff", opacity: 0.9 }}>
+                                                                            {item.new_descripcion}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                }
+                                                                arrow
+                                                                placement="top"
+                                                            >
+                                                                <IconButton
                                                                     sx={{
-                                                                        width: { xs: 28, xl: 32 },
-                                                                        height: { xs: 28, xl: 32 },
-                                                                        bgcolor: alpha("#4caf50", 0.1),
-                                                                        border: `2px solid ${alpha("#4caf50", 0.3)}`,
+                                                                        ...actionButtonStyle,
+                                                                        bgcolor: isDark ? alpha("#9c27b0", 0.1) : alpha("#9c27b0", 0.08),
+                                                                        border: `1px solid ${isDark ? alpha("#9c27b0", 0.3) : alpha("#9c27b0", 0.2)}`,
+                                                                        color: isDark ? "#ba68c8" : "#7b1fa2",
+                                                                        "&::before": {
+                                                                            background: isDark
+                                                                                ? "linear-gradient(135deg, rgba(156, 39, 176, 0.2) 0%, rgba(186, 104, 200, 0.1) 100%)"
+                                                                                : "linear-gradient(135deg, rgba(123, 31, 162, 0.1) 0%, rgba(156, 39, 176, 0.05) 100%)",
+                                                                        },
+                                                                        "&:hover": {
+                                                                            ...actionButtonStyle["&:hover"],
+                                                                            boxShadow: isDark ? "0 8px 25px rgba(156, 39, 176, 0.3)" : "0 8px 25px rgba(123, 31, 162, 0.2)",
+                                                                        },
                                                                     }}
                                                                 >
-                                                                    <CheckCircle sx={{ fontSize: 18, color: '#4caf50' }} />
-                                                                    {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
-                                                                </Avatar> : (
-                                                                    item.new_requeridoenportal ?
-                                                                        <Avatar
-                                                                            sx={{
-                                                                                width: { xs: 28, xl: 32 },
-                                                                                height: { xs: 28, xl: 32 },
-                                                                                bgcolor: alpha("#f44336", 0.1),
-                                                                                border: `2px solid ${alpha("#f44336", 0.3)}`,
-                                                                            }}
-                                                                        >
-                                                                            <Error sx={{ fontSize: 18, color: '#f44336' }} />
-                                                                            {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
-                                                                        </Avatar>
-                                                                        :
-                                                                        <Avatar
-                                                                            sx={{
-                                                                                width: { xs: 28, xl: 32 },
-                                                                                height: { xs: 28, xl: 32 },
-                                                                                bgcolor: alpha("#ff9800", 0.1),
-                                                                                border: `2px solid ${alpha("#ff9800", 0.3)}`,
-                                                                            }}
-                                                                        >
-                                                                            <Warning sx={{ fontSize: 18, color: '#ff9800' }} />
-                                                                            {/* <IconComponent sx={{ fontSize: 18, color: config.color }} /> */}
-                                                                        </Avatar>)}
-                                                        </Tooltip>
-                                                    )}
-                                            </Stack>
-                                        </ListItemIcon>
-                                        {/* Contenido del documento */}
-                                        <ListItemText
-                                            primary={
-                                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                    <Typography
-                                                        sx={{
-                                                            fontSize: { xs: 12, xl: 14 },
-                                                            fontWeight: "bold",
-                                                            // color: item.new_requeridoenportal ? "#f44336" : "text.primary",
-                                                        }}
-                                                    >
-                                                        {(!entidadLufeEncontrada || documentacionLufeYParametrizada) ? item.new_name : item.nombre}
-                                                        {item.new_requeridoenportal && (
-                                                            <Chip
-                                                                label="Requerido"
-                                                                size="small"
-                                                                color="error"
-                                                                sx={{
-                                                                    ml: 1,
-                                                                    height: 20,
-                                                                    fontSize: "0.7rem",
-                                                                    fontWeight: "bold",
-                                                                }}
-                                                            />
+                                                                    <HelpOutline fontSize="small" />
+                                                                </IconButton>
+                                                            </Tooltip>
                                                         )}
-                                                    </Typography>
-                                                </Box>
-                                            }
-
-                                            secondary={
-                                                (!entidadLufeEncontrada || documentacionLufeYParametrizada) &&
-                                                item.new_descripcion && (
-                                                    !esPantallaChica ? (
-                                                        <Typography
-                                                            variant="caption"
-                                                            color="text.secondary"
-                                                            sx={{
-                                                                display: "-webkit-box",
-                                                                WebkitLineClamp: 2,
-                                                                WebkitBoxOrient: "vertical",
-                                                                overflow: "hidden",
-                                                                mt: 0.5,
-                                                            }}
-                                                        >
-                                                            {item.new_descripcion}
-                                                        </Typography>
-                                                    ) : null
-                                                )
-                                            }
-                                        />
-
-                                        {/* Acciones */}
-                                        {(!entidadLufeEncontrada || documentacionLufeYParametrizada) && (
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                                {/* Botón de ayuda */}
-                                                {item.new_descripcion && (
-                                                    <Tooltip
-                                                        title={
-                                                            <Box>
-                                                                <Typography variant="body2" fontWeight="bold" sx={{ color: "#fff" }}>
-                                                                    Información del Documento
-                                                                </Typography>
-                                                                <Typography variant="caption" sx={{ color: "#fff", opacity: 0.9 }}>
-                                                                    {item.new_descripcion}
-                                                                </Typography>
-                                                            </Box>
-                                                        }
-                                                        arrow
-                                                        placement="top"
-                                                    >
-                                                        <IconButton
-                                                            sx={{
-                                                                ...actionButtonStyle,
-                                                                bgcolor: isDark ? alpha("#9c27b0", 0.1) : alpha("#9c27b0", 0.08),
-                                                                border: `1px solid ${isDark ? alpha("#9c27b0", 0.3) : alpha("#9c27b0", 0.2)}`,
-                                                                color: isDark ? "#ba68c8" : "#7b1fa2",
-                                                                "&::before": {
-                                                                    background: isDark
-                                                                        ? "linear-gradient(135deg, rgba(156, 39, 176, 0.2) 0%, rgba(186, 104, 200, 0.1) 100%)"
-                                                                        : "linear-gradient(135deg, rgba(123, 31, 162, 0.1) 0%, rgba(156, 39, 176, 0.05) 100%)",
-                                                                },
-                                                                "&:hover": {
-                                                                    ...actionButtonStyle["&:hover"],
-                                                                    boxShadow: isDark ? "0 8px 25px rgba(156, 39, 176, 0.3)" : "0 8px 25px rgba(123, 31, 162, 0.2)",
-                                                                },
-                                                            }}
-                                                        >
-                                                            <HelpOutline fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
+                                                    </Stack>
                                                 )}
-
-                                                {/* Botón de descarga de plantilla */}
-                                                {item.new_urlplantilla && (
-                                                    <Tooltip
-                                                        title={
-                                                            <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
-                                                                Descargar Plantilla
-                                                            </Typography>
-                                                        }
-                                                        arrow
-                                                    >
-                                                        <IconButton
-                                                            onClick={() => window.open(item.new_urlplantilla, "_blank")}
-                                                            // disabled={loadingStates.download}
-                                                            sx={{
-                                                                ...actionButtonStyle,
-                                                                bgcolor: isDark ? alpha("#2196f3", 0.1) : alpha("#2196f3", 0.08),
-                                                                border: `1px solid ${isDark ? alpha("#2196f3", 0.3) : alpha("#2196f3", 0.2)}`,
-                                                                color: isDark ? "#64b5f6" : "#1976d2",
-                                                                "&::before": {
-                                                                    background: isDark
-                                                                        ? "linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(100, 181, 246, 0.1) 100%)"
-                                                                        : "linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%)",
-                                                                },
-                                                                "&:hover": {
-                                                                    ...actionButtonStyle["&:hover"],
-                                                                    boxShadow: isDark ? "0 8px 25px rgba(33, 150, 243, 0.3)" : "0 8px 25px rgba(25, 118, 210, 0.2)",
-                                                                },
-                                                            }}
-                                                        >
-                                                            <GetApp fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                )}
-
-                                                {/* Botón de abrir carpeta */}
-                                                <Tooltip
-                                                    title={
-                                                        <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
-                                                            Abrir Carpeta Digital
-                                                        </Typography>
-                                                    }
-                                                    arrow
-                                                >
-                                                    <IconButton
-                                                        onClick={() => obtenerCarpeta(item.new_documentacionid)}
-                                                        // disabled={loadingStates.folder}
-                                                        sx={{
-                                                            ...actionButtonStyle,
-                                                            bgcolor: isDark ? alpha("#ff9800", 0.1) : alpha("#ff9800", 0.08),
-                                                            border: `1px solid ${isDark ? alpha("#ff9800", 0.3) : alpha("#ff9800", 0.2)}`,
-                                                            color: isDark ? "#ffb74d" : "#f57c00",
-                                                            "&::before": {
-                                                                background: isDark
-                                                                    ? "linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.1) 100%)"
-                                                                    : "linear-gradient(135deg, rgba(245, 124, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%)",
-                                                            },
-                                                            "&:hover": {
-                                                                ...actionButtonStyle["&:hover"],
-                                                                boxShadow: isDark ? "0 8px 25px rgba(255, 152, 0, 0.3)" : "0 8px 25px rgba(245, 124, 0, 0.2)",
-                                                            },
-                                                        }}
-                                                    >
-                                                        <FolderOpen fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-
-                                                {/* Botón de subir archivo */}
-                                                <Tooltip
-                                                    title={
-                                                        <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
-                                                            Subir Archivo
-                                                        </Typography>
-                                                    }
-                                                    arrow
-                                                >
-                                                    <IconButton
-                                                        onClick={() => obtenerDocumento(item.new_documentacionid)}
-                                                        // disabled={loadingStates.upload}
-                                                        sx={{
-                                                            ...actionButtonStyle,
-                                                            bgcolor: isDark ? alpha("#4caf50", 0.1) : alpha("#4caf50", 0.08),
-                                                            border: `1px solid ${isDark ? alpha("#4caf50", 0.3) : alpha("#4caf50", 0.2)}`,
-                                                            color: isDark ? "#66bb6a" : "#2e7d32",
-                                                            "&::before": {
-                                                                background: isDark
-                                                                    ? "linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(102, 187, 106, 0.1) 100%)"
-                                                                    : "linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)",
-                                                            },
-                                                            "&:hover": {
-                                                                ...actionButtonStyle["&:hover"],
-                                                                boxShadow: isDark ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 8px 25px rgba(46, 125, 50, 0.2)",
-                                                            },
-                                                        }}
-                                                    >
-                                                        <CloudUpload fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Stack>
-                                        )}
-                                    </ListItem>
-                                </Paper>
-                            )}
-                        </List>
+                                            </ListItem>
+                                        </Paper>
+                                    )}
+                            </List>
+                        </Box>
                     </Grid>
                     <Grid xs={12} sm={6} item>
                         <Grid xs={12} id="juridica" sx={{ mb: 2, p: 0, pb: 1 }} style={{ display: 'none' }}>
@@ -564,143 +683,194 @@ const SolicitudAltaAdicional = (
                                 </Box>
                             </Box>
                             <Divider sx={{ mb: 3, borderColor: isDark ? "#4A4063" : "#e0e0e0" }} />
-                            <List dense={dense} sx={{ py: 0 }}>
-                                {accionistas?.map((item, index) =>
-                                    <Paper
-                                        key={item.uid}
-                                        elevation={isDark ? 2 : 1}
-                                        sx={{
-                                            mb: 1,
-                                            borderRadius: 3,
-                                            bgcolor: isDark ? alpha("#000", 0.2) : "#ffffff",
-                                            border: isDark ? alpha("#000", 0.5) : "1px solid #e0e0e0",
-                                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                            "&:hover": {
-                                                transform: "translateY(-1px)",
-                                                boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
-                                            },
-                                        }}
-                                    >
-                                        <ListItem
+                            <Box
+                                sx={{
+                                    maxHeight: {
+                                        xs: 200,  // móviles
+                                        xl: 500,  // pantallas grandes
+                                    },
+                                    overflowY: "auto",
+                                    overflowX: "hidden",
+                                    pr: 0.5, // Small padding to prevent content from touching scrollbar
+
+                                    // Custom scrollbar styles
+                                    "&::-webkit-scrollbar": {
+                                        width: "8px",
+                                    },
+                                    "&::-webkit-scrollbar-track": {
+                                        background: isDark ? alpha("#ffffff", 0.05) : alpha("#000000", 0.03),
+                                        borderRadius: "10px",
+                                        margin: "4px",
+                                    },
+                                    "&::-webkit-scrollbar-thumb": {
+                                        background: isDark
+                                            ? `linear-gradient(135deg, ${alpha("#64b5f6", 0.6)} 0%, ${alpha("#1976d2", 0.8)} 100%)`
+                                            : `linear-gradient(135deg, ${alpha("#1976d2", 0.6)} 0%, ${alpha("#0d47a1", 0.8)} 100%)`,
+                                        borderRadius: "10px",
+                                        border: isDark ? `2px solid ${alpha("#ffffff", 0.1)}` : `2px solid ${alpha("#000000", 0.05)}`,
+                                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                    },
+                                    "&::-webkit-scrollbar-thumb:hover": {
+                                        background: isDark
+                                            ? `linear-gradient(135deg, ${alpha("#64b5f6", 0.8)} 0%, ${alpha("#1976d2", 1)} 100%)`
+                                            : `linear-gradient(135deg, ${alpha("#1976d2", 0.8)} 0%, ${alpha("#0d47a1", 1)} 100%)`,
+                                        transform: "scale(1.1)",
+                                        boxShadow: isDark ? `0 0 10px ${alpha("#64b5f6", 0.4)}` : `0 0 10px ${alpha("#1976d2", 0.3)}`,
+                                    },
+                                    "&::-webkit-scrollbar-thumb:active": {
+                                        background: isDark
+                                            ? `linear-gradient(135deg, ${alpha("#42a5f5", 0.9)} 0%, ${alpha("#1565c0", 1)} 100%)`
+                                            : `linear-gradient(135deg, ${alpha("#1565c0", 0.9)} 0%, ${alpha("#0a3d62", 1)} 100%)`,
+                                    },
+
+                                    // Firefox scrollbar styles
+                                    scrollbarWidth: "thin",
+                                    scrollbarColor: isDark
+                                        ? `${alpha("#64b5f6", 0.6)} ${alpha("#ffffff", 0.05)}`
+                                        : `${alpha("#1976d2", 0.6)} ${alpha("#000000", 0.03)}`,
+
+                                    // Smooth scrolling
+                                    scrollBehavior: "smooth",
+                                }}
+                            >
+                                <List dense={dense} sx={{ py: 0 }}>
+                                    {accionistas?.map((item, index) =>
+                                        <Paper
+                                            key={item.uid}
+                                            elevation={isDark ? 2 : 1}
                                             sx={{
-                                                py: dense ? 1 : 1.5,
-                                                px: 2,
+                                                mb: 1,
+                                                borderRadius: 3,
+                                                bgcolor: isDark ? alpha("#000", 0.2) : "#ffffff",
+                                                border: isDark ? alpha("#000", 0.5) : "1px solid #e0e0e0",
+                                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                "&:hover": {
+                                                    transform: "translateY(-1px)",
+                                                    boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.1)",
+                                                },
                                             }}
                                         >
-                                            <ListItemIcon sx={{ minWidth: { xs: 18, xl: 22 } }} >
-                                                <Stack direction="row" spacing={1} alignItems="center">
-                                                    <Avatar
-                                                        sx={{
-                                                            bgcolor: isDark ? alpha("#64b5f6", 0.2) : alpha("#1976d2", 0.1),
-                                                            color: isDark ? "#64b5f6" : "#1976d2",
-                                                            width: { xs: 32, xl: 40 },
-                                                            height: { xs: 32, xl: 40 },
-                                                        }}
-                                                    >
-                                                        {item.razonSocial ? <Business fontSize="small" /> : <Person fontSize="small" />}
-                                                    </Avatar>
-                                                </Stack>
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={
-                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                        <Typography
-
+                                            <ListItem
+                                                sx={{
+                                                    py: dense ? 1 : 1.5,
+                                                    px: 2,
+                                                }}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: { xs: 18, xl: 22 } }} >
+                                                    <Stack direction="row" spacing={1} alignItems="center">
+                                                        <Avatar
                                                             sx={{
-                                                                fontSize: 14,
-                                                                fontWeight: "bold",
-                                                                // color: item.new_requeridoenportal ? "#f44336" : "text.primary",
+                                                                bgcolor: isDark ? alpha("#64b5f6", 0.2) : alpha("#1976d2", 0.1),
+                                                                color: isDark ? "#64b5f6" : "#1976d2",
+                                                                width: { xs: 32, xl: 40 },
+                                                                height: { xs: 32, xl: 40 },
                                                             }}
                                                         >
-                                                            {item.razonSocial ?
-                                                                `${item.razonSocial} - ${item.cuitcuil}` :
-                                                                `${item.nombre} - ${item.cuitcuil}`}
-                                                            {item.porcentaje && (
-                                                                <Chip
-                                                                    label={`${item.porcentaje}%`}
-                                                                    size="small"
-                                                                    color={item.porcentaje > 0 ? "success" : "error"}
-                                                                    sx={{
-                                                                        ml: 1,
-                                                                        height: 20,
-                                                                        fontSize: "0.7rem",
-                                                                        fontWeight: "bold",
-                                                                    }}
-                                                                />
-                                                            )}
-                                                        </Typography>
-                                                    </Box>
-                                                }
-                                            />
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                                <Tooltip
-                                                    title={
-                                                        <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
-                                                            Editar Accionista
-                                                        </Typography>
+                                                            {item.razonSocial ? <Business fontSize="small" /> : <Person fontSize="small" />}
+                                                        </Avatar>
+                                                    </Stack>
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={
+                                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                            <Typography
+
+                                                                sx={{
+                                                                    fontSize: 14,
+                                                                    fontWeight: "bold",
+                                                                    // color: item.new_requeridoenportal ? "#f44336" : "text.primary",
+                                                                }}
+                                                            >
+                                                                {item.razonSocial ?
+                                                                    `${item.razonSocial} - ${item.cuitcuil}` :
+                                                                    `${item.nombre} - ${item.cuitcuil}`}
+                                                                {item.porcentaje && (
+                                                                    <Chip
+                                                                        label={`${item.porcentaje}%`}
+                                                                        size="small"
+                                                                        color={item.porcentaje > 0 ? "success" : "error"}
+                                                                        sx={{
+                                                                            ml: 1,
+                                                                            height: 20,
+                                                                            fontSize: "0.7rem",
+                                                                            fontWeight: "bold",
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </Typography>
+                                                        </Box>
                                                     }
-                                                >
-                                                    <IconButton
-                                                        onClick={() => editarAccionista(item.uid)}
-                                                        sx={{
-                                                            ...actionButtonStyle,
-                                                            bgcolor: isDark ? alpha("#ff9800", 0.1) : alpha("#ff9800", 0.08),
-                                                            border: `1px solid ${isDark ? alpha("#ff9800", 0.3) : alpha("#ff9800", 0.2)}`,
-                                                            color: isDark ? "#ffb74d" : "#f57c00",
-                                                            "&::before": {
-                                                                background: isDark
-                                                                    ? "linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.1) 100%)"
-                                                                    : "linear-gradient(135deg, rgba(245, 124, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%)",
-                                                            },
-                                                            "&:hover": {
-                                                                ...actionButtonStyle["&:hover"],
-                                                                boxShadow: isDark ? "0 8px 25px rgba(255, 152, 0, 0.3)" : "0 8px 25px rgba(245, 124, 0, 0.2)",
-                                                            },
-                                                        }}
-                                                    >
-                                                        <DriveFileRenameOutlineIcon fontSize="small" />
-                                                        {/* )} */}
-                                                    </IconButton>
-                                                </Tooltip>
-                                                {!item.relacionDirecta && (
+                                                />
+                                                <Stack direction="row" spacing={1} alignItems="center">
                                                     <Tooltip
                                                         title={
                                                             <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
-                                                                Eliminar Accionista
+                                                                Editar Accionista
                                                             </Typography>
                                                         }
-                                                        arrow
                                                     >
                                                         <IconButton
-                                                            onClick={() => handleOpenEliminarAccionista(item.uid)}
-                                                            // disabled={loadingStates.upload}
+                                                            onClick={() => editarAccionista(item.uid)}
                                                             sx={{
                                                                 ...actionButtonStyle,
-                                                                bgcolor: isDark ? alpha("#4caf50", 0.1) : alpha("#4caf50", 0.08),
-                                                                border: `1px solid ${isDark ? alpha("#4caf50", 0.3) : alpha("#4caf50", 0.2)}`,
-                                                                color: isDark ? "#66bb6a" : "#2e7d32",
+                                                                bgcolor: isDark ? alpha("#ff9800", 0.1) : alpha("#ff9800", 0.08),
+                                                                border: `1px solid ${isDark ? alpha("#ff9800", 0.3) : alpha("#ff9800", 0.2)}`,
+                                                                color: isDark ? "#ffb74d" : "#f57c00",
                                                                 "&::before": {
                                                                     background: isDark
-                                                                        ? "linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(102, 187, 106, 0.1) 100%)"
-                                                                        : "linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)",
+                                                                        ? "linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.1) 100%)"
+                                                                        : "linear-gradient(135deg, rgba(245, 124, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%)",
                                                                 },
                                                                 "&:hover": {
                                                                     ...actionButtonStyle["&:hover"],
-                                                                    boxShadow: isDark ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 8px 25px rgba(46, 125, 50, 0.2)",
+                                                                    boxShadow: isDark ? "0 8px 25px rgba(255, 152, 0, 0.3)" : "0 8px 25px rgba(245, 124, 0, 0.2)",
                                                                 },
                                                             }}
                                                         >
-                                                            {/* {loadingStates.upload ? ( */}
-                                                            <DeleteIcon fontSize="small" />
+                                                            <DriveFileRenameOutlineIcon fontSize="small" />
                                                             {/* )} */}
                                                         </IconButton>
                                                     </Tooltip>
-                                                )}
-                                            </Stack>
-                                        </ListItem>
-                                    </Paper>
-                                )}
-                            </List>
+                                                    {!item.relacionDirecta && (
+                                                        <Tooltip
+                                                            title={
+                                                                <Typography variant="body2" sx={{ color: "#fff", fontWeight: "medium" }}>
+                                                                    Eliminar Accionista
+                                                                </Typography>
+                                                            }
+                                                            arrow
+                                                        >
+                                                            <IconButton
+                                                                onClick={() => handleOpenEliminarAccionista(item.uid)}
+                                                                // disabled={loadingStates.upload}
+                                                                sx={{
+                                                                    ...actionButtonStyle,
+                                                                    bgcolor: isDark ? alpha("#4caf50", 0.1) : alpha("#4caf50", 0.08),
+                                                                    border: `1px solid ${isDark ? alpha("#4caf50", 0.3) : alpha("#4caf50", 0.2)}`,
+                                                                    color: isDark ? "#66bb6a" : "#2e7d32",
+                                                                    "&::before": {
+                                                                        background: isDark
+                                                                            ? "linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(102, 187, 106, 0.1) 100%)"
+                                                                            : "linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)",
+                                                                    },
+                                                                    "&:hover": {
+                                                                        ...actionButtonStyle["&:hover"],
+                                                                        boxShadow: isDark ? "0 8px 25px rgba(76, 175, 80, 0.3)" : "0 8px 25px rgba(46, 125, 50, 0.2)",
+                                                                    },
+                                                                }}
+                                                            >
+                                                                {/* {loadingStates.upload ? ( */}
+                                                                <DeleteIcon fontSize="small" />
+                                                                {/* )} */}
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    )}
+                                                </Stack>
+                                            </ListItem>
+                                        </Paper>
+                                    )}
+                                </List>
+                            </Box>
                         </Grid>
                         <Box display="flex" alignItems="center" gap={2} mb={2}>
                             <Avatar

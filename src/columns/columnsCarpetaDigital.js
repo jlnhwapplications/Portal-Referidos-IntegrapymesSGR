@@ -20,11 +20,38 @@ import {
     Edit as EditIcon,
     CloudUpload as UploadIcon,
 } from "@mui/icons-material"
-// const statusObj = {
-//     Recibido: { color: 'success' },
-//     Pendiente: { color: 'warning' },
-//     Aprobado: { color: 'secondary' }
-// }
+
+function safeParseDate(dateStr) {
+    if (!dateStr || typeof dateStr !== "string") return null;
+
+    const parts = dateStr.split("/");
+    if (parts.length !== 3) return null;
+
+    const [day, month, year] = parts.map(Number);
+
+    // Validar que sean números y estén en rango
+    if (
+        isNaN(day) || isNaN(month) || isNaN(year) ||
+        day < 1 || day > 31 ||
+        month < 1 || month > 12 ||
+        year < 1900
+    ) {
+        return null;
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    // Validar que coincida con lo que vino
+    if (
+        date.getDate() !== day ||
+        date.getMonth() !== month - 1 ||
+        date.getFullYear() !== year
+    ) {
+        return null;
+    }
+
+    return date;
+}
 
 // Configuración de estados
 const statusObj = {
@@ -57,8 +84,6 @@ const statusObj = {
         label: "Aprobado",
     },
 }
-
-
 
 // Función para calcular días hasta vencimiento
 const getDaysUntilExpiration = (expirationDate) => {
@@ -213,6 +238,7 @@ export const columns_carperta_digital = (theme, handleOpenModal) => [
         maxWidth: 200,
         field: "fechaVencimiento",
         headerName: "Vencimiento",
+        valueGetter: ({ row }) => safeParseDate(row.new_fechadevencimiento),
         renderCell: ({ row }) => {
             const daysUntilExpiration = getDaysUntilExpiration(row.new_fechadevencimiento_value)
             const formattedDate = formatDate(row.new_fechadevencimiento_value)
@@ -265,7 +291,7 @@ export const columns_carperta_digital = (theme, handleOpenModal) => [
                         >
                             {formattedDate}
                         </Typography>
-                        {urgencyText && (
+                        {/* {urgencyText && (
                             <Typography
                                 variant="caption"
                                 sx={{
@@ -281,7 +307,7 @@ export const columns_carperta_digital = (theme, handleOpenModal) => [
                             >
                                 {urgencyText}
                             </Typography>
-                        )}
+                        )} */}
                     </Box>
                 </Box>
             )
@@ -408,6 +434,7 @@ export const columns_carperta_digital_inicio = (theme) => [
         minWidth: 200,
         field: "fechaVencimiento",
         headerName: "Vencimiento",
+        valueGetter: ({ row }) => safeParseDate(row.new_fechadevencimiento),
         renderCell: ({ row }) => {
             const daysUntilExpiration = getDaysUntilExpiration(row.new_fechadevencimiento_value)
             const formattedDate = formatDate(row.new_fechadevencimiento_value)

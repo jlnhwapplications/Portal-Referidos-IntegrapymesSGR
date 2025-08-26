@@ -3,19 +3,23 @@ import { Alert, alpha, Avatar, Box, Button, Chip, Dialog, DialogActions, DialogC
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 
-const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedFiles, nombreDocumento = '', agregarDocumento, desabilitadoDocumento, uploadProgress, handleRemoveFile }) => {
+const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedFiles, nombreDocumento = '', agregarDocumento, desabilitadoDocumento, uploadProgress, handleRemoveFile, handleRemoveAllFiles }) => {
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
     //DOCUMENTOS
 
     const multiple = true
-    const maxSize = 15000000 // 15MB
+    const maxSize = 15728640 // 15MB
     const acceptedTypes = {
         "application/pdf": [".pdf"],
         "image/*": [".png", ".jpg", ".jpeg"],
         "application/msword": [".doc"],
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+        "application/vnd.ms-excel": [".xls"], // Excel 97-2003
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], // Excel moderno
+        "text/csv": [".csv"]
     }
+
 
     const totalSize = useMemo(() => {
         return selectedFiles.reduce((acc, file) => acc + file.size, 0)
@@ -29,14 +33,19 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
         return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
     }
 
+    const handleRemoveAllFilesModal = () => {
+        setSelectedFiles([]);
+    };
+
+    const handleRemoveFileModal = (index) => {
+        const filtered = selectedFiles.filter((_, i) => i !== index);
+        setSelectedFiles(filtered);
+    };
+
 
     const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
         onDrop: useCallback(
             (acceptedFiles, rejectedFiles) => {
-                // Limpiar errores previos
-                // setErrors([])
-
-                // Manejar archivos rechazados
                 if (rejectedFiles.length > 0) {
                     const newErrors = rejectedFiles.map(({ file, errors }) => ({
                         file: file.name,
@@ -44,14 +53,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                     }))
                     setErrors(newErrors)
                 }
-
-                // Agregar archivos aceptados
-                // onDrop: (acceptedFiles) => {
-                //         debugger
-                //         setSelectedFiles(acceptedFiles.map((file) => Object.assign(file)));
-                //     },
                 if (acceptedFiles.length > 0) {
-                    // setSelectedFiles((prev) => (multiple ? [...prev, ...acceptedFiles] : acceptedFiles))
                     setSelectedFiles((prev) => (multiple ? [...prev, ...acceptedFiles] : acceptedFiles))
                 }
             },
@@ -74,8 +76,10 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                     elevation={0}
                     sx={{
                         background: isDark
-                            ? '#474360'
+                            ? theme.palette.background
                             : "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                        borderBottom: 1,
+                        borderBottomColor: theme.palette.divider,
                         color: "white",
                         p: 3,
                         borderRadius: "16px 16px 0 0",
@@ -127,6 +131,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                         <Tooltip title="Cerrar" arrow>
                             <IconButton
                                 onClick={onClose}
+                                disabled={desabilitadoDocumento}
                                 sx={{
                                     color: "white",
                                     bgcolor: alpha("#ffffff", 0.1),
@@ -196,102 +201,112 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
 
         return (
             // <Fade in timeout={500}>
-                <Paper
-                    elevation={isDark ? 2 : 1}
-                    sx={{
-                        mt: 3,
-                        borderRadius: 3,
-                        bgcolor: isDark ? "#3A3356" : "#f8f9fa",
-                        border: isDark ? "1px solid #4A4063" : "1px solid #e0e0e0",
-                        overflow: "hidden",
-                    }}
-                >
-                    <Box sx={{ p: 2, bgcolor: isDark ? alpha("#64b5f6", 0.1) : alpha("#1976d2", 0.05) }}>
-                        <Typography variant="subtitle2" fontWeight="bold" color="primary">
-                            Archivos Seleccionados ({files.length})
-                        </Typography>
-                    </Box>
+            <Paper
+                PaperProps={{
+                    elevation: isDark ? 12 : 8,
+                    sx: {
+                        bgcolor: isDark ? "#28243D" : "#ffffff",
+                        borderRadius: 4,
+                        border: isDark ? "1px solid #4A4063" : "none",
+                        minHeight: "auto",
+                        backdropFilter: "blur(10px)",
+                    },
+                }}
+                // elevation={isDark ? 2 : 1}
+                // sx={{
+                //     mt: 3,
+                //     borderRadius: 3,
+                //     bgcolor: theme.palette.background,
+                //     border: isDark ? "1px solid #4A4063" : "1px solid #e0e0e0",
+                //     overflow: "hidden",
+                // }}
+            >
+                <Box sx={{ p: 2, bgcolor: isDark ? alpha("#64b5f6", 0.1) : alpha("#1976d2", 0.05) }}>
+                    <Typography variant="subtitle2" fontWeight="bold" color="primary">
+                        Archivos Seleccionados ({files.length})
+                    </Typography>
+                </Box>
 
-                    <List disablePadding>
-                        {files.map((file, index) => (
-                            <ListItem
-                                key={index}
-                                sx={{
-                                    py: 2,
-                                    borderBottom: index < files.length - 1 ? `1px solid ${isDark ? "#4A4063" : "#e0e0e0"}` : "none",
-                                    "&:hover": {
-                                        bgcolor: isDark ? alpha("#64b5f6", 0.05) : alpha("#1976d2", 0.02),
-                                    },
-                                    transition: "background-color 0.3s ease",
-                                }}
-                            >
-                                <ListItemIcon>
-                                    <FileIcon file={file} />
-                                </ListItemIcon>
+                <List disablePadding>
+                    {files.map((file, index) => (
+                        <ListItem
+                            key={index}
+                            sx={{
+                                py: 2,
+                                borderBottom: index < files.length - 1 ? `1px solid ${isDark ? "#4A4063" : "#e0e0e0"}` : "none",
+                                "&:hover": {
+                                    bgcolor: isDark ? alpha("#64b5f6", 0.05) : alpha("#1976d2", 0.02),
+                                },
+                                transition: "background-color 0.3s ease",
+                            }}
+                        >
+                            <ListItemIcon>
+                                <FileIcon file={file} />
+                            </ListItemIcon>
 
-                                <ListItemText
-                                    primary={
-                                        <Typography
-                                            variant="body2" fontWeight="medium" noWrap>
-                                            {file.name}
+                            <ListItemText
+                                primary={
+                                    <Typography
+                                        variant="body2" fontWeight="medium" noWrap>
+                                        {file.name}
+                                    </Typography>
+                                }
+                                secondary={
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {formatFileSize(file.size)}
                                         </Typography>
-                                    }
-                                    secondary={
-                                        <Box>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {formatFileSize(file.size)}
-                                            </Typography>
-                                            {uploadProgress[index] !== undefined && (
-                                                <Box sx={{ mt: 1 }}>
-                                                    <LinearProgress
-                                                        variant="determinate"
-                                                        value={uploadProgress[index]}
-                                                        sx={{
-                                                            height: 4,
+                                        {uploadProgress[index] !== undefined && (
+                                            <Box sx={{ mt: 1 }}>
+                                                <LinearProgress
+                                                    variant="determinate"
+                                                    value={uploadProgress[index]}
+                                                    sx={{
+                                                        height: 4,
+                                                        borderRadius: 2,
+                                                        bgcolor: isDark ? "#4A4063" : "#e0e0e0",
+                                                        "& .MuiLinearProgress-bar": {
+                                                            bgcolor: uploadProgress[index] === 100 ? "#4caf50" : "#1976d2",
                                                             borderRadius: 2,
-                                                            bgcolor: isDark ? "#4A4063" : "#e0e0e0",
-                                                            "& .MuiLinearProgress-bar": {
-                                                                bgcolor: uploadProgress[index] === 100 ? "#4caf50" : "#1976d2",
-                                                                borderRadius: 2,
-                                                            },
-                                                        }}
-                                                    />
-                                                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
-                                                        {uploadProgress[index] === 100 ? "Completado" : `${uploadProgress[index]}%`}
-                                                    </Typography>
-                                                </Box>
-                                            )}
-                                        </Box>
-                                    }
-                                />
+                                                        },
+                                                    }}
+                                                />
+                                                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+                                                    {uploadProgress[index] === 100 ? "Completado" : `${uploadProgress[index]}%`}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Box>
+                                }
+                            />
 
-                                <ListItemSecondaryAction>
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                        {uploadProgress[index] === 100 && <CheckCircle sx={{ color: "#4caf50", fontSize: 20 }} />}
+                            <ListItemSecondaryAction>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    {uploadProgress[index] === 100 && <CheckCircle sx={{ color: "#4caf50", fontSize: 20 }} />}
 
-                                        <Tooltip title="Eliminar archivo" arrow>
-                                            <IconButton
-                                                edge="end"
-                                                onClick={() => onRemove(index)}
-                                                disabled={uploadProgress[index] !== undefined && uploadProgress[index] < 100}
-                                                sx={{
-                                                    color: "error.main",
-                                                    "&:hover": {
-                                                        bgcolor: alpha("#f44336", 0.1),
-                                                        transform: "scale(1.1)",
-                                                    },
-                                                    transition: "all 0.3s ease",
-                                                }}
-                                            >
-                                                <Delete fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Stack>
-                                </ListItemSecondaryAction>
-                            </ListItem>
-                        ))}
-                    </List>
-                </Paper>
+                                    <Tooltip title="Eliminar archivo" arrow>
+                                        <IconButton
+                                            edge="end"
+                                            onClick={() => onRemove(index)}
+                                            disabled={uploadProgress[index] !== undefined && uploadProgress[index] < 100}
+                                            sx={{
+                                                color: "error.main",
+                                                "&:hover": {
+                                                    bgcolor: alpha("#f44336", 0.1),
+                                                    transform: "scale(1.1)",
+                                                },
+                                                transition: "all 0.3s ease",
+                                            }}
+                                        >
+                                            <Delete fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Stack>
+                            </ListItemSecondaryAction>
+                        </ListItem>
+                    ))}
+                </List>
+            </Paper>
             // </Fade>
         )
     }
@@ -302,20 +317,21 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
             onClose={handleClose}
             maxWidth="md"
             fullWidth
+            // sx={{ bgcolor: isDark ? theme.palette.background : "#ffffff" }}
             PaperProps={{
                 elevation: isDark ? 12 : 8,
                 sx: {
                     borderRadius: 4,
-                    bgcolor: isDark ? "#28243D" : "#ffffff",
+                    bgcolor: isDark ? theme.palette.background : "#ffffff",
                     backdropFilter: "blur(10px)",
-                    border: isDark ? "1px solid #4A4063" : "none",
+                    border: theme.palette.divider,
                     overflow: "hidden",
                 },
             }}
         >
             <ModalHeader title="Cargar Documentación" onClose={handleClose} theme={theme} />
 
-            <DialogContent sx={{ p: 3 }}>
+            <DialogContent sx={{ p: 3, bgcolor: isDark ? theme.palette.background : "#ffffff" }}>
                 {/* Chip del documento */}
                 <Fade in timeout={300}>
                     <Box sx={{ my: 3 }}>
@@ -348,7 +364,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                             ? `3px dashed ${isDark ? "#64b5f6" : "#1976d2"}`
                             : isDragReject
                                 ? `3px dashed #f44336`
-                                : `2px dashed ${isDark ? "#4A4063" : "#e0e0e0"}`,
+                                : `2px dashed ${isDark ? theme.palette.divider : "#e0e0e0"}`,
                         borderRadius: 3,
                         bgcolor: isDragActive
                             ? isDark
@@ -357,7 +373,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                             : isDragReject
                                 ? alpha("#f44336", 0.05)
                                 : isDark
-                                    ? "#332C4E"
+                                    ? theme.palette.background
                                     : "#ffffff",
                         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                         "&:hover": {
@@ -403,12 +419,13 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                         <Chip label="PDF" size="small" variant="outlined" />
                         <Chip label="Imágenes" size="small" variant="outlined" />
                         <Chip label="Word" size="small" variant="outlined" />
+                        <Chip label="Excel" size="small" variant="outlined" />
                     </Stack>
                 </Paper>
 
                 {/* Lista de archivos */}
                 {selectedFiles.length > 0 && (
-                    <FileList files={selectedFiles} onRemove={handleRemoveFile} uploadProgress={uploadProgress} theme={theme} />
+                    <FileList files={selectedFiles} onRemove={handleRemoveFileModal} uploadProgress={uploadProgress} theme={theme} />
                 )}
 
                 {/* Botón para quitar todos los archivos */}
@@ -418,7 +435,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                             <Button
                                 color="error"
                                 variant="outlined"
-                                onClick={handleRemoveAllFiles}
+                                onClick={handleRemoveAllFilesModal}
                                 disabled={desabilitadoDocumento}
                                 startIcon={<Delete />}
                                 sx={{
@@ -481,6 +498,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                         disabled={desabilitadoDocumento}
                         startIcon={desabilitadoDocumento ? null : <CloudUpload />}
                         sx={{
+                            mt: 2,
                             height: 48,
                             borderRadius: 3,
                             fontSize: "1rem",

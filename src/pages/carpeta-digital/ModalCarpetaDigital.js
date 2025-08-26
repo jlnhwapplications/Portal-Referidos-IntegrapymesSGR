@@ -51,19 +51,21 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
     }
   };
 
-  const handleRemoveFile = (file) => {
-    const uploadedFiles = selectedFiles;
-    const filtered = uploadedFiles.filter((i) => i.name !== file.name);
-    setSelectedFiles([...filtered]);
+  const handleRemoveFile = (index) => {
+   const filtered = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(filtered);
   };
 
   const multiple = true
-  const maxSize = 15000000 // 15MB
+  const maxSize = 15728640 // 15MB
   const acceptedTypes = {
     "application/pdf": [".pdf"],
     "image/*": [".png", ".jpg", ".jpeg"],
     "application/msword": [".doc"],
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+    "application/vnd.ms-excel": [".xls"], // Excel 97-2003
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], // Excel moderno
+    "text/csv": [".csv"]
   }
 
   const totalSize = useMemo(() => {
@@ -163,6 +165,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
               <IconButton
                 id="cerrar-cargadigital"
                 onClick={onClose}
+                disabled={disabled}
                 sx={{
                   color: "white",
                   bgcolor: alpha("#ffffff", 0.1),
@@ -511,6 +514,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
             <Chip label="PDF" size="small" variant="outlined" />
             <Chip label="Imágenes" size="small" variant="outlined" />
             <Chip label="Word" size="small" variant="outlined" />
+            <Chip label="Excel" size="small" variant="outlined" />
           </Stack>
         </Paper>
 
@@ -527,7 +531,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
                 color="error"
                 variant="outlined"
                 onClick={handleRemoveAllFiles}
-                disabled={desabilitadoDocumento}
+                // disabled={desabilitadoDocumento}
                 startIcon={<Delete />}
                 sx={{
                   borderRadius: 2,

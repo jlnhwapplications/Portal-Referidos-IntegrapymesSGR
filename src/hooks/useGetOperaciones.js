@@ -12,7 +12,7 @@ const UseGetOperaciones = () => {
     const [operaciones, setOperaciones] = useState(null)
     const [garantiasOP, setGarantiasOP] = useState([])
     const [documentosOP, setDocumentosOP] = useState([])
-    const [loadingOperaciones, setLoadingOperaciones] = useState(false)
+    const [loadingOperaciones, setLoadingOperaciones] = useState(true)
 
     useEffect(() => {
         try {
@@ -60,7 +60,7 @@ const UseGetOperaciones = () => {
                                     new_montototal: element["new_montototal"],
                                     createdon: element["createdon@OData.Community.Display.V1.FormattedValue"],
                                     fechaCreacion: new Date(element["createdon"]),
-                                    fechaCreacion_str: moment(new Date(element["createdon"])).format('DD/MM/yyyy HH:mm'),
+                                    fechaCreacion_str: moment(new Date(element["createdon"])).format('DD/MM/yyyy'),
                                     new_fechadeinstrumentacion: element["new_fechadeinstrumentacion"] ? new Date(element["new_fechadeinstrumentacion"]) : '',
                                     new_cantidadgarantias: element["new_cantidadgarantias"],
                                     new_montodelaoperacion: element["new_montodelaoperacion@OData.Community.Display.V1.FormattedValue"],
@@ -73,7 +73,6 @@ const UseGetOperaciones = () => {
                             return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
                         });
                         setOperaciones(OperacionesFormat)
-                        setLoadingOperaciones(true)
                         garantiasUnicas.forEach(element => {
                             if (element["garantia.new_garantiaid"] != undefined && element["garantia.new_garantiaid"] != "") {
                                 let garantiaFormat = {
@@ -115,24 +114,27 @@ const UseGetOperaciones = () => {
                             }
                         })
                         setDocumentosOP(documentosOPAUX)
+                        setLoadingOperaciones(false)
                     } else {
                         debugger
                         setOperaciones([])
-                        setLoadingOperaciones(true)
+                        setLoadingOperaciones(false)
                     }
                 })
                 .catch(() => {
                     debugger
                     setOperaciones([])
+                    setLoadingOperaciones(false)
                 })
         } catch (error) {
             console.log(error);
+            setLoadingOperaciones(false)
         }
     };
 
 
-    const memoizedData = useMemo(() => operaciones, [operaciones]);
-    return { operaciones: memoizedData, garantiasOP, documentosOP, loadingOperaciones };
+    // const memoizedData = useMemo(() => operaciones, [operaciones]);
+    return { operaciones, garantiasOP, documentosOP, loadingOperaciones };
 };
 
 export default UseGetOperaciones;

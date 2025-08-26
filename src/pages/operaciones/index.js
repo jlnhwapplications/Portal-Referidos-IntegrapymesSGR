@@ -1,25 +1,3 @@
-// import ApexChartWrapper from '@/@core/styles/libs/react-apexcharts'
-// import { Grid, Typography } from '@mui/material'
-// import React from 'react'
-// import TablaOperaciones from '../views/operaciones/TablaOperaciones'
-// import PageHeader from '@/@core/components/page-header'
-
-// const Operaciones = () => {
-//     return (
-//         <Grid container sx={{ pt: '0px !important', mt: '0px !important' }}>
-//             <PageHeader
-//                 title="Mis Operaciones"
-//                 subtitle="Administración completa del portafolio de operaciones."
-//                 variant="compact"
-//             />
-//             <Grid item xs={12} sx={{ mt: 4 }}>
-//                 <TablaOperaciones />
-//             </Grid>
-//         </Grid>
-//     )
-// }
-
-// export default Operaciones
 import { useState, useMemo, useEffect } from "react"
 import {
   Grid,
@@ -66,7 +44,7 @@ import PageHeader from "@/@core/components/page-header"
 
 const Operaciones = () => {
   const theme = useTheme()
-  const { operaciones, garantiasOP, documentosOP } = useGetOperaciones()
+  const { operaciones, garantiasOP, documentosOP, loadingOperaciones } = useGetOperaciones()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -427,18 +405,28 @@ const Operaciones = () => {
     </Card>
   )
 
-  if (isLoading) {
-    return <OperacionesSkeleton />
-  }
+  // if (loadingOperaciones) {
+  //   return <OperacionesSkeleton />
+  // }
 
   return (
     <ApexChartWrapper>
       <Box sx={{ p: 3 }}>
+
         <PageHeader
           title="Mis Operaciones"
           subtitle={"Administración completa del portafolio de operaciones."}
           variant="compact"
         />
+
+        {
+          loadingOperaciones ?
+            <OperacionesSkeleton /> : <Fade in timeout={600}>
+              <Box sx={{ borderRadius: 3 }}>
+                <TablaOperaciones searchTerm={searchTerm} statusFilter={statusFilter} dateRange={dateRange} />
+              </Box>
+            </Fade>
+        }
         {/* <Box>
           <Typography
             sx={{
@@ -701,13 +689,11 @@ const Operaciones = () => {
         </Fade> */}
 
         {/* Tabla de Operaciones */}
-        <Fade in timeout={1200}>
+        {/* <Fade in timeout={1200}>
           <Box sx={{ borderRadius: 3 }}>
-            {/* <CardContent sx={{ p: 0 }}> */}
             <TablaOperaciones searchTerm={searchTerm} statusFilter={statusFilter} dateRange={dateRange} />
-            {/* </CardContent> */}
           </Box>
-        </Fade>
+        </Fade> */}
       </Box>
     </ApexChartWrapper>
   )

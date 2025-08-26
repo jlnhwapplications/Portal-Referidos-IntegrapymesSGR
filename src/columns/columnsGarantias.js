@@ -12,6 +12,55 @@ let dollarUS = Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
+function safeParseDate(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return null;
+
+  const parts = dateStr.split("/");
+  if (parts.length !== 3) return null;
+
+  const [day, month, year] = parts.map(Number);
+
+  // Validar que sean números y estén en rango
+  if (
+    isNaN(day) || isNaN(month) || isNaN(year) ||
+    day < 1 || day > 31 ||
+    month < 1 || month > 12 ||
+    year < 1900
+  ) {
+    return null;
+  }
+
+  const date = new Date(year, month - 1, day);
+
+  // Validar que coincida con lo que vino
+  if (
+    date.getDate() !== day ||
+    date.getMonth() !== month - 1 ||
+    date.getFullYear() !== year
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function safeParseInt(value, defaultValue = null) {
+  if (value === null || value === undefined) return defaultValue;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+function safeParseFloat(value, defaultValue = null) {
+  if (value === null || value === undefined) return defaultValue;
+
+  // Convertir
+  const parsed = parseFloat(value);
+
+  // Si no es un número válido → devolver defaultValue
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+
 // Componente para celdas de texto mejoradas
 function EnhancedTextCell({ value, subtitle = null, icon = null, color = "text.primary" }) {
   const theme = useTheme()
@@ -167,10 +216,10 @@ function MoneyCell({ amount, currency = "USD", subtitle = null }) {
   }
 
   const getAmountColor = (amount) => {
-    if (!amount || amount === 0) return "text.secondary"
-    if (amount > 1000000) return isDark ? "#66bb6a" : "#2e7d32" // Verde para montos altos
-    if (amount > 100000) return isDark ? "#64b5f6" : "#1976d2" // Azul para montos medios
-    return "text.primary" // Color normal para montos bajos
+    // if (!amount || amount === 0) return "text.secondary"
+    // if (amount > 1000000) return isDark ? "#66bb6a" : "#2e7d32" // Verde para montos altos
+    // if (amount > 100000) return isDark ? "#64b5f6" : "#1976d2" // Azul para montos medios
+    return isDark ? "#66bb6a" : "#2e7d32" // Color normal para montos bajos
   }
 
   return (
@@ -419,6 +468,10 @@ export const columns_garantias_mejoradas = [
     field: "new_ndeordendelagarantiaotorgada",
     minWidth: 140,
     headerName: "Nro de Orden",
+    type: "number",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseInt(row.new_ndeordendelagarantiaotorgada),
     renderCell: ({ row }) => (
       <EnhancedTextCell
         value={row.new_ndeordendelagarantiaotorgada}
@@ -468,16 +521,22 @@ export const columns_garantias_mejoradas = [
     minWidth: 160,
     field: "new_monto",
     headerName: "Monto",
-    headerAlign: "right",
-    align: "right",
+    type: "number",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseFloat(row.new_monto),
     renderCell: ({ row }) => <MoneyCell amount={row.new_monto} currency="USD" subtitle="Valor de la garantía" />,
   },
   {
     flex: 0.17,
     minWidth: 160,
-    field: "createdon",
+    field: "new_fechadeorigen",
     headerName: "Fecha de Creación",
-    renderCell: ({ row }) => <DateCell date={row.createdon} format="short" />,
+    type: "date",
+    valueGetter: ({ row }) => safeParseDate(row.new_fechadeorigen),
+    renderCell: ({ row }) => <EnhancedTextCell
+      value={row.new_fechadeorigen}
+    />,
   },
 ]
 
@@ -498,11 +557,13 @@ export const columns_garantias_mejoradas_estado = [
     field: "new_ndeordendelagarantiaotorgada",
     minWidth: 140,
     headerName: "Nro de Orden",
+    type: "number",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseInt(row.new_ndeordendelagarantiaotorgada),
     renderCell: ({ row }) => (
       <EnhancedTextCell
         value={row.new_ndeordendelagarantiaotorgada}
-        // subtitle="Número de identificación"
-        // icon={<Security fontSize="small" />}
         color="primary.main"
       />
     ),
@@ -515,8 +576,6 @@ export const columns_garantias_mejoradas_estado = [
     renderCell: ({ row }) => (
       <EnhancedTextCell
         value={row.new_tipodeoperacion}
-      // subtitle="Categoría de garantía"
-      // icon={<TrendingUp fontSize="small" />}
       />
     ),
   },
@@ -538,16 +597,21 @@ export const columns_garantias_mejoradas_estado = [
     minWidth: 160,
     field: "new_monto",
     headerName: "Monto",
-    headerAlign: "right",
-    align: "right",
+    type: "number",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseFloat(row.new_monto),
     renderCell: ({ row }) => <MoneyCell amount={row.new_monto} currency="USD" subtitle="Valor de la garantía" />,
   },
   {
     flex: 0.17,
     minWidth: 160,
-    field: "createdon",
+    field: "new_fechadeorigen",
     headerName: "Fecha de Creación",
-    renderCell: ({ row }) => <DateCell date={row.createdon} format="short" />,
+    valueGetter: ({ row }) => safeParseDate(row.new_fechadeorigen),
+    renderCell: ({ row }) => <EnhancedTextCell
+      value={row.new_fechadeorigen}
+    />,
   },
 ]
 

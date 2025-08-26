@@ -1,7 +1,7 @@
 import { AuthContext } from "@/context/AuthContext";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { LimpiarGarantiasFetchSelector, obtenerAdjuntosGarantias, obtenerGarantiasFetch } from "@/redux/Garantias";
+import { cargarECheck, LimpiarGarantiasFetchSelector, obtenerAdjuntosGarantias, obtenerGarantiasFetch } from "@/redux/Garantias";
 import moment from "moment";
 import { cargarGarantiaPromise } from "@/redux/Operaciones";
 const estadosGarantia = ["Afrontada", "Anulada", "En Cartera", "En Gestión", "Honrada", "Vencida", "Vigente"];
@@ -31,7 +31,6 @@ const UseGetGarantias = () => {
           if (data?.length > 0) {
             let GarantiasFormat = [];
             data.forEach((element) => {
-              debugger
               let garantiaFormat = {
                 id: element["new_garantiaid"],
                 new_name: element["new_name"],
@@ -46,8 +45,11 @@ const UseGetGarantias = () => {
                 new_monto_value: element["new_monto@OData.Community.Display.V1.FormattedValue"],
                 new_fechadevencimiento: moment(new Date(element["new_fechadevencimiento"])).format('DD/MM/yyyy'),
                 new_tipodegarantias: element["new_tipodegarantias@OData.Community.Display.V1.FormattedValue"],
+                new_fechadeorigen: moment(new Date(element["new_fechadeorigen"])).format("DD/MM/yyyy"),
+                new_fechadeorigen_date: element["new_fechadeorigen"],
                 // fechaCreacion: new Date(element["createdon"]),
-                createdon: moment(new Date(element["createdon"])).format("DD/MM/yyyy HH:mm"),
+                // createdon: moment(new Date(element["createdon"])).format("DD/MM/yyyy HH:mm"),
+                createdon: moment(new Date(element["createdon"])).format("DD/MM/yyyy"),
                 transactioncurrencyid: element["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"],
                 new_sociosprotector: element["_new_sociosprotector_value@OData.Community.Display.V1.FormattedValue"],
                 new_fechadecancelada: moment(new Date(element["new_fechadecancelada"])).format('DD/MM/yyyy'),
@@ -170,6 +172,28 @@ const UseGetGarantias = () => {
     });
   }
 
+  function createECheck(formData, id, token, toast) {
+    setCargandoGarantia(true);
+    return new Promise((resolve, reject) => {
+      debugger;
+      dispatch(cargarECheck(formData, referido?.accountid, token, toast))
+        // dispatch(cargarGarantiaPromise(datos, referido?.accountid, token, toast))
+        .then(() => {
+          return fetchData(id, token);
+        })
+        .then(() => {
+          setCargandoGarantia(false);
+          resolve();
+        })
+        .catch((err) => {
+          setCargandoGarantia(false);
+          reject(err);
+        });
+    });
+  }
+
+
+
   const LimpiarGarantia = () => {
     setGarantias([]);
     setEstadoGarantias([]);
@@ -186,7 +210,8 @@ const UseGetGarantias = () => {
     cargandoCarantia,
     LimpiarGarantia,
     fetchData,
-    createGarantia
+    createGarantia,
+    createECheck
   };
 };
 

@@ -44,6 +44,7 @@ import {
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
 import ReactApexcharts from "@/@core/components/react-apexcharts";
 import { useState } from "react";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
 
 const LimitCard = ({ data }) => {
   const theme = useTheme();
@@ -73,7 +74,7 @@ const LimitCard = ({ data }) => {
 
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: currency,
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -82,7 +83,7 @@ const LimitCard = ({ data }) => {
   const formatCompactCurrency = (amount, currency = "USD") => {
     const formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: currency === "COP" ? "COP" : currency,
+      currency: currency === "COP" ? "COP" : "USD",
       notation: "compact",
       maximumFractionDigits: 1,
     });
@@ -497,7 +498,7 @@ const LimitCard = ({ data }) => {
               gutterBottom
               sx={{
                 color: isDark ? "#10B981" : "#2e7d32",
-                fontSize: { xs: "1rem", md: "2rem", xl: "3rem" },
+                fontSize: { xs: "1rem", md: "1.5rem", xl: "2rem" },
               }}
             >
               {data._transactioncurrencyid_value === "COP"
@@ -509,10 +510,21 @@ const LimitCard = ({ data }) => {
             </Typography>
             <Stack direction="row" spacing={2} justifyContent="center">
               <Box display="flex" alignItems="center" gap={0.5}>
-                <Schedule fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
-                  Vence: {data?.new_vigenciahasta || "N/A"}
-                </Typography>
+                {data?.statecode === 0 ? (
+                  <>
+                    <Schedule fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      Vence: {data?.new_vigenciahasta || "N/A"}
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <EventBusyIcon fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      Venció: {data?.new_vigenciahasta || "N/A"}
+                    </Typography>
+                  </>
+                )}
               </Box>
             </Stack>
           </Paper>

@@ -356,7 +356,7 @@ const IdGarantia = () => {
                         {
                             icon: CalendarTodayIcon,
                             label: "Fecha de Carga",
-                            value: formatDate(selectedGuarantee.createdon),
+                            value: selectedGuarantee.new_fechadeorigen,
                         },
                         {
                             icon: ScheduleIcon,
@@ -436,7 +436,7 @@ const IdGarantia = () => {
                         {
                             icon: CalendarTodayIcon,
                             label: "Fecha de Carga",
-                            value: formatDate(selectedGuarantee.createdon),
+                            value: selectedGuarantee.new_fechadeorigen,
                         },
                         {
                             icon: ScheduleIcon,
@@ -471,7 +471,7 @@ const IdGarantia = () => {
                 {
                     icon: CalendarTodayIcon,
                     label: "Fecha de Vencimiento",
-                    value: formatDate(selectedGuarantee.new_fechadevencimiento),
+                    value: selectedGuarantee.new_fechadevencimiento,
                     color: "warning",
                 },
                 {

@@ -233,7 +233,7 @@ const NotificationDropdown = ({ settings }) => {
   const dispatch = useDispatch()
   const router = useRouter()
   const { token, referido } = useContext(AuthContext)
-  const { notificaciones, loading } = useGetNotificaciones()
+  const { notificaciones, loading, inactivarNotificacion } = useGetNotificaciones()
   const inactivarTareaSelector = useSelector(store => store.cuenta.inactivarTarea)
 
   const [anchorEl, setAnchorEl] = useState(null)
@@ -271,7 +271,8 @@ const NotificationDropdown = ({ settings }) => {
 
   const handleMarkAsRead = useCallback((id) => {
     setLoadingIds(prev => new Set(prev).add(id))
-    dispatch(inactivarTarea(id, token))
+    // dispatch(inactivarTarea(id, token))
+    inactivarNotificacion(referido?.accountid, id, token)
   }, [dispatch, token])
 
   const handleNavigate = useCallback((type) => {
@@ -292,14 +293,14 @@ const NotificationDropdown = ({ settings }) => {
   }, [router, handleDropdownClose])
 
   // Handle task completion response
-  useEffect(() => {
-    if (inactivarTareaSelector === "EXITO") {
-      setLoadingIds(new Set())
-      dispatch(obtenerTareas(referido?.accountid, token))
-    } else if (inactivarTareaSelector === "ERROR") {
-      setLoadingIds(new Set())
-    }
-  }, [inactivarTareaSelector, dispatch, referido?.accountid, token])
+  // useEffect(() => {
+  //   if (inactivarTareaSelector === "EXITO") {
+  //     setLoadingIds(new Set())
+  //     dispatch(obtenerTareas(referido?.accountid, token))
+  //   } else if (inactivarTareaSelector === "ERROR") {
+  //     setLoadingIds(new Set())
+  //   }
+  // }, [inactivarTareaSelector, dispatch, referido?.accountid, token])
 
   return (
     <Fragment>
@@ -316,7 +317,7 @@ const NotificationDropdown = ({ settings }) => {
           }}
         >
           <Badge
-            sx={{ "& .MuiBadge-badge": { fontSize: 8, height: 15, minWidth: 15 }  }}
+            sx={{ "& .MuiBadge-badge": { fontSize: 8, height: 15, minWidth: 15 } }}
             badgeContent={totalPending}
             color="error"
             variant={totalPending > 0 ? 'standard' : 'dot'}

@@ -10,7 +10,7 @@ const TablaOperaciones = () => {
     const { operaciones, loadingOperaciones } = useGetOperaciones()
 
     return (
-        loadingOperaciones ? (
+        // loadingOperaciones ? (
             <Box>
                 <Table
                     data={operaciones?.length > 0 ? operaciones : []}
@@ -18,14 +18,14 @@ const TablaOperaciones = () => {
                     canExport={false}
                 />
             </Box>
-        )
-            : (
-                <Grid item xs={12} sx={{ mt: 2 }}>
-                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                        <CircularProgress />
-                    </Box>
-                </Grid>
-            )
+        // )
+        //     : (
+        //         <Grid item xs={12} sx={{ mt: 2 }}>
+        //             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        //                 <CircularProgress />
+        //             </Box>
+        //         </Grid>
+        //     )
     )
 }
 

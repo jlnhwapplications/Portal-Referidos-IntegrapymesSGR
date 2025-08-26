@@ -602,7 +602,7 @@ const EnhancedDropzone = ({ files, setFiles }) => {
   const [isDragOver, setIsDragOver] = useState(false)
 
   const multiple = true
-  const maxSize = 15000000 // 15MB
+  const maxSize = 15728640 // 15MB
   const acceptedTypes = {
     "application/pdf": [".pdf"],
     "image/*": [".png", ".jpg", ".jpeg"],
@@ -737,7 +737,7 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
   const [autoSaving, setAutoSaving] = useState(false)
   const [formDataPersistence, setFormDataPersistence] = useState({})
   const { referido, token } = useContext(AuthContext);
-  const { createGarantia, cargandoCarantia } = useContext(Garantias)
+  const { createGarantia, cargandoCarantia, createECheck } = useContext(Garantias)
   const { toast } = useToast()
   const [acreedoresCargados, setAcreedoresCargados] = useState(false);
 
@@ -1117,18 +1117,11 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
   }
 
   const submitArchivo = useCallback(async () => {
-    debugger
     if (files.length === 0) return
 
     try {
-      setLoading(true)
-      console.log("Archivo enviado:", files)
-      // Simular envío
-
-      // setDisabled(true)
       if (files.length === 0) {
         toast.error('El archivo adjunto es requerido!');
-        setLoading(false)
         return
       }
       const formData = new FormData();
@@ -1136,33 +1129,39 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
         if (files[index].size >= 15000000) {
           toast.error('El archivo no puede superar los 15 megas');
           setFiles([])
-          setLoading(false)
           return
         }
         let element = files[index];
         formData.append(`body${index}`, element);
       }
 
-      dispatch(cargarECheck(formData, referido?.accountid, token))
+      createECheck(formData, referido?.accountid, token, toast)
         .then(() => {
-          toast.success("Carga de cheque finalizada con exito. En la pestaña de carga masiva puede visualizar el detalle.", {
-            duration: 5000,
-          })
-          setLoading(false)
-          setFiles([])
-          dispatch(obtenerDetalle(referido?.accountid, token))
           setTimeout(() => {
             handleClose()
-          }, 1500)
+            handleReset()
+          }, 1000);
         })
-        .catch(() => {
-          toast.error("Error en la carga, comuníquese con su oficial.")
-          setLoading(false)
-          setFiles([])
-          setTimeout(() => {
-            handleClose()
-          }, 1500)
-        })
+      // dispatch(cargarECheck(formData, referido?.accountid, token))
+      //   .then(() => {
+      //     toast.success("Carga de cheque finalizada con exito. En la pestaña de carga masiva puede visualizar el detalle.", {
+      //       duration: 5000,
+      //     })
+      //     setLoading(false)
+      //     setFiles([])
+      //     dispatch(obtenerDetalle(referido?.accountid, token))
+      //     setTimeout(() => {
+      //       handleClose()
+      //     }, 1500)
+      //   })
+      //   .catch(() => {
+      //     toast.error("Error en la carga, comuníquese con su oficial.")
+      //     setLoading(false)
+      //     setFiles([])
+      //     setTimeout(() => {
+      //       handleClose()
+      //     }, 1500)
+      //   })
     } catch (error) {
       console.error("Error:", error)
     } finally {

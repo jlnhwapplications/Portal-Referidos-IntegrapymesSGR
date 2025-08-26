@@ -37,6 +37,8 @@ import SecurityIcon from "@mui/icons-material/Security"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import BlankLayout from "@/@core/layouts/BlankLayout"
 import { useAuth } from "@/hooks/useAuth"
+import { useToast } from "@/@core/components/toast/ToastProvider"
+import { useRouter } from "next/router"
 
 // Styled Components
 const LoginContainer = styled(Box)(({ theme }) => ({
@@ -238,7 +240,9 @@ const LoginPage = () => {
   const [showSuccess, setShowSuccess] = useState(false)
   const auth = useAuth()
   const theme = useTheme()
-  const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('lg'))
+  const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
+  const { toast } = useToast()
+  const router = useRouter()
 
   const {
     control,
@@ -266,30 +270,24 @@ const LoginPage = () => {
     const { email, password } = data
     try {
 
-      await auth.login({ email, password, recordar });
-      setShowForm(false)
-      setTimeout(() => {
+      const result = await auth.login({ email, password, recordar });
+      if (result.success) {
+        setShowForm(false)
         setLoginSuccess(true)
         setShowSuccess(true)
-      }, 300)
-
-      // Redirect after success animation
-      setTimeout(() => {
-        console.log("Login successful:", data)
-        // Here you would typically redirect to dashboard
-      }, 2500)
+      } else {
+        // Mostrar error
+        setShowForm(true)
+        setLoginSuccess(false)
+        setShowSuccess(false)
+        toast.error(result.error.message)
+      }
     } catch (error) {
       setLoading(false);
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || 'auth/invalid-login-credentials') {
-        setLoginError('email', {
-          type: 'manual',
-          message: 'El correo electrónico o la contraseña no son válidos',
-        });
+        toast.error('El correo electrónico o la contraseña no son válidos')
       } else {
-        setLoginError('email', {
-          type: 'manual',
-          message: 'Hubo un error al iniciar sesion.',
-        });
+        toast.error('Hubo un error al iniciar sesion.')
       }
     }
     finally {
@@ -306,7 +304,7 @@ const LoginPage = () => {
 
   return (
     <LoginContainer>
-      <Box sx={{display: "flex", alignItems: "center", justifyContent: "center", py: 4 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", py: 4 }}>
         <Fade in={mounted} timeout={200}>
           <div style={{ width: "100%" }}>
             <LoginCard elevation={0}>
@@ -316,7 +314,7 @@ const LoginPage = () => {
                     <Grow in={showSuccess} timeout={800} style={{ transformOrigin: "center" }}>
                       <CheckCircleIcon sx={{ fontSize: 80, color: "success.main", mb: 2 }} />
                     </Grow>
-                    <Fade  in={showSuccess} timeout={600}>
+                    <Fade in={showSuccess} timeout={600}>
                       <div>
                         <Typography variant="h4" fontWeight={700} color="success.main" gutterBottom>
                           ¡Bienvenido!
@@ -333,9 +331,12 @@ const LoginPage = () => {
                   <div>
                     {/* Brand Section */}
                     <BrandSection>
-                      <div className="brand-icon">
-                        <SecurityIcon sx={{ fontSize: { xs: 28, xl: 32 }, color: "white" }} />
-                      </div>
+                      {
+                        !esPantallaChica ?
+                          <div className="brand-icon">
+                            <SecurityIcon sx={{ fontSize: { xs: 28, xl: 32 }, color: "white" }} />
+                          </div> : null
+                      }
                       <Fade in={showForm} timeout={100}>
                         <div>
                           <Typography sx={{ fontSize: { xs: 20, xl: 22 }, mb: { xs: 0, xl: 2 } }} fontWeight={700}>
@@ -415,7 +416,7 @@ const LoginPage = () => {
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
-                                        <LockIcon color={errors.password ? "error" : "action"} />
+                                        <LockIcon />
                                       </InputAdornment>
                                     ),
                                     endAdornment: (

@@ -281,11 +281,11 @@ const Navigation = props => {
                   flexShrink: 0,
                 }}
               >
-                
+
               </Avatar>
               {(!navCollapsed || navHover) && (
                 <Box sx={{ transition: "opacity 0.2s ease-in-out", opacity: (!navCollapsed || navHover) ? 1 : 0 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                  <Typography sx={{ fontSize: { xs: 12, xl: 14 }, fontWeight: 700, lineHeight: 1.2 }}>
                     {referido?.name || "Socio"}
                   </Typography>
                   {

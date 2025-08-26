@@ -111,8 +111,8 @@ export const obtenerGarantiasFetch = (cuentaid, token) => async (dispatch) => {
         type: LIMPIAR_GARANTIAS,
         loadingGarantias: true,
     })
-   
-    try {   
+
+    try {
         if (cuentaid != undefined) {
             var entidad = "new_garantias"
             var fetch = "<fetch mapping='logical'>" +
@@ -143,6 +143,7 @@ export const obtenerGarantiasFetch = (cuentaid, token) => async (dispatch) => {
                 "<attribute name='new_sistemadeamortizacion'/> " +
                 "<attribute name='new_periodicidadpagos'/> " +
                 "<attribute name='new_observaciones'/> " +
+                "<attribute name='new_fechadeorigen'/> " +
                 "<order attribute ='createdon' descending='true' />" +
                 "<filter type='and'>" +
                 "<condition attribute='new_socioparticipe' operator='eq' value='" + cuentaid + "' />" +
@@ -162,7 +163,7 @@ export const obtenerGarantiasFetch = (cuentaid, token) => async (dispatch) => {
                             "Authorization": `Bearer ${token}`
                         }
                     })
-                    
+
                     .then((response) => {
                         // dispatch({
                         //     type: TODAS_GARANTIASFETCH_EXITO,
@@ -220,8 +221,8 @@ export const obtenerAdjuntosGarantias = (cuentaid, token) => async (dispatch) =>
             "</entity>" +
             "</fetch>";
 
-            return new Promise((resolve, reject) => {
-                axios.post(`${UrlApi}api/consultafetch`,
+        return new Promise((resolve, reject) => {
+            axios.post(`${UrlApi}api/consultafetch`,
                 {
                     "entidad": entidad,
                     "fetch": fetch
@@ -242,7 +243,7 @@ export const obtenerAdjuntosGarantias = (cuentaid, token) => async (dispatch) =>
                     reject(err)
                     // console.log(err)
                 })
-            })
+        })
     }
     catch (error) {
         dispatch({
@@ -407,7 +408,7 @@ const crearExcepcion = (error, token) => {
         })
 }
 
-export const cargarECheck = (file, cuenta_id, token) => async (dispatch) => {
+export const cargarECheck = (file, cuenta_id, token, toastCustom) => async (dispatch) => {
     dispatch({
         type: LOADING_CARGACHEQUES,
         cargaCheques: 'LOADING'
@@ -420,17 +421,26 @@ export const cargarECheck = (file, cuenta_id, token) => async (dispatch) => {
                 'content-type': 'multipart/form-data',
             },
         };
-        return new Promise((resolve, reject) => {
+        const response = await toastCustom.promise(
             axios.post(`${UrlApi}api/socioparticipe/importadorcheques?account_id=${cuenta_id}`,
-                file, configDocumentos)
-                .then((response) => {
-                    resolve(response.data)
-                })
-                .catch(err => {
-                    // ToastError("Error al descargar archivo")
-                    reject(err)
-                })
-        })
+                file, configDocumentos),
+            {
+                loading: "Cargando...",
+                success: "Proceso exitoso.",
+                error: "Error al cargar el eChek.",
+            }
+        );
+        // return new Promise((resolve, reject) => {
+        //     axios.post(`${UrlApi}api/socioparticipe/importadorcheques?account_id=${cuenta_id}`,
+        //         file, configDocumentos)
+        //         .then((response) => {
+        //             resolve(response.data)
+        //         })
+        //         .catch(err => {
+        //             // ToastError("Error al descargar archivo")
+        //             reject(err)
+        //         })
+        // })
 
     } catch (err) {
         dispatch({

@@ -89,7 +89,7 @@ const App = (props) => {
     <Provider store={store}>
       <CacheProvider value={emotionCache}>
         <Head>
-          <title>{`${themeConfig.templateName} - SgrOneClick`}</title>
+          <title>{`${themeConfig.templateName} - Integra Pymes`}</title>
           <meta
             name="description"
             content={`${themeConfig.templateName} – Web portal – implementado para la gestión de Socios`}

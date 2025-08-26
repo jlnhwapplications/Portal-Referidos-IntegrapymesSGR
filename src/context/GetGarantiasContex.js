@@ -9,13 +9,14 @@ const deafultvalues = {
   cargandoCarantia: false,
   LimpiarGarantia: () => { },
   fetchData: () => { },
-  createGarantia: () => { }
+  createGarantia: () => { },
+  createECheck: () => { }
 };
 
 export const Garantias = createContext(deafultvalues);
 
 export const GarantiasProvider = ({ children }) => {
-  const { garantias, estadoGarantias, loadingGarantias, adjuntosGarantias, cargandoCarantia, LimpiarGarantia, fetchData, createGarantia } = UseGetGarantias();
+  const { garantias, estadoGarantias, loadingGarantias, adjuntosGarantias, cargandoCarantia, LimpiarGarantia, fetchData, createGarantia, createECheck } = UseGetGarantias();
 
   const values = {
     garantias,
@@ -25,7 +26,8 @@ export const GarantiasProvider = ({ children }) => {
     cargandoCarantia,
     LimpiarGarantia,
     fetchData,
-    createGarantia
+    createGarantia,
+    createECheck
   };
 
   return <Garantias.Provider value={values}>{children}</Garantias.Provider>;

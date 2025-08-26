@@ -79,10 +79,11 @@ export const obtenerTodosLimitesPorLineas = (cuentaid, token) => async (dispatch
                 "<attribute name='new_montodisponiblegeneral' />" +
                 "<attribute name='new_mostrarenportalsocio' />" +
                 "<attribute name='new_vigenciahasta' />" +
-                "<order attribute='transactioncurrencyid' descending='false' />" +
+                "<attribute name='statecode' />" +
+                "<order attribute='createdon' descending='false' />" +
                 "<filter type='and'>" +
-                "<condition attribute='statecode' operator='eq' value='0' />" +
-                "<condition attribute='statuscode' operator='eq' value='100000001' />" +
+                // "<condition attribute='statecode' operator='eq' value='0' />" +
+                // "<condition attribute='statuscode' operator='eq' value='100000001' />" +
                 //"<condition attribute='new_lineatipodeoperacion' operator='eq' value='100000000' />" +
                 "<condition attribute='new_cuenta' operator='eq' value='" + cuentaid + "' />" +
                 "<condition attribute='new_mostrarenportalsocio' operator='eq' value='1' />" +
@@ -117,7 +118,7 @@ export const obtenerTodosLimitesPorLineas = (cuentaid, token) => async (dispatch
                     })
             })
         }
-    } 
+    }
     catch (error) {
         dispatch({
             type: ERROR_LIMITE,

@@ -343,7 +343,7 @@ const IndexLufe = () => {
                 <Typography variant="h6" align="center" sx={{ fontFamily: 'Roboto' }}>
                     Felicitaciones! has completado el primer paso. En breve nos comunicaremos contigo vía correo electrónico para informarte
                     del estado de tu solicitud. Cualquier duda podés enviar un correo informando nombre completo o razón social y Cuit/Cuil
-                    al siguiente correo administracion@sgroneclick.com
+                    al siguiente correo administracion@integrapymes.com
                 </Typography>
                 {/* } */}
                 <Box sx={{

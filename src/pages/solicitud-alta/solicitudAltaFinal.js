@@ -116,8 +116,16 @@ const SolicitudAltaFinal = ({ ResetOnboarding, nuevaCuenta, envioConfirmado, env
         localStorage.removeItem("documentosLufe");
         localStorage.removeItem("accionistasLufe");
         localStorage.clear();
-        router.push('/')
-        // window.location.reload()
+        // setTimeout
+        // setMostrarIconoFinal(false)
+        // setMostrarTextoFinal(false)
+        // router.replace('/');
+        // router.reload();
+        // window.location.replace('/');
+        // router.push('/').then(() => {
+        //     router.reload();
+        // });
+        window.location.reload()
     }
 
     React.useEffect(() => {

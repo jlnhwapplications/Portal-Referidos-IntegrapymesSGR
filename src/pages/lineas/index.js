@@ -33,6 +33,7 @@ import PageHeader from "@/@core/components/page-header"
 import useGetLimites from "@/hooks/useGetLimites"
 import LimitCard from "./LimitCard"
 import ApexChartWrapper from '@/@core/styles/libs/react-apexcharts'// Asegúrate de que esta ruta sea correcta
+import { Icon } from "@iconify/react"
 
 const Index = () => {
     const theme = useTheme()
@@ -44,9 +45,13 @@ const Index = () => {
         setActiveTab(newValue)
     }
 
+    useEffect(() => {
+        debugger
+        console.log(limiteGral)
+    }, [limiteGral])
+
     // Cálculos de KPIs para Líneas
     const kpis = useMemo(() => {
-        debugger
         // if (loadingLimites || !limiteGral || !limites) return null
         if (loadingLimites) return null
 
@@ -446,6 +451,8 @@ const Index = () => {
                     opacity: isVisible ? 1 : 0,
                     transform: isVisible ? "translateX(0)" : "translateX(20px)",
                     transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                    m: 0,
+                    p: 0
                 }}
                 {...other}
             >
@@ -454,9 +461,9 @@ const Index = () => {
         )
     }
 
-      if (!loadingLimites) {
-        return <LoadingSkeleton />
-      }
+    // if (!loadingLimites) {
+    //     return <LoadingSkeleton />
+    // }
 
     // if (!loadingLimites) {
     //     return <LoadingSkeleton />
@@ -464,7 +471,7 @@ const Index = () => {
 
     return (
         <ApexChartWrapper>
-            <Container maxWidth="xl" sx={{ py: {xs: 1, xl: 2}}}>
+            <Container maxWidth="xl" sx={{ py: { xl: 2 } }}>
                 <Stack spacing={3}>
                     <PageHeader
                         title="Mís Líneas"
@@ -520,7 +527,7 @@ const Index = () => {
                     {/* Gráficos */}
                     {/* <Fade in timeout={800}>
                         <Grid container spacing={3} sx={{ mb: 4 }}> */}
-                            {/* <Grid item xs={12} md={4}>
+                    {/* <Grid item xs={12} md={4}>
                                 <ChartCard title="Utilización del Límite">
                                     <Box sx={{ height: 280, display: "flex", alignItems: "center", justifyContent: "center" }}>
                                         <Chart
@@ -533,8 +540,8 @@ const Index = () => {
                                 </ChartCard>
                             </Grid> */}
 
-                            {/* <Grid item xs={12} md={8}> */}
-                                {/* <ChartCard
+                    {/* <Grid item xs={12} md={8}> */}
+                    {/* <ChartCard
                                     title="Tendencia de Utilización"
                                     actions={[
                                         <Tooltip key="export" title="Exportar gráfico" arrow>
@@ -553,145 +560,238 @@ const Index = () => {
                                         />
                                     </Box>
                                 </ChartCard> */}
-                            {/* </Grid>
+                    {/* </Grid>
                         </Grid>
                     </Fade> */}
 
                     {/* Tabs mejorados con diseño responsive y animaciones */}
-                    <Paper
-                        elevation={isDark ? 6 : 4}
-                        sx={{
-                            bgcolor: theme.palette.background,
-                            border: theme.palette.border.default,
-                            borderRadius: 3,
-                            overflow: "hidden",
-                            background: isDark
-                                ? "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)"
-                                : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-                        }}
-                    >
-                        <Tabs
-                            value={activeTab}
-                            onChange={handleTabChange}
-                            variant="fullWidth"
-                            sx={{
-                                minHeight: { xs: 56, sm: 64, md: 72 },
-                                "& .MuiTabs-flexContainer": {
-                                    height: "100%",
-                                },
-                                "& .MuiTab-root": {
-                                    fontWeight: "bold",
-                                    textTransform: "none",
-                                    fontSize: { xs: "0.875rem", sm: "1rem", md: "1.1rem" },
-                                    minHeight: { xs: 56, sm: 64, md: 72 },
-                                    px: { xs: 2, sm: 3, md: 4 },
-                                    py: { xs: 1.5, sm: 2, md: 2.5 },
-                                    color: isDark ? "#b0b0b0" : "text.secondary",
-                                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                    position: "relative",
-                                    overflow: "hidden",
-                                    "&::before": {
-                                        content: '""',
-                                        position: "absolute",
-                                        top: 0,
-                                        left: 0,
-                                        right: 0,
-                                        bottom: 0,
+                    {
+                        !loadingLimites ?
+                            <LoadingSkeleton /> :
+                            <>
+                                <Paper
+                                    elevation={isDark ? 6 : 4}
+                                    sx={{
+                                        bgcolor: theme.palette.background,
+                                        border: theme.palette.border.default,
+                                        borderRadius: 3,
+                                        overflow: "hidden",
                                         background: isDark
-                                            ? "linear-gradient(135deg, rgba(100, 181, 246, 0.1) 0%, rgba(66, 165, 245, 0.05) 100%)"
-                                            : "linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.02) 100%)",
-                                        opacity: 0,
-                                        transition: "opacity 0.3s ease",
-                                    },
-                                    "&:hover": {
-                                        color: isDark ? "#90caf9" : "primary.main",
-                                        transform: "translateY(-2px)",
-                                        "&::before": {
-                                            opacity: 1,
-                                        },
-                                    },
-                                    "&.Mui-selected": {
-                                        color: isDark ? "#64b5f6" : "primary.main",
-                                        fontWeight: "black",
-                                        background: isDark
-                                            ? "linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(66, 165, 245, 0.1) 100%)"
-                                            : "linear-gradient(135deg, rgba(25, 118, 210, 0.08) 0%, rgba(25, 118, 210, 0.04) 100%)",
-                                        boxShadow: isDark
-                                            ? "inset 0 2px 8px rgba(100, 181, 246, 0.2)"
-                                            : "inset 0 2px 8px rgba(25, 118, 210, 0.1)",
-                                        "&::before": {
-                                            opacity: 1,
-                                        },
-                                    },
-                                },
-                                "& .MuiTabs-indicator": {
-                                    backgroundColor: isDark ? "#64b5f6" : "primary.main",
-                                    height: 4,
-                                    borderRadius: "2px 2px 0 0",
-                                    background: isDark
-                                        ? "linear-gradient(90deg, #64b5f6 0%, #42a5f5 100%)"
-                                        : "linear-gradient(90deg, #1976d2 0%, #1565c0 100%)",
-                                    boxShadow: isDark ? "0 0 12px rgba(100, 181, 246, 0.6)" : "0 0 12px rgba(25, 118, 210, 0.4)",
-                                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                },
-                            }}
-                        >
-                            <Tab
-                                label={
-                                    <Box display="flex" alignItems="center" gap={1}>
-                                        <CreditCard fontSize="small" />
-                                        <Box>
-                                            <Typography variant="inherit" fontWeight="inherit">
-                                                Límites Generales
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ opacity: 0.7, display: { xs: "none", sm: "block" } }}>
-                                                {limiteGral?.length} líneas activas
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                }
-                            />
-                            <Tab
-                                label={
-                                    <Box display="flex" alignItems="center" gap={1}>
-                                        <TrendingUp fontSize="small" />
-                                        <Box>
-                                            <Typography variant="inherit" fontWeight="inherit">
-                                                Operaciones Activas
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ opacity: 0.7, display: { xs: "none", sm: "block" } }}>
-                                                {limites?.length} operaciones
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                }
-                            />
-                        </Tabs>
-                    </Paper>
+                                            ? "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)"
+                                            : "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+                                    }}
+                                >
+                                    <Tabs
+                                        value={activeTab}
+                                        onChange={handleTabChange}
+                                        variant="fullWidth"
+                                        sx={{
+                                            minHeight: { xs: 50, sm: 64, md: 72 },
+                                            "& .MuiTabs-flexContainer": {
+                                                height: "100%",
+                                            },
+                                            "& .MuiTab-root": {
+                                                fontWeight: "bold",
+                                                textTransform: "none",
+                                                fontSize: { xs: "0.875rem", sm: "1rem", md: "1.1rem" },
+                                                minHeight: { xs: 56, sm: 64, md: 72 },
+                                                px: { xs: 2, sm: 3, md: 4 },
+                                                py: { xs: 1, sm: 2, md: 2.5 },
+                                                color: isDark ? "#b0b0b0" : "text.secondary",
+                                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                position: "relative",
+                                                overflow: "hidden",
+                                                "&::before": {
+                                                    content: '""',
+                                                    position: "absolute",
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    bottom: 0,
+                                                    background: isDark
+                                                        ? "linear-gradient(135deg, rgba(100, 181, 246, 0.1) 0%, rgba(66, 165, 245, 0.05) 100%)"
+                                                        : "linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.02) 100%)",
+                                                    opacity: 0,
+                                                    transition: "opacity 0.3s ease",
+                                                },
+                                                "&:hover": {
+                                                    color: isDark ? "#90caf9" : "primary.main",
+                                                    transform: "translateY(-2px)",
+                                                    "&::before": {
+                                                        opacity: 1,
+                                                    },
+                                                },
+                                                "&.Mui-selected": {
+                                                    color: isDark ? "#64b5f6" : "primary.main",
+                                                    fontWeight: "black",
+                                                    background: isDark
+                                                        ? "linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(66, 165, 245, 0.1) 100%)"
+                                                        : "linear-gradient(135deg, rgba(25, 118, 210, 0.08) 0%, rgba(25, 118, 210, 0.04) 100%)",
+                                                    boxShadow: isDark
+                                                        ? "inset 0 2px 8px rgba(100, 181, 246, 0.2)"
+                                                        : "inset 0 2px 8px rgba(25, 118, 210, 0.1)",
+                                                    "&::before": {
+                                                        opacity: 1,
+                                                    },
+                                                },
+                                            },
+                                            "& .MuiTabs-indicator": {
+                                                backgroundColor: isDark ? "#64b5f6" : "primary.main",
+                                                height: 4,
+                                                borderRadius: "2px 2px 0 0",
+                                                background: isDark
+                                                    ? "linear-gradient(90deg, #64b5f6 0%, #42a5f5 100%)"
+                                                    : "linear-gradient(90deg, #1976d2 0%, #1565c0 100%)",
+                                                boxShadow: isDark ? "0 0 12px rgba(100, 181, 246, 0.6)" : "0 0 12px rgba(25, 118, 210, 0.4)",
+                                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                            },
+                                        }}
+                                    >
+                                        <Tab
+                                            label={
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <CreditCard fontSize="small" />
+                                                    <Box>
+                                                        <Typography variant="inherit" fontWeight="inherit">
+                                                            Límites Generales
+                                                        </Typography>
+                                                        <Typography variant="caption" sx={{ opacity: 0.7, display: { xs: "none", sm: "block" } }}>
+                                                            {limiteGral?.length} líneas
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            }
+                                        />
+                                        <Tab
+                                            label={
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <TrendingUp fontSize="small" />
+                                                    <Box>
+                                                        <Typography variant="inherit" fontWeight="inherit">
+                                                            Operaciones Activas
+                                                        </Typography>
+                                                        <Typography variant="caption" sx={{ opacity: 0.7, display: { xs: "none", sm: "block" } }}>
+                                                            {limites?.length} operaciones
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            }
+                                        />
+                                    </Tabs>
+                                </Paper>
 
-                    {/* Tab Panels con animaciones */}
-                    <CustomTabPanel value={activeTab} index={0}>
-                        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                            {limiteGral?.map((limite, index) => (
-                                <Grid item xs={12} sm={6} lg={4} key={index}>
-                                    <AnimatedGrid delay={index * 150}>
-                                        <LimitCard data={limite} />
-                                    </AnimatedGrid>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </CustomTabPanel>
-                    <CustomTabPanel value={activeTab} index={1}>
-                        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                            {limites?.map((operacion, index) => (
-                                <Grid item xs={12} sm={6} lg={4} key={index}>
-                                    <AnimatedGrid delay={index * 150}>
-                                        <LimitCard data={operacion} />
-                                    </AnimatedGrid>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </CustomTabPanel>
+                                {/* Tab Panels con animaciones */}
+                                <CustomTabPanel value={activeTab} index={0}>
+                                    {/* <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}> */}
+                                    {
+                                        limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.length > 0 && (
+                                            <Box>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                                                    <Box>
+                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                            Límites Activos
+                                                        </Typography>
+                                                        {/* <Typography variant="body2" color="text.secondary">
+                                                            {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length} límite{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} instrumentado
+                                                            {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} y disponible{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""}
+                                                        </Typography> */}
+                                                    </Box>
+                                                </Box>
+                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                    {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.map((limite, index) => (
+                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                            <AnimatedGrid delay={index * 150}>
+                                                                <LimitCard data={limite} />
+                                                            </AnimatedGrid>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        )}
+                                    {
+                                        limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length > 0 && (
+                                            <Box sx={{ mt: 2 }}>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                                                    <Box>
+                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                            Límites Vencidos
+                                                        </Typography>
+                                                        {/* <Typography variant="body2" color="text.secondary">
+                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length} límite{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} vencido
+                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} o inactivo{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""}
+                                                        </Typography> */}
+                                                    </Box>
+                                                </Box>
+
+                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                    {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.map((limite, index) => (
+                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                            <AnimatedGrid delay={index * 150}>
+                                                                <LimitCard data={limite} />
+                                                            </AnimatedGrid>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        )
+                                    }
+                                </CustomTabPanel>
+                                <CustomTabPanel value={activeTab} index={1}>
+                                    {
+                                        limites?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.length > 0 && (
+                                            <Box>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                                                    <Box>
+                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                            Operaciones Activas
+                                                        </Typography>
+                                                        {/* <Typography variant="body2" color="text.secondary">
+                                                            {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length} límite{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} instrumentado
+                                                            {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} y disponible{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""}
+                                                        </Typography> */}
+                                                    </Box>
+                                                </Box>
+                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                    {limites?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.map((limite, index) => (
+                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                            <AnimatedGrid delay={index * 150}>
+                                                                <LimitCard data={limite} />
+                                                            </AnimatedGrid>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        )}
+                                    {
+                                        limites?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length > 0 && (
+                                            <Box sx={{ mt: 2 }}>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                                                    <Box>
+                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                            Operaciones Vencidas
+                                                        </Typography>
+                                                        {/* <Typography variant="body2" color="text.secondary">
+                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length} límite{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} vencido
+                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} o inactivo{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""}
+                                                        </Typography> */}
+                                                    </Box>
+                                                </Box>
+
+                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                    {limites?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.map((limite, index) => (
+                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                            <AnimatedGrid delay={index * 150}>
+                                                                <LimitCard data={limite} />
+                                                            </AnimatedGrid>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        )
+                                    }
+                                </CustomTabPanel>
+                            </>
+                    }
                 </Stack>
             </Container>
         </ApexChartWrapper>

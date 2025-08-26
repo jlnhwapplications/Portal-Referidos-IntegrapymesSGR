@@ -123,352 +123,105 @@ const statusAdjuntosOP = {
     Aprobado: { color: 'primary' },
 }
 
-// export const COLUMNSGOPERACIONES = [
-//     {
-//         flex: 0.25,
-//         field: 'new_tipodeoperacion',
-//         minWidth: 100,
-//         headerName: 'Tipo de Operación',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_tipodeoperacion}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'new_acreedor',
-//         headerName: 'Acreedor',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_acreedor}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'statuscode_value',
-//         headerName: 'Estado',
-//         renderCell: ({ row }) => (
-//             <CustomChip
-//                 skin='light'
-//                 label={row.statuscode_value}
-//     //             color={statusObj[row.statuscode_value].color}
-//                 sx={{
-//                     height: 24,
-//                     fontSize: '0.75rem',
-//                     textTransform: 'capitalize',
-//                     '& .MuiChip-label': { fontWeight: 600, lineHeight: 1.4 }
-//                 }}
-//             />
-//         )
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'createdon',
-//         headerName: 'Destino de Fondo',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.createdon}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'new_monto',
-//         headerName: 'Monto Bruto',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_monto}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     }
-// ]
+function safeParseDate(dateStr) {
+    if (!dateStr || typeof dateStr !== "string") return null;
 
+    const parts = dateStr.split("/");
+    if (parts.length !== 3) return null;
 
-// export const columns_operaciones = [
-//     {
-//         flex: 0.1,
-//         minWidth: 130,
-//         sortable: false,
-//         field: 'actions',
-//         headerName: 'Acciones',
-//         renderCell: ({ row }) => (
-//             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                 <Tooltip title='Ver'>
-//                     <IconButton size='small' component={Link} href={`/operaciones/${row.id}`}>
-//                         <Icon icon='mdi:eye-outline' fontSize={24} />
-//                     </IconButton>
-//                 </Tooltip>
-//                 <RowOptions id={row.id} />
-//             </Box>
-//         )
-//     },
-//     {
-//         flex: 0.25,
-//         field: 'new_nrooperacion',
-//         minWidth: 100,
-//         headerName: 'Nro. de Orden',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_nrooperacion}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'new_tipooperacin',
-//         headerName: 'Tipo de Operación',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_tipooperacin}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'statuscode',
-//         headerName: 'Estado',
-//         renderCell: ({ row }) => (
-//             <CustomChip
-//                 skin='light'
-//                 label={row.statuscode}
-//                 color={statusObj[row.statuscode].color}
-//                 sx={{
-//                     height: 24,
-//                     fontSize: '0.75rem',
-//                     textTransform: 'capitalize',
-//                     '& .MuiChip-label': { fontWeight: 600, lineHeight: 1.4 }
-//                 }}
-//             />
-//         )
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'new_destinodefondo',
-//         headerName: 'Destino de Fondo',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_destinodefondo}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'fechaCreacion_str',
-//         headerName: 'Fecha de Creación',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.fechaCreacion_str}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     }
-// ]
+    const [day, month, year] = parts.map(Number);
 
-// export const columns_adjuntos_operaciones = [
-//     {
-//         flex: 0.25,
-//         field: 'Documento',
-//         minWidth: 100,
-//         headerName: 'Documento',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_name}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'statuscode',
-//         headerName: 'Estado',
-//         renderCell: ({ row }) => (
-//             <CustomChip
-//                 skin='light'
-//                 label={row.statuscode}
-//                 color={statusAdjuntosOP[row.statuscode]?.color}
-//                 sx={{
-//                     height: 24,
-//                     fontSize: '0.75rem',
-//                     textTransform: 'capitalize',
-//                     '& .MuiChip-label': { fontWeight: 600, lineHeight: 1.4 }
-//                 }}
-//             />
-//         )
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'Fecha de Vencimiento',
-//         headerName: 'Fecha de Vencimiento',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_fechadevencimiento}
-//                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'utilidades',
-//         headerName: 'Acciones',
-//         // header: '',
-//         // accessorKey: 'utilidades',
-//         minSize: 100, //min size enforced during resizing
-//         maxSize: 140, //max size enforced during resizing
-//         renderCell: ({ row }) => (
-//             row != null ? <UtilidadesOP utilidad={row.utilidades} /> : '-'
-//         )
-//     }
-// ]
+    // Validar que sean números y estén en rango
+    if (
+        isNaN(day) || isNaN(month) || isNaN(year) ||
+        day < 1 || day > 31 ||
+        month < 1 || month > 12 ||
+        year < 1900
+    ) {
+        return null;
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    // Validar que coincida con lo que vino
+    if (
+        date.getDate() !== day ||
+        date.getMonth() !== month - 1 ||
+        date.getFullYear() !== year
+    ) {
+        return null;
+    }
+
+    return date;
+}
+
+function safeParseInt(value, defaultValue = null) {
+    if (value === null || value === undefined) return defaultValue;
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? defaultValue : parsed;
+}
+
+function safeParseFloat(value, defaultValue = null) {
+    if (value === null || value === undefined) return defaultValue;
+
+    // Convertir
+    const parsed = parseFloat(value);
+
+    // Si no es un número válido → devolver defaultValue
+    return isNaN(parsed) ? defaultValue : parsed;
+}
+
+// Componente para celdas de texto mejoradas
+function EnhancedTextCell({ value, subtitle = null, icon = null, color = "text.primary" }) {
+  const theme = useTheme()
+
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1 }}>
+      {icon && (
+        <Avatar
+          sx={{
+            width: 32,
+            height: 32,
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            color: "primary.main",
+          }}
+        >
+          {icon}
+        </Avatar>
+      )}
+      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            color: color,
+            lineHeight: 1.4,
+            fontSize: "0.875rem",
+            letterSpacing: "0.1px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {value || "N/A"}
+        </Typography>
+        {subtitle && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.secondary",
+              lineHeight: 1.2,
+              fontSize: "0.75rem",
+              mt: 0.25,
+            }}
+          >
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  )
+}
 
 
 const statusConfig = {
@@ -795,7 +548,12 @@ export const columns_operaciones = [
         minWidth: 140,
         field: "fechaCreacion_str",
         headerName: "Fecha de Creación",
-        renderCell: ({ row }) => <DateCell date={row.fechaCreacion_str} />,
+        type: "date",
+        valueGetter: ({ row }) => safeParseDate(row.fechaCreacion_str),
+        renderCell: ({ row }) => <EnhancedTextCell
+            value={row.fechaCreacion_str}
+        />,
+        // renderCell: ({ row }) => <DateCell date={row.fechaCreacion_str} />,
     },
 ]
 

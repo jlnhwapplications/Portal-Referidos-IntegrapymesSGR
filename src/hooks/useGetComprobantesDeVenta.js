@@ -44,11 +44,11 @@ const useGetComprobantesDeVenta = () => {
                     comprobantesVenta.push(comprovanteVenta)
                 }
             })
-            comprobantesVenta.sort((a, b) => {
-                const dateA = moment(a.createdon, 'DD/MM/YYYY').toDate();
-                const dateB = moment(b.createdon, 'DD/MM/YYYY').toDate();
-                return dateB - dateA;
-            });
+            // comprobantesVenta.sort((a, b) => {
+            //     const dateA = moment(a.createdon, 'DD/MM/YYYY').toDate();
+            //     const dateB = moment(b.createdon, 'DD/MM/YYYY').toDate();
+            //     return dateB - dateA;
+            // });
             setComprobantes(comprobantesVenta)
             setLoadingComprobantes(retrieveComprobantes)
         } else if (comprobantesDeVentaSelector?.length === 0 && retrieveComprobantes) {

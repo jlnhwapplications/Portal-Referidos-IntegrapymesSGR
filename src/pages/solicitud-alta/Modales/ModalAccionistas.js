@@ -129,10 +129,8 @@ const ModalAccionistas = ({
     // Acciones al enviar
     const onSubmit = (data) => {
         if (esActualizacion) {
-            console.log(data)
             modificarAccionista(data)
         } else {
-            console.log(data)
             crearAccionista(data)
         }
     }

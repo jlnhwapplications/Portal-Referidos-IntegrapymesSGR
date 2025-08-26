@@ -13,7 +13,7 @@ import {
 } from "@mui/icons-material"
 
 const LineasOverview = () => {
-  const { limites } = useGetLimites()
+  const { limitesInicio } = useGetLimites()
   const theme = useTheme()
   const isDark = theme.palette.mode === "dark"
 
@@ -170,17 +170,17 @@ const LineasOverview = () => {
               Límites por línea
             </Typography>
             <Typography sx={{ color: theme.palette.text.secondary, fontSize: { xs: 12, xl: 14 }, }}>
-              {limites?.length > 0
-                ? `${limites?.length} ${limites?.length === 1 ? "línea disponible" : "líneas disponibles"}`
+              {limitesInicio?.length > 0
+                ? `${limitesInicio?.length === 1 ? "Úlitma Línea" : `Últimas ${limitesInicio?.length} líneas`}`
                 : "Sin líneas registradas"}
             </Typography>
           </Box>
         </Box>
 
         {/* Lista de líneas */}
-        {limites?.length > 0 ? (
+        {limitesInicio?.length > 0 ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {limites?.map((item, index) => {
+            {limitesInicio?.map((item, index) => {
               const OperationIcon = getOperationIcon(item.new_lineatipodeoperacion)
               const operationColors = getOperationColor(item.new_lineatipodeoperacion)
               const operationName = getOperationName(item.new_lineatipodeoperacion)
@@ -338,7 +338,7 @@ const LineasOverview = () => {
                   </Box>
 
                   {/* Divider entre elementos (excepto el último) */}
-                  {index < limites.length - 1 && (
+                  {index < limitesInicio.length - 1 && (
                     <Divider
                       sx={{
                         my: 2,

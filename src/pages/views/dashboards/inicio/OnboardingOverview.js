@@ -29,18 +29,17 @@ const OnboardingOverview = () => {
 
     useEffect(() => {
         if (
-            referido && Object.keys(referido).length > 0 &&
-            carpetas && carpetas.length > 0
+            referido && Object.keys(referido).length > 0 
+            // && carpetas && carpetas.length > 0
         ) {
-            debugger
             const estadioOnboarding = [];
             const coloresEstados = [];
 
-            const carpetasVisibles = carpetas.filter(c => c.new_visibleenportal);
-            const hayDocumentacionPendiente = carpetasVisibles.some(c => c.statuscodeNOMBRE === "Pendiente");
+            const carpetasVisibles = carpetas?.filter(c => c.new_visibleenportal);
+            const hayDocumentacionPendiente = carpetasVisibles?.some(c => c.statuscodeNOMBRE === "Pendiente");
 
-            const docuPendiente = carpetasVisibles.length > 0 && hayDocumentacionPendiente;
-            const datosPendiente = ![100000006, 100000000].includes(referido.new_estadodelsocio);
+            const docuPendiente = carpetasVisibles?.length > 0 && hayDocumentacionPendiente;
+            const datosPendiente = ![100000006, 100000000].includes(referido?.new_estadodelsocio);
 
             // Documentación y datos mi cuenta
             if (docuPendiente && datosPendiente) {
@@ -75,6 +74,9 @@ const OnboardingOverview = () => {
                 coloresEstados.push("#43a047");
 
                 setProgreso(66);
+            }else{
+                estadioOnboarding.push({ name: "Documentación", value: 30, texto: "Pendiente" });
+                coloresEstados.push("#ffab00");
             }
 
             // Solicitud de Alta (siempre completada)
