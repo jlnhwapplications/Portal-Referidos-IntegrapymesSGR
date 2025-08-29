@@ -50,6 +50,8 @@ const UserDropdown = props => {
   const router = useRouter()
   const { logout, user } = useAuth()
 
+  
+
   // ** Vars
   const { direction } = settings
 
@@ -92,43 +94,12 @@ const UserDropdown = props => {
     setAnchorEl(null)
   }
 
+  const handlePerfil = () => {
+    router.push("/perfil")
+    setAnchorEl(null)
+  }
+
   return (
-    // <Menu
-    //   anchorEl={anchorEl}
-    //   open={Boolean(anchorEl)}
-    //   onClose={handleClose}
-    //   PaperProps={{
-    //     sx: {
-    //       mt: 1,
-    //       minWidth: 200,
-    //       borderRadius: 3,
-    //       background: isDark
-    //         ? "linear-gradient(145deg, rgba(30, 37, 63, 0.95) 0%, rgba(20, 25, 45, 0.98) 100%)"
-    //         : "linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)",
-    //       backdropFilter: "blur(20px)",
-    //       border: `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)"}`,
-    //       boxShadow: isDark ? "0 8px 32px rgba(0, 0, 0, 0.3)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
-    //     },
-    //   }}
-    // >
-    //   <MenuItem onClick={handleClose}>
-    //     <AccountIcon sx={{ mr: 2, fontSize: 20 }} />
-    //     Mi Perfil
-    //   </MenuItem>
-    //   <MenuItem onClick={handleClose}>
-    //     <SecurityIcon sx={{ mr: 2, fontSize: 20 }} />
-    //     Seguridad
-    //   </MenuItem>
-    //   <MenuItem onClick={handleClose}>
-    //     <SettingsIcon sx={{ mr: 2, fontSize: 20 }} />
-    //     Configuración
-    //   </MenuItem>
-    //   <Divider />
-    //   <MenuItem onClick={handleLogout} sx={{ color: theme.palette.error.main }}>
-    //     <LogoutIcon sx={{ mr: 2, fontSize: 20 }} />
-    //     Cerrar Sesión
-    //   </MenuItem>
-    // </Menu>
     <Fragment>
       <Badge
         overlap='circular'
@@ -147,56 +118,6 @@ const UserDropdown = props => {
           src={user?.photoURL}
         />
       </Badge>
-      {/* <Button
-        onClick={handleProfileClick}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          px: 2,
-          py: 1,
-          borderRadius: 3,
-          backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
-          "&:hover": {
-            backgroundColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)",
-          },
-          textTransform: "none",
-        }}
-      >
-        <Badge
-          overlap="circular"
-          badgeContent={<BadgeContentSpan />}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-        >
-          <Avatar
-            alt={user?.nombreUsuario || "User Avatar"}
-            src={user?.photoURL}
-            sx={{
-              width: 32,
-              height: 32,
-              background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
-              fontSize: "0.8rem",
-              fontWeight: 700,
-            }}
-          >
-            {user?.nombreUsuario ? user.nombreUsuario.charAt(0).toUpperCase() : "U"}
-          </Avatar>
-        </Badge>
-        <Box sx={{ display: { xs: "none", sm: "block" }, textAlign: "left" }}>
-          <Typography
-            variant="body2"
-            sx={{ color: theme.palette.text.primary, fontWeight: 600, fontSize: "0.8rem" }}
-          >
-            {user?.nombreUsuario || "Usuario"}
-          </Typography>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: "0.7rem" }}>
-            Premium
-          </Typography>
-        </Box>
-      </Button> */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -229,14 +150,14 @@ const UserDropdown = props => {
               }}
             >
               <Avatar
-                alt={user?.nombreUsuario || "User Avatar"}
+                alt={user?.Name || "User Avatar"}
                 src={user?.photoURL}
                 sx={{ width: "2.5rem", height: "2.5rem" }}
               />
             </Badge>
             <Box sx={{ display: "flex", ml: 3, alignItems: "flex-start", flexDirection: "column" }}>
               <Typography sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-                {user?.nombreUsuario || "Usuario"}
+                {user?.Name || "Usuario"}
               </Typography>
               <Tooltip title={user?.correo || "Usuario no autenticado"}>
                 <Typography
@@ -257,29 +178,14 @@ const UserDropdown = props => {
           </Box>
         </Box>
         <Divider sx={{ mt: "0 !important", borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" }} />
-
         {/* Menu Items */}
         <MenuItem
-          onClick={handleClose}
+          onClick={handlePerfil}
           sx={{ mt: 1, py: 2, "& svg": { mr: 2, fontSize: "1.375rem", color: theme.palette.text.primary } }}
         >
           <AccountIcon />
           Mi Perfil
         </MenuItem>
-        {/* <MenuItem
-          onClick={handleClose}
-          sx={{ py: 2, "& svg": { mr: 2, fontSize: "1.375rem", color: theme.palette.text.primary } }}
-        >
-          <SecurityIcon />
-          Seguridad
-        </MenuItem>
-        <MenuItem
-          onClick={handleClose}
-          sx={{ py: 2, "& svg": { mr: 2, fontSize: "1.375rem", color: theme.palette.text.primary } }}
-        >
-          <SettingsIcon />
-          Configuración
-        </MenuItem> */}
         <Divider sx={{ borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" }} />
         <MenuItem
           onClick={handleLogout}
@@ -289,59 +195,6 @@ const UserDropdown = props => {
           Salir
         </MenuItem>
       </Menu>
-      {/* <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => handleDropdownClose()}
-        sx={{ '& .MuiMenu-paper': { width: 230, mt: 4 } }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: direction === 'ltr' ? 'right' : 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: direction === 'ltr' ? 'right' : 'left' }}
-      >
-        <Box sx={{ pt: 2, pb: 3, px: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Badge
-              overlap='circular'
-              badgeContent={<BadgeContentSpan />}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right'
-              }}
-            >
-              <Avatar alt={user?.nombreUsuario} src={user?.photoURL} sx={{ width: '2.5rem', height: '2.5rem' }} />
-            </Badge>
-            <Box sx={{ display: 'flex', ml: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>{user?.nombreUsuario || null}</Typography>
-              <Tooltip title={user?.correo || 'Usuario no autenticado'}>
-                <Typography variant='body2' sx={{ fontSize: '0.8rem', color: 'text.disabled', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user?.correo || null}
-                </Typography>
-              </Tooltip>
-            </Box>
-          </Box>
-        </Box>
-        <Divider sx={{ mt: '0 !important' }} /> */}
-      {/* <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon='mdi:account-outline' />
-            Perfil
-          </Box>
-        </MenuItem>
-        <Divider />
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon='mdi:cog-outline' />
-            Configuraciones
-          </Box>
-        </MenuItem>
-        <Divider /> */}
-      {/* <MenuItem
-          onClick={handleLogout}
-          sx={{ py: 2, '& svg': { mr: 2, fontSize: '1.375rem', color: 'text.primary' } }}
-        >
-          <Icon icon='mdi:logout-variant' />
-          Salir
-        </MenuItem>
-      </Menu> */}
     </Fragment>
   )
 }

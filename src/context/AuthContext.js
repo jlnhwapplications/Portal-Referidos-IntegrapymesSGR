@@ -141,12 +141,12 @@ const AuthProvider = ({ children }) => {
 
         if (!querySnapshot.empty) {
           const userData = querySnapshot.docs[0].data();
-          const { correo, accountid, nombreUsuario, uid, photoURL, photoPORTADA, Estado } = userData;
+          const { correo, accountid, Name, uid, photoURL, photoPORTADA, Estado } = userData;
           accountID = accountid
           setUser({
             correo,
             accountid,
-            nombreUsuario,
+            Name,
             uid,
             photoURL,
             photoPORTADA,
@@ -243,7 +243,7 @@ const AuthProvider = ({ children }) => {
         setLoadingAuth(false);
         throw error
       }
-      debugger
+      
       if (respMail && respMail?.data.length > 0) {
         accountid = respMail.data[0].accountid;
         personeria = respMail.data[0].new_personeria
@@ -313,11 +313,11 @@ const AuthProvider = ({ children }) => {
       const querySnapshot = await getDocs(usuarioDoc);
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-        const { correo, accountid, nombreUsuario, uid, photoURL, photoPORTADA, Estado } = userData;
+        const { correo, accountid, Name, uid, photoURL, photoPORTADA, Estado } = userData;
         setUser({
           correo,
           accountid,
-          nombreUsuario,
+          Name,
           uid,
           photoURL,
           photoPORTADA,

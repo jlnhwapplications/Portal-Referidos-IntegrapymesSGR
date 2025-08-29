@@ -58,6 +58,7 @@ import { useSettings } from "@/@core/hooks/useSettings";
 import { useRouter } from "next/router";
 import NotificationDropdown from "@/@core/layouts/components/shared-components/NotificationDropdown";
 import NotificacionesReferidor from "./views/ui/inicio/NotificacionesReferidor";
+import ReferidorDropDown from "./views/ui/Buttons/ReferidorDropDown";
 
 // Animated Background Component
 const AnimatedBackground = ({ isDark }) => {
@@ -92,7 +93,7 @@ const AnimatedBackground = ({ isDark }) => {
 }
 
 // Header Component
-const Header = ({ isDark, handleModeToggle, handleAddAccount, handleLogout }) => {
+const Header = ({ isDark, handleModeToggle, handleAddAccount, handleLogout, referidor }) => {
     const theme = useTheme()
 
     return (
@@ -143,7 +144,6 @@ const Header = ({ isDark, handleModeToggle, handleAddAccount, handleLogout }) =>
                             </Typography>
                         </Box>
                     </Box>
-
                     <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
                         <Tooltip title={isDark ? "Modo claro" : "Modo oscuro"} arrow>
                             <IconButton
@@ -163,22 +163,6 @@ const Header = ({ isDark, handleModeToggle, handleAddAccount, handleLogout }) =>
                             </IconButton>
                         </Tooltip>
                         <NotificacionesReferidor />
-                        {/* <Tooltip title="Actualizar" arrow>
-                            <IconButton
-                                sx={{
-                                    backgroundColor: alpha(theme.palette.primary.contrastText, 0.1),
-                                    color: theme.palette.primary.contrastText,
-                                    backdropFilter: "blur(10px)",
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    "&:hover": {
-                                        backgroundColor: alpha(theme.palette.primary.contrastText, 0.2),
-                                        transform: 'rotate(180deg)',
-                                    },
-                                }}
-                            >
-                                <RefreshIcon />
-                            </IconButton>
-                        </Tooltip> */}
                         <Button
                             variant="outlined"
                             onClick={handleAddAccount}
@@ -202,8 +186,8 @@ const Header = ({ isDark, handleModeToggle, handleAddAccount, handleLogout }) =>
                         >
                             Alta de Cuenta
                         </Button>
-
-                        <Button
+                        <ReferidorDropDown userName={referidor} onLogout={handleLogout} />
+                        {/* <Button
                             variant="outlined"
                             onClick={handleLogout}
                             startIcon={<LogoutIcon />}
@@ -225,7 +209,7 @@ const Header = ({ isDark, handleModeToggle, handleAddAccount, handleLogout }) =>
                             }}
                         >
                             Cerrar Sesión
-                        </Button>
+                        </Button> */}
                     </Stack>
                 </Box>
 
@@ -667,8 +651,8 @@ const Index = () => {
     const [statusFilter, setStatusFilter] = useState("all")
     const [itemsPerPage, setItemsPerPage] = useState(4)
     const [viewMode, setViewMode] = useState("grid")
-
-    const { actualizarReferido, referidos, logout, loadingReferidos } = useContext(AuthContext);
+    const { actualizarReferido, referidos, logout, loadingReferidos, user } = useContext(AuthContext);
+    
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
     const router = useRouter()
@@ -816,6 +800,7 @@ const Index = () => {
                     handleModeToggle={handleModeToggle}
                     handleAddAccount={handleAddAccount}
                     handleLogout={handleLogout}
+                    referidor={user?.Name}
                 />
 
                 <FiltersCard

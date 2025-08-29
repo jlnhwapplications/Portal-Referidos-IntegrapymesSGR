@@ -151,7 +151,6 @@ const GarantiaIndex = () => {
             >
               {value}
             </Typography>
-
             <Typography
               sx={{
                 fontSize: {xs: 18, xl: 20},
@@ -162,7 +161,6 @@ const GarantiaIndex = () => {
             >
               {title}
             </Typography>
-
             {subtitle && (
               <Typography
                 sx={{
@@ -176,7 +174,6 @@ const GarantiaIndex = () => {
             )}
           </Box>
         </Box>
-
       </CardContent>
     </Card>
   )

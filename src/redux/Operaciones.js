@@ -122,7 +122,6 @@ export const obtenerOperaciones = (cuentaid, token) => async (dispatch) => {
                 "<attribute name='new_destinodefondo'/> " +
                 "<attribute name='new_acreedor'/> " +
                 "<attribute name='new_montodelaoperacion'/> " +
-                "<attribute name='new_destinodefondo'/> " +
                 "<order attribute ='createdon' descending='false' />" +
                 "<filter type='and'>" +
                 // "<condition attribute='statecode' operator='eq' value='1' />" + //Inactivo
@@ -169,11 +168,9 @@ export const obtenerOperaciones = (cuentaid, token) => async (dispatch) => {
                         }
                     })
                     .then((response) => {
-                        debugger
                         resolve(response.data)
                     })
                     .catch(err => {
-                        debugger
                         reject(err)
                     })
             })
@@ -214,7 +211,6 @@ export const obtenerOperacionPorID = (operacionid, token) => async (dispatch) =>
         "<attribute name='new_destinodefondo'/> " +
         "<attribute name='new_acreedor'/> " +
         "<attribute name='new_montodelaoperacion'/> " +
-        "<attribute name='new_destinodefondo'/> " +
         "<order attribute ='createdon' descending='false' />" +
         "<filter type='and'>" +
         "<condition attribute='new_operacionid' operator='eq' value='" + operacionid + "' />" +

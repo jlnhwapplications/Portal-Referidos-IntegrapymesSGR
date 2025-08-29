@@ -1,7 +1,7 @@
 import { AuthContext } from "@/context/AuthContext";
 import { useContext, useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { obtenerOperaciones } from '@/redux/Operaciones'
+import { cargarDocumentacionPorOperacion, obtenerOperaciones } from '@/redux/Operaciones'
 import moment from 'moment'
 
 const UseGetOperaciones = () => {
@@ -28,9 +28,9 @@ const UseGetOperaciones = () => {
 
     const fetchData = (accountid, token) => {
         try {
+            debugger
             dispatch(obtenerOperaciones(referido?.accountid, token))
                 .then(data => {
-                    debugger
                     if (data?.length > 0) {
                         let OperacionesExport = []
                         let OperacionesFormat = []
@@ -44,14 +44,13 @@ const UseGetOperaciones = () => {
                                     id: element["new_operacionid"],
                                     new_nrooperacion: element["new_nrooperacion"],
                                     new_name: element["new_name"],
-                                    new_fechadeenvio: element["new_fechadeenvio"] ? new Date(element["new_fechadeenvio"]) : '',
+                                    new_fechadeenvio: element["new_fechadeenvio"] ? moment(new Date(element["new_fechadeenvio"])).format('DD/MM/yyyy') : '',
                                     new_destinodefondo: element["_new_destinodefondo_value@OData.Community.Display.V1.FormattedValue"],
                                     new_montototalcomision: element["new_montototalcomision@OData.Community.Display.V1.FormattedValue"],
                                     new_acreedor: element["_new_acreedor_value@OData.Community.Display.V1.FormattedValue"],
                                     new_acreedor_value: element["_new_acreedor_value"],
                                     new_referido: element["_new_referido_value@OData.Community.Display.V1.FormattedValue"],
                                     new_socioprotector: element["_new_socioprotector_value@OData.Community.Display.V1.FormattedValue"],
-                                    new_destinodefondo: element["_new_destinodefondo_value@OData.Community.Display.V1.FormattedValue"],
                                     new_tipooperacin: element["new_tipooperacin@OData.Community.Display.V1.FormattedValue"],
                                     new_tipooperacin_value: element["new_tipooperacin"],
                                     new_tipodecheque: element["new_tipodecheque@OData.Community.Display.V1.FormattedValue"],
@@ -59,11 +58,12 @@ const UseGetOperaciones = () => {
                                     new_tipogarantia: element["new_tipogarantia@OData.Community.Display.V1.FormattedValue"],
                                     new_montototal: element["new_montototal"],
                                     createdon: element["createdon@OData.Community.Display.V1.FormattedValue"],
-                                    fechaCreacion: new Date(element["createdon"]),
-                                    fechaCreacion_str: moment(new Date(element["createdon"])).format('DD/MM/yyyy'),
-                                    new_fechadeinstrumentacion: element["new_fechadeinstrumentacion"] ? new Date(element["new_fechadeinstrumentacion"]) : '',
+                                    fechaCreacion:  new Date(element["createdon"]),
+                                    fechaCreacion_str: element["createdon"] ? moment(new Date(element["createdon"])).format('DD/MM/yyyy') : '',
+                                    new_fechadeinstrumentacion: element["new_fechadeinstrumentacion"] ? moment(new Date(element["new_fechadeinstrumentacion"])).format('DD/MM/yyyy') : '',
                                     new_cantidadgarantias: element["new_cantidadgarantias"],
                                     new_montodelaoperacion: element["new_montodelaoperacion@OData.Community.Display.V1.FormattedValue"],
+                                    new_montodelaoperacion_value: element["new_montodelaoperacion"],
                                     statuscode: element["statuscode@OData.Community.Display.V1.FormattedValue"]
                                 }
                                 OperacionesFormat.push(operacionFormat)
@@ -116,13 +116,11 @@ const UseGetOperaciones = () => {
                         setDocumentosOP(documentosOPAUX)
                         setLoadingOperaciones(false)
                     } else {
-                        debugger
                         setOperaciones([])
                         setLoadingOperaciones(false)
                     }
                 })
                 .catch(() => {
-                    debugger
                     setOperaciones([])
                     setLoadingOperaciones(false)
                 })
@@ -132,9 +130,25 @@ const UseGetOperaciones = () => {
         }
     };
 
+    function subirAdjuntoOperacion(formData, id, token) {
+            return new Promise((resolve, reject) => {
+                dispatch(cargarDocumentacionPorOperacion(formData, id, token))
+                    .then(() => {
+                        debugger
+                        return fetchData("", token);
+                    })
+                    .then(() => {
+                        resolve();
+                    })
+                    .catch((err) => {
+                        reject(err);
+                    });
+            });
+        }
+
 
     // const memoizedData = useMemo(() => operaciones, [operaciones]);
-    return { operaciones, garantiasOP, documentosOP, loadingOperaciones };
+    return { operaciones, garantiasOP, documentosOP, loadingOperaciones, subirAdjuntoOperacion };
 };
 
 export default UseGetOperaciones;

@@ -39,6 +39,8 @@ import TablaOperaciones from "../views/operaciones/TablaOperaciones"
 import useGetOperaciones from "@/hooks/useGetOperaciones"
 import ApexChartWrapper from '@/@core/styles/libs/react-apexcharts' // Import ApexChartWrapper
 import PageHeader from "@/@core/components/page-header"
+import { columns_operaciones } from "@/columns/columnsOperaciones"
+import Table from "@/@core/components/table/Table"
 
 // Registrar componentes de Chart.js
 
@@ -423,7 +425,12 @@ const Operaciones = () => {
           loadingOperaciones ?
             <OperacionesSkeleton /> : <Fade in timeout={600}>
               <Box sx={{ borderRadius: 3 }}>
-                <TablaOperaciones searchTerm={searchTerm} statusFilter={statusFilter} dateRange={dateRange} />
+                <Table
+                  data={operaciones?.length > 0 ? operaciones : []}
+                  columns={columns_operaciones}
+                  canExport={false}
+                />
+                {/* <TablaOperaciones searchTerm={searchTerm} statusFilter={statusFilter} dateRange={dateRange} /> */}
               </Box>
             </Fade>
         }

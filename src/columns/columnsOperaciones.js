@@ -26,7 +26,7 @@ import {
     Build as BuildIcon,
     MonetizationOn as MonetizationOnIcon,
 } from "@mui/icons-material"
-// import UtilidadesOP from "@/pages/views/operaciones/UtilidadesOP";
+import UtilidadesOP from "@/pages/views/operaciones/UtilidadesOP";
 
 let dollarUS = Intl.NumberFormat("en-US", {
     style: "currency",
@@ -49,23 +49,11 @@ const RowOptions = ({ id }) => {
     };
 
     const deleteRow = () => {
-        // dispatch(deleteCurso(token, id))
-        //   .then((id) => {
-        //     dispatch(fetchCursosE(token));
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error:", error);
-        //   });
         handleRowOptionsClose();
     };
 
     return (
         <>
-            {/* <Tooltip title='Eliminar'>
-            <IconButton size="small" onClick={handleRowOptionsClick}>
-              <Icon icon="mdi:trash-can-outline" fontSize={20} style={{ color: "red" }} />
-            </IconButton>
-          </Tooltip> */}
             <Menu
                 keepMounted
                 anchorEl={anchorEl}
@@ -534,15 +522,15 @@ export const columns_operaciones = [
         headerName: "Estado",
         renderCell: ({ row }) => <StatusChip status={row.statuscode} config={statusConfig} />,
     },
-    {
-        flex: 0.2,
-        minWidth: 160,
-        field: "new_destinodefondo",
-        headerName: "Destino de Fondo",
-        renderCell: ({ row }) => (
-            <TextCell value={row.new_destinodefondo} icon={TrendingUpIcon} subtitle="Asignación de recursos" />
-        ),
-    },
+    // {
+    //     flex: 0.2,
+    //     minWidth: 160,
+    //     field: "new_destinodefondo",
+    //     headerName: "Destino de Fondo",
+    //     renderCell: ({ row }) => (
+    //         <TextCell value={row.new_destinodefondo} icon={TrendingUpIcon} subtitle="Asignación de recursos" />
+    //     ),
+    // },
     {
         flex: 0.15,
         minWidth: 140,
@@ -562,7 +550,7 @@ export const columns_adjuntos_operaciones = [
     {
         flex: 0.3,
         field: "Documento",
-        minWidth: 200,
+        minWidth: 240,
         headerName: "Documento",
         renderCell: ({ row }) => (
             <TextCell value={row.new_name} icon={DescriptionIcon} subtitle="Archivo adjunto" fontWeight={600} />
@@ -570,7 +558,7 @@ export const columns_adjuntos_operaciones = [
     },
     {
         flex: 0.2,
-        minWidth: 140,
+        minWidth: 120,
         field: "statuscode",
         headerName: "Estado",
         renderCell: ({ row }) => <StatusChip status={row.statuscode} config={statusAdjuntosConfig} />,
@@ -590,29 +578,3 @@ export const columns_adjuntos_operaciones = [
         renderCell: ({ row }) => (row != null ? <UtilidadesOP utilidad={row.utilidades} /> : "-"),
     },
 ]
-
-// Componente UtilidadesOP mejorado (placeholder)
-const UtilidadesOP = ({ utilidad }) => {
-    const theme = useTheme()
-
-    return (
-        <Stack direction="row" spacing={0.5}>
-            <Tooltip title="Descargar" arrow>
-                <IconButton
-                    size="small"
-                    sx={{
-                        backgroundColor: alpha(theme.palette.success.main, 0.1),
-                        color: theme.palette.success.main,
-                        "&:hover": {
-                            backgroundColor: alpha(theme.palette.success.main, 0.2),
-                            transform: "scale(1.1)",
-                        },
-                        transition: "all 0.2s ease-in-out",
-                    }}
-                >
-                    <DescriptionIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-            </Tooltip>
-        </Stack>
-    )
-}

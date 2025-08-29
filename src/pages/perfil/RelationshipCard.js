@@ -24,7 +24,7 @@ import {
   Link as LinkIcon,
 } from "@mui/icons-material"
 import { useEffect } from "react"
-
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 const RelationshipCard = ({ relationship, onEdit, onDelete, onView, index }) => {
   const theme = useTheme()
 
@@ -149,10 +149,47 @@ const RelationshipCard = ({ relationship, onEdit, onDelete, onView, index }) => 
                 )
             }
           </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {
+              relationship.new_tipoderelacion === 100000001 &&
+              <>
+                <PeopleAltIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
+                <Typography variant="body2" color="text.secondary">
+                  Participación accionaria:{" "}
+                  <Typography component="span" variant="body2" color="text.primary" fontWeight={500}>
+                    {relationship.new_porcentajedeparticipacion || "N/A"}%
+                  </Typography>
+                </Typography>
+              </>
+            }
+            {
+              relationship.new_tipoderelacion === 100000002 &&
+              <>
+                <PeopleAltIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
+                <Typography variant="body2" color="text.secondary">
+                  Participación accionaria:{" "}
+                  <Typography component="span" variant="body2" color="text.primary" fontWeight={500}>
+                    {relationship.new_porcentajebeneficiario || "N/A"}%
+                  </Typography>
+                </Typography>
+              </>
+            }
+            {
+              relationship.new_tipoderelacion === 100000003 &&
+              <>
+                <PeopleAltIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
+                <Typography variant="body2" color="text.secondary">
+                  Cargo:{" "}
+                  <Typography component="span" variant="body2" color="text.primary" fontWeight={500}>
+                    {relationship.new_cargo || "N/A"}
+                  </Typography>
+                </Typography>
+              </>
+            }
+          </Box>
         </Stack>
-
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
-          {/* <Tooltip title="Ver detalles" arrow>
+          {/* <Tooltip title="Ver detalles" arrow> new_porcentajebeneficiario new_porcentajedeparticipacion
             <IconButton
               size="small"
               onClick={() => onView?.(relationship)}

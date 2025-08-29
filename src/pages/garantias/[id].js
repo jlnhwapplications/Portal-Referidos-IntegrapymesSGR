@@ -270,6 +270,38 @@ const IdGarantia = () => {
         })
     }
 
+    // function formatDate(dateStr) {
+    //     if (!dateStr || typeof dateStr !== "string") return null;
+
+    //     const parts = dateStr.split("/");
+    //     if (parts.length !== 3) return null;
+
+    //     const [day, month, year] = parts.map(Number);
+
+    //     // Validar que sean números y estén en rango
+    //     if (
+    //         isNaN(day) || isNaN(month) || isNaN(year) ||
+    //         day < 1 || day > 31 ||
+    //         month < 1 || month > 12 ||
+    //         year < 1900
+    //     ) {
+    //         return null;
+    //     }
+
+    //     const date = new Date(year, month - 1, day);
+
+    //     // Validar que coincida con lo que vino
+    //     if (
+    //         date.getDate() !== day ||
+    //         date.getMonth() !== month - 1 ||
+    //         date.getFullYear() !== year
+    //     ) {
+    //         return null;
+    //     }
+
+    //     return date;
+    // }
+
     // Función para formatear moneda
     const formatAmount = (amount, currency = "USD") => {
         if (!amount && amount !== 0) return null
@@ -356,7 +388,7 @@ const IdGarantia = () => {
                         {
                             icon: CalendarTodayIcon,
                             label: "Fecha de Carga",
-                            value: selectedGuarantee.new_fechadeorigen,
+                            value: selectedGuarantee.createdon,
                         },
                         {
                             icon: ScheduleIcon,
@@ -436,7 +468,7 @@ const IdGarantia = () => {
                         {
                             icon: CalendarTodayIcon,
                             label: "Fecha de Carga",
-                            value: selectedGuarantee.new_fechadeorigen,
+                            value: selectedGuarantee.createdon,
                         },
                         {
                             icon: ScheduleIcon,

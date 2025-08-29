@@ -13,7 +13,7 @@ const lufeHabilitado = true
 const DireccionOnbHabilitado = false
 const LineaDeCreditoHabilitado = true
 const documentacionLufeYParametrizada = true
-const cliente = 'SOC SANDBOX'
+const cliente = 'Integra Pymes Referidos'
 
 //Sacar times new roman - sacar requerido - achicar onboarding - sacar plazo de gracia en meses
 

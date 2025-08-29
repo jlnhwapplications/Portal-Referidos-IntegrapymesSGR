@@ -48,14 +48,13 @@ const IdOperacion = () => {
   const router = useRouter()
   const paramID = router.query.id
   const { operaciones, garantiasOP, documentosOP } = useGetOperaciones()
-
   const [activeTab, setActiveTab] = useState("0")
+  const [filteredDocumentos, setFilteredDocumentos] = useState([])
   const [expandedSections, setExpandedSections] = useState({
     general: true,
-    kpi: false,
+    kpi: true,
   })
   const [isLoading, setIsLoading] = useState(true)
-
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isTablet = useMediaQuery(theme.breakpoints.down("lg"))
 
@@ -68,9 +67,9 @@ const IdOperacion = () => {
     return garantiasOP?.filter((item) => item.new_operacionid == paramID) || []
   }, [garantiasOP, paramID])
 
-  const filteredDocumentos = useMemo(() => {
-    return documentosOP?.filter((item) => item.new_operacionid == paramID) || []
-  }, [documentosOP, paramID])
+  // const filteredDocumentos = useMemo(() => {
+  //   return documentosOP?.filter((item) => item.new_operacionid == paramID) || []
+  // }, [documentosOP, paramID])
 
   const montoTotalGarantias = useMemo(() => {
     return filteredGarantias.reduce((total, item) => {
@@ -88,6 +87,13 @@ const IdOperacion = () => {
       setIsLoading(false)
     }
   }, [operaciones, garantiasOP, documentosOP])
+
+  useEffect(() => {
+    debugger
+    if (documentosOP?.length > 0) {
+      setFilteredDocumentos(documentosOP?.filter((item) => item.new_operacionid == paramID) || [])
+    }
+  }, [documentosOP])
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -207,6 +213,82 @@ const IdOperacion = () => {
         <ExpandMoreIcon />
       </IconButton>
     </Box>
+  )
+
+  // Componente para las tarjetas de KPI
+  const KPICard = ({ title, value, subtitle, icon: Icon, color = "primary", trend }) => (
+    <Card
+      sx={{
+        borderRadius: 3,
+        background: `linear-gradient(135deg, ${alpha(theme.palette[color].main, 0.05)}, ${alpha(theme.palette[color].main, 0.02)})`,
+        border: `1px solid ${alpha(theme.palette[color].main, 0.1)}`,
+        transition: "all 0.3s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: `0 12px 30px ${alpha(theme.palette[color].main, 0.2)}`,
+          border: `1px solid ${alpha(theme.palette[color].main, 0.2)}`,
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2 }}>
+        <Box display="flex" alignItems="center" flexDirection={"row"} gap={2} height="100%">
+          <Box>
+            <Avatar
+              sx={{
+                backgroundColor: alpha(theme.palette[color].main, 0.1),
+                color: theme.palette[color].main,
+                width: { xs: 40, xl: 56 },
+                height: { xs: 40, xl: 56 },
+              }}
+            >
+              <Icon sx={{ fontSize: { xs: 18, xl: 28 } }} />
+            </Avatar>
+            {trend && (
+              <Chip
+                label={`${trend > 0 ? "+" : ""}${trend}%`}
+                size="small"
+                color={trend > 0 ? "success" : "error"}
+                sx={{ fontWeight: 600 }}
+              />
+            )}
+          </Box>
+          <Box flex={1} display="flex" flexDirection="column" justifyContent="center" sx={{ mt: 2 }}>
+            <Typography
+              sx={{
+                fontSize: { xs: 22, xl: 26 },
+                fontWeight: 700,
+                color: theme.palette[color].main,
+                mb: 1,
+                lineHeight: 1.2,
+              }}
+            >
+              {value}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: { xs: 18, xl: 20 },
+                fontWeight: 600,
+                color: theme.palette.text.primary,
+                mb: 0.5,
+              }}
+            >
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography
+                sx={{
+                  fontSize: { xs: 12, xl: 14 },
+                  color: theme.palette.text.secondary,
+                  lineHeight: 1.4,
+                }}
+              >
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
   )
 
   const StatsCard = ({ title, value, subtitle, color = "primary", icon: Icon }) => (
@@ -406,7 +488,7 @@ const IdOperacion = () => {
                           icon={SecurityIcon}
                           color="warning"
                         />
-                      </Grid>
+                      </Grid> 
                       <Grid item xs={12} sm={6} md={4} lg={3}>
                         <InfoCard
                           title="Destino de Fondos"
@@ -450,7 +532,7 @@ const IdOperacion = () => {
                       <Grid item xs={12} sm={6} md={4} lg={3}>
                         <InfoCard
                           title="Monto de la Operación"
-                          value={dollarFormatter.format(currentOperation.new_montodelaoperacion || 0)}
+                          value={currentOperation.new_montodelaoperacion_value ? dollarFormatter.format(currentOperation.new_montodelaoperacion_value) : 0}
                           icon={AttachMoneyIcon}
                           color="success"
                         />
@@ -474,7 +556,7 @@ const IdOperacion = () => {
                       <Grid item xs={12} sm={6} md={4}>
                         <InfoCard
                           title="Fecha de Creación"
-                          value={currentOperation.fechaCreacion_str ? currentOperation.fechaCreacion_str : ''}
+                          value={currentOperation.fechaCreacion_str ? currentOperation.fechaCreacion_str?.toString() : ''}
                           icon={CalendarTodayIcon}
                           color="primary"
                         />
@@ -482,7 +564,7 @@ const IdOperacion = () => {
                       <Grid item xs={12} sm={6} md={4}>
                         <InfoCard
                           title="Fecha de Instrumentación"
-                          value={currentOperation.new_fechadeinstrumentacion ? currentOperation.new_fechadeinstrumentacion : ''}
+                          value={currentOperation.new_fechadeinstrumentacion ? currentOperation.new_fechadeinstrumentacion?.toString() : ''}
                           icon={ScheduleIcon}
                           color="info"
                         />
@@ -490,7 +572,7 @@ const IdOperacion = () => {
                       <Grid item xs={12} sm={6} md={4}>
                         <InfoCard
                           title="Fecha de Envío"
-                          value={currentOperation.new_fechadeenvio ? currentOperation.new_fechadeenvio : ''}
+                          value={currentOperation.new_fechadeenvio ? currentOperation.new_fechadeenvio?.toString() : ''}
                           icon={CalendarTodayIcon}
                           color="success"
                         />
@@ -502,7 +584,6 @@ const IdOperacion = () => {
             </Box>
           </Fade>
         </TabPanel>
-
         {/* Panel 2: Garantías */}
         <TabPanel value="1" sx={{ p: 0 }}>
           <Fade in={activeTab === "1"} timeout={300}>
@@ -510,7 +591,7 @@ const IdOperacion = () => {
               {/* Stats de Garantías */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={6} md={4}>
-                  <StatsCard
+                  <KPICard
                     title="Monto Total"
                     value={dollarFormatter.format(montoTotalGarantias)}
                     subtitle="Suma de todas las garantías"
@@ -519,7 +600,7 @@ const IdOperacion = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <StatsCard
+                  <KPICard
                     title="Cantidad de Garantías"
                     value={filteredGarantias.length}
                     subtitle="Total de garantías registradas"
@@ -528,7 +609,7 @@ const IdOperacion = () => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <StatsCard
+                  <KPICard
                     title="Promedio por Garantía"
                     value={
                       filteredGarantias.length > 0
@@ -541,16 +622,9 @@ const IdOperacion = () => {
                   />
                 </Grid>
               </Grid>
-
-              {/* Tabla de Garantías */}
-              {/* <Card sx={{ borderRadius: 3 }}> */}
-              {/* <CardContent> */}
               <Box>
                 <Table data={filteredGarantias} columns={COLUMNSGOPERACIONES} />
               </Box>
-
-              {/* </CardContent> */}
-              {/* </Card> */}
             </Box>
           </Fade>
         </TabPanel>
