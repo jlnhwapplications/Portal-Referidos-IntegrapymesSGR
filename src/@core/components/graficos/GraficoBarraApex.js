@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+﻿import React, { useEffect, useMemo } from 'react'
 import Chart from 'src/@core/components/react-apexcharts'
 import { Box, Card, CardContent, CardHeader, Chip, FormControl, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -10,8 +10,9 @@ let dollarUS = Intl.NumberFormat("en-US", {
     currency: "USD",
 });
 
-const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de datos", onRefresh,
-  onExport}) => {                                                         
+const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Analisis de datos", onRefresh, onExport }) => {
+ 
+ 
     const [datosGrafico, setDatosGraficos] = React.useState([])
     const [series, setSeries] = React.useState([])
     const [opcion, setOpcion] = React.useState([])
@@ -67,7 +68,7 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
     }, [datos, opciones])
 
 
-    // Handler mejorado para cambio de opción
+    // Handler mejorado para cambio de opciÃ³n
     const handleChange = (event) => {
         const nuevaOpcion = event.target.value
         setOpcion(nuevaOpcion)
@@ -113,8 +114,8 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
         }
     }, [isDark])
 
-
-    // Configuración mejorada del gráfico
+    const currencyFmt = useMemo(() => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }), [])
+    // ConfiguraciÃ³n mejorada del grÃ¡fico
     const chartOptions = useMemo(
         () => ({
             chart: {
@@ -138,7 +139,7 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
                         csv: {
                             filename: titulo,
                             columnDelimiter: ",",
-                            headerCategory: "Categoría",
+                            headerCategory: "CategorÃ­a",
                             headerValue: "Cantidad",
                         },
                         png: {
@@ -192,7 +193,7 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
                     fontWeight: 600,
                     colors: [theme.palette.text.primary],
                 },
-                formatter: (val) => val.toLocaleString(),
+                formatter: (val) => (opcion === 'Monto' ? currencyFmt.format(val) : val.toLocaleString()),
             },
             legend: {
                 show: false,
@@ -227,7 +228,7 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
                         fontFamily: theme.typography.fontFamily,
                         fontWeight: 500,
                     },
-                    formatter: (value) => value.toLocaleString(),
+                    formatter: (value) => (opcion === 'Monto' ? currencyFmt.format(value) : value.toLocaleString()),
                 },
                 tickAmount: 5,
             },
@@ -252,13 +253,14 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
                 },
             },
             tooltip: {
+                enabled: false,
                 theme: isDark ? "dark" : "light",
                 style: {
                     fontSize: "12px",
                     fontFamily: theme.typography.fontFamily,
                 },
                 y: {
-                    formatter: (val) => val.toLocaleString() + " unidades",
+                    formatter: (val) => (opcion === 'Monto' ? currencyFmt.format(val) : val.toLocaleString()) + " unidades",
                 },
                 marker: {
                     show: true,
@@ -569,7 +571,7 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
                                 }}
                             />
 
-                            {/* Botones de acción */}
+                            {/* Botones de acciÃ³n */}
                             {onRefresh && (
                                 <Tooltip title="Actualizar datos">
                                     <IconButton onClick={onRefresh} size="small">
@@ -640,3 +642,9 @@ const GraficoBarraApex = ({ datos, opciones, titulo, subtitulo = "Análisis de d
 }
 
 export default GraficoBarraApex
+
+
+
+
+
+

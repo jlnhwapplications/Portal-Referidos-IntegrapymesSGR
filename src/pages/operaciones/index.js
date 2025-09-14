@@ -69,7 +69,10 @@ const Operaciones = () => {
     const operacionesInstrumentadas = operaciones.filter((op) => op.statuscode === "Instrumentada").length
     const operacionesMonetizadas = operaciones.filter((op) => op.statuscode === "Monetizada").length
 
-    const montoTotal = operaciones.reduce((sum, op) => sum + (op.new_montodelaoperacion || 0), 0)
+    const montoTotal = operaciones.reduce(
+      (sum, op) => sum + (Number(op.new_montodelaoperacion_value) || 0),
+      0
+    )
     const montoPromedio = totalOperaciones > 0 ? montoTotal / totalOperaciones : 0
 
     // Operaciones por mes (últimos 6 meses)
@@ -82,11 +85,13 @@ const Operaciones = () => {
     }
 
     operaciones.forEach((op) => {
-      if (op.fechaCreacion_str) {
-        const opDate = new Date(op.fechaCreacion_str)
-        const key = opDate.toLocaleDateString("es-AR", { month: "short", year: "numeric" })
-        if (operacionesPorMes.hasOwnProperty(key)) {
-          operacionesPorMes[key]++
+      if (op.fechaCreacion) {
+        const opDate = new Date(op.fechaCreacion)
+        if (!isNaN(opDate)) {
+          const key = opDate.toLocaleDateString("es-AR", { month: "short", year: "numeric" })
+          if (Object.prototype.hasOwnProperty.call(operacionesPorMes, key)) {
+            operacionesPorMes[key]++
+          }
         }
       }
     })

@@ -74,10 +74,10 @@ function MoneyCell({ amount, currency = "USD", subtitle = null }) {
   }
 
   const getAmountColor = (amount) => {
-    if (!amount || amount === 0) return "text.secondary"
+    if (!amount || amount === 0) return isDark ? "#66bb6a" : "#2e7d32"
     if (amount > 1000000) return isDark ? "#66bb6a" : "#2e7d32" // Verde para montos altos
-    if (amount > 100000) return isDark ? "#64b5f6" : "#1976d2" // Azul para montos medios
-    return "text.primary" // Color normal para montos bajos
+    if (amount > 100000) return isDark ? "#66bb6a" : "#2e7d32" // Azul para montos medios
+    return isDark ? "#66bb6a" : "#2e7d32"// Color normal para montos bajos
   }
 
   return (

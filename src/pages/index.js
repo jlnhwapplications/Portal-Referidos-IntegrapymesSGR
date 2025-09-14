@@ -24,6 +24,7 @@ import {
     Collapse,
     useMediaQuery,
     Skeleton,
+    Paper,
 } from "@mui/material";
 import React, { Fragment, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { AuthContext } from "@/context/AuthContext";
@@ -52,13 +53,23 @@ import {
     PersonAddAlt as PersonAddAltIcon,
     TrendingUp,
     AccountBalance,
+    AttachMoney,
+    FilterList as FilterIcon,
+    CalendarToday as CalendarIcon,
+    Clear as ClearIcon,
+    DateRange as DateRangeIcon
 } from "@mui/icons-material"
-
 import { useSettings } from "@/@core/hooks/useSettings";
 import { useRouter } from "next/router";
 import NotificationDropdown from "@/@core/layouts/components/shared-components/NotificationDropdown";
 import NotificacionesReferidor from "./views/ui/inicio/NotificacionesReferidor";
 import ReferidorDropDown from "./views/ui/Buttons/ReferidorDropDown";
+import GraficoBarraApex from "@/@core/components/graficos/GraficoBarraApex";
+import GraficoBarraApexDetalle from "@/@core/components/graficos/GraficoBarraApexDetalle";
+import GraficoDonaApex from "@/@core/components/graficos/GraficoDonaApex";
+import useGetGarantiasProximas from "@/hooks/useGetGarantiasProximas";
+import useGetDisponibleLimitesGeneral from "@/hooks/useGetDisponibleLimitesGeneral";
+import { CheckCircle, WarningAmber } from "@mui/icons-material";
 
 // Animated Background Component
 const AnimatedBackground = ({ isDark }) => {
@@ -367,7 +378,7 @@ const FiltersCard = ({
 }
 
 // Account Card Component
-const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig }) => {
+const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig, limiteDisponible = 0, fmtCurrency }) => {
     const theme = useTheme()
     const [isHovered, setIsHovered] = useState(false)
     const statusConfig = getStatusConfig(account?.new_estadodelsocio)
@@ -493,7 +504,7 @@ const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig }) =>
                                     textOverflow: "ellipsis",
                                 }}
                             >
-                                {account.name}
+                                {account?.name?.length > 20 ? `${account.name.substr(0, 20)}...` : account.name}
                             </Typography>
 
                             <Box sx={{
@@ -520,48 +531,64 @@ const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig }) =>
                             <Divider sx={{ mb: 2, borderColor: alpha(theme.palette.divider, 0.1) }} />
 
                             <Stack spacing={1.5} alignItems={viewMode === "grid" ? "center" : "flex-start"}>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, maxWidth: "100%" }}>
-                                    <BusinessIcon sx={{
-                                        color: theme.palette.text.secondary,
-                                        fontSize: 16,
-                                        flexShrink: 0
-                                    }} />
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            color: theme.palette.text.secondary,
-                                            fontSize: "0.85rem",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                        }}
-                                    >
-                                        CUIT: {account.new_nmerodedocumento}
-                                    </Typography>
-                                </Box>
-
-                                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, maxWidth: "100%" }}>
-                                    <EmailIcon sx={{
-                                        color: theme.palette.text.secondary,
-                                        fontSize: 16,
-                                        flexShrink: 0,
-                                        mt: 0.2
-                                    }} />
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            color: theme.palette.text.secondary,
-                                            fontSize: "0.85rem",
-                                            wordBreak: "break-word",
-                                            textAlign: viewMode === "grid" ? "center" : "left",
-                                            lineHeight: 1.3,
-                                            display: "-webkit-box",
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: "vertical",
-                                            overflow: "hidden",
-                                        }}
-                                    >
-                                        {account.emailaddress1}
+                                {
+                                    account.new_nmerodedocumento && (
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, maxWidth: "100%" }}>
+                                            <BusinessIcon sx={{
+                                                color: theme.palette.text.secondary,
+                                                fontSize: 16,
+                                                flexShrink: 0
+                                            }} />
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    color: theme.palette.text.secondary,
+                                                    fontSize: "0.85rem",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    whiteSpace: "nowrap",
+                                                }}
+                                            >
+                                                CUIT: {account.new_nmerodedocumento}
+                                            </Typography>
+                                        </Box>
+                                    )
+                                }
+                                {
+                                    account.emailaddress1 && (
+                                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, maxWidth: "100%" }}>
+                                            <EmailIcon sx={{
+                                                color: theme.palette.text.secondary,
+                                                fontSize: 16,
+                                                flexShrink: 0,
+                                                mt: 0.2
+                                            }} />
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    color: theme.palette.text.secondary,
+                                                    fontSize: "0.85rem",
+                                                    wordBreak: "break-word",
+                                                    textAlign: viewMode === "grid" ? "center" : "left",
+                                                    lineHeight: 1.3,
+                                                    display: "-webkit-box",
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: "vertical",
+                                                    overflow: "hidden",
+                                                }}
+                                            >
+                                                {account?.emailaddress1?.length > 30 ? `${account.emailaddress1.substr(0, 30)}...` : account?.emailaddress1}
+                                            </Typography>
+                                        </Box>
+                                    )
+                                }
+                                {/* Límite Disponible */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                                    <AttachMoney sx={{ color: theme.palette.success.main, fontSize: 16 }} />
+                                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.85rem' }}>
+                                        Disponible: <Typography component="span" sx={{ fontSize: "0.85rem", fontWeight: 600, color: theme.palette.text.primary }}>
+                                            {fmtCurrency ? fmtCurrency.format(limiteDisponible) : limiteDisponible.toLocaleString()}
+                                        </Typography>
                                     </Typography>
                                 </Box>
                             </Stack>
@@ -652,7 +679,7 @@ const Index = () => {
     const [itemsPerPage, setItemsPerPage] = useState(4)
     const [viewMode, setViewMode] = useState("grid")
     const { actualizarReferido, referidos, logout, loadingReferidos, user } = useContext(AuthContext);
-    
+
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
     const router = useRouter()
@@ -734,6 +761,19 @@ const Index = () => {
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000003).length || 0,
         },
     ], [referidos])
+
+    // Límites disponibles por cuenta (para mostrar en cada AccountCard)
+    const { disponibles: dispPorCuenta } = useGetDisponibleLimitesGeneral()
+    const limiteDisponiblePorCuenta = useMemo(() => {
+        const map = new Map()
+            ; (dispPorCuenta || []).forEach(d => {
+                const accId = d?.new_cuenta_value
+                const val = Number(d?.new_montodisponiblegeneral) || 0
+                if (accId) map.set(accId, (map.get(accId) || 0) + val)
+            })
+        return map
+    }, [dispPorCuenta])
+    const fmtCurrency = useMemo(() => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }), [])
 
     const getStatusConfig = useCallback((status) => {
         const configs = {
@@ -847,6 +887,8 @@ const Index = () => {
                             viewMode={viewMode}
                             onSelect={actualizarReferido}
                             getStatusConfig={getStatusConfig}
+                            limiteDisponible={limiteDisponiblePorCuenta.get(account.accountid) || 0}
+                            fmtCurrency={fmtCurrency}
                         />
                     ))}
                 </Grid>
@@ -973,6 +1015,9 @@ const Index = () => {
                         </Box>
                     </Fade>
                 )}
+
+                {/* KPIs y Gráficos de Garantías Próximas a Vencer */}
+                <GarantiasProximasOverview />
             </Container>
         </Box>
     )
@@ -981,3 +1026,591 @@ const Index = () => {
 Index.getLayout = (page) => <BlankLayout>{page}</BlankLayout>;
 
 export default Index;
+
+// Sección de KPIs y Gráficos para Garantías Próximas a Vencer
+function GarantiasProximasOverview() {
+    const theme = useTheme()
+    const isDark = theme.palette.mode === 'dark'
+    const { garantiasProximas, loading } = useGetGarantiasProximas()
+    const list = Array.isArray(garantiasProximas) ? garantiasProximas : []
+    const esMobile = useMediaQuery(theme => theme.breakpoints.down('md'))
+    // Normaliza elementos por si vienen en crudo (Dynamics) o ya formateados por el hook
+    const proximasList = useMemo(() => {
+        const parseDate = (val) => {
+            if (!val) return null
+            if (val instanceof Date) return isNaN(val.getTime()) ? null : val
+            const s = String(val)
+            // ISO YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+                const d = new Date(s)
+                return isNaN(d.getTime()) ? null : d
+            }
+            // DD/MM/YYYY
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                const [dd, mm, yyyy] = s.split('/').map(Number)
+                const d = new Date(yyyy, mm - 1, dd)
+                return isNaN(d.getTime()) ? null : d
+            }
+            // timestamp
+            const n = Number(s)
+            if (!isNaN(n)) {
+                const d = new Date(n)
+                return isNaN(d.getTime()) ? null : d
+            }
+            const d = new Date(s)
+            return isNaN(d.getTime()) ? null : d
+        }
+        const toStartOfDay = (d) => {
+            const dt = parseDate(d)
+            if (!dt) return null
+            return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
+        }
+        const todayStart = toStartOfDay(new Date())
+        const esAR = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+        return list.map((item) => {
+            const tipoValue = item.new_tipodeoperacion ?? item.new_tipodeoperacion_value
+            const tipoFormatted = item.tipoOperacion
+                ?? item["new_tipodeoperacion@OData.Community.Display.V1.FormattedValue"]
+                ?? item.new_tipodeoperacion
+            const socio = item.socioParticipe
+                ?? item["ad.name"]
+                ?? item["new_socioparticipe@OData.Community.Display.V1.FormattedValue"]
+                ?? item.new_socioparticipe
+            const monto = Number(item.montoBruto ?? item.new_monto ?? 0)
+            const fechaRaw = item.fechaVencimiento ?? item.new_fechadevencimiento
+            const fechaValida = parseDate(fechaRaw)
+            const fechaLabelISO = fechaValida ? `${fechaValida.getFullYear()}-${String(fechaValida.getMonth() + 1).padStart(2, '0')}-${String(fechaValida.getDate()).padStart(2, '0')}` : ''
+            const startFecha = fechaValida ? toStartOfDay(fechaValida) : null
+            const dias = startFecha && todayStart ? Math.max(0, Math.round((startFecha.getTime() - todayStart.getTime()) / 86400000)) : null
+            return {
+                id: item.id ?? item.new_garantiaid,
+                tipoOperacion: tipoFormatted,
+                tipoOperacionValue: tipoValue,
+                socioParticipe: socio,
+                fechaVencimiento: fechaLabelISO,
+                montoBruto: monto,
+                diasParaVencer: dias,
+                nombre: item.new_name || item.nombre,
+            }
+        })
+    }, [list])
+
+    const currency = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' })
+
+    // Disponible General de Límites (hook nuevo)
+    const { disponibles, loading: loadingLimites, error: errorLimites } = useGetDisponibleLimitesGeneral()
+    const totalDisponibleGeneral = useMemo(() => {
+        return (disponibles || []).reduce((acc, it) => acc + (Number(it?.new_montodisponiblegeneral) || 0), 0)
+    }, [disponibles])
+    const cantidadProductosLimite = useMemo(() => (disponibles || []).length, [disponibles])
+    // Filtro por "vigencia hasta" para el gráfico de límites
+    const [vigenciaHasta, setVigenciaHasta] = useState('') // YYYY-MM-DD
+    const parseDDMMYYYY = useCallback((s) => {
+        if (!s) return null
+        const m = String(s).match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/)
+        if (!m) return null
+        const dd = Number(m[1]); const mm = Number(m[2]); const yyyy = Number(m[3])
+        const d = new Date(yyyy, mm - 1, dd)
+        return isNaN(d.getTime()) ? null : d
+    }, [])
+    const parseISODate = useCallback((s) => {
+        if (!s) return null
+        const m = String(s).match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/)
+        if (!m) return null
+        const yyyy = Number(m[1]); const mm = Number(m[2]); const dd = Number(m[3])
+        const d = new Date(yyyy, mm - 1, dd)
+        return isNaN(d.getTime()) ? null : d
+    }, [])
+    const hoyISO = useMemo(() => {
+        const d = new Date()
+        const y = d.getFullYear()
+        const m = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${y}-${m}-${day}`
+    }, [])
+    const disponiblesFiltradosLimites = useMemo(() => {
+        if (!vigenciaHasta) return disponibles || []
+        const hasta = parseISODate(vigenciaHasta)
+        if (!hasta) return disponibles || []
+        return (disponibles || []).filter(d => {
+            const dv = parseDDMMYYYY(d?.new_vigenciahasta)
+            return dv ? dv.getTime() <= hasta.getTime() : false
+        })
+    }, [disponibles, vigenciaHasta, parseISODate, parseDDMMYYYY])
+    const datosBarraLimites = useMemo(() => {
+        return (disponiblesFiltradosLimites || []).map((d) => ({
+            opcion: (d.new_cuenta.length > 18 ? `${d.new_cuenta?.substr(0, 18)}...` : d.new_cuenta) || d.new_name || 'Sin nombre',
+            cantidad: Number(d.new_montodisponiblegeneral) || 0,
+            filtro: 'Monto'
+        }))
+    }, [disponiblesFiltradosLimites])
+    const fechaPorCuenta = useMemo(() => {
+        const map = new Map()
+            ; (disponiblesFiltradosLimites || []).forEach(d => {
+                const key = String(d.new_cuenta || d.new_name || '')
+                map.set(key, d.new_vigenciahasta || '')
+            })
+        return Object.fromEntries(map)
+    }, [disponiblesFiltradosLimites])
+    const opcionesBarraLimites = ['Monto']
+    const totalDisponibleGeneralFiltrado = useMemo(() => {
+        return (disponiblesFiltradosLimites || []).reduce((acc, it) => acc + (Number(it?.new_montodisponiblegeneral) || 0), 0)
+    }, [disponiblesFiltradosLimites])
+    const cantidadProductosLimiteFiltrado = useMemo(() => (disponiblesFiltradosLimites || []).length, [disponiblesFiltradosLimites])
+
+    const { totalGarantias, montoTotal, criticosCantidad, criticosMonto } = useMemo(() => {
+        const total = proximasList.length
+        const monto = proximasList.reduce((acc, g) => acc + (Number(g.montoBruto) || 0), 0)
+        const criticos = proximasList.filter(g => typeof g.diasParaVencer === 'number' && g.diasParaVencer <= 3)
+        const critCant = criticos.length
+        const critMonto = criticos.reduce((acc, g) => acc + (Number(g.montoBruto) || 0), 0)
+        return { totalGarantias: total, montoTotal: monto, criticosCantidad: critCant, criticosMonto: critMonto }
+    }, [proximasList])
+
+    // Datos para gráfico de barras (cantidad/monto por día)
+    const datosBarra = useMemo(() => {
+        const esLabel = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'short' })
+        const parseDate = (s) => {
+            if (!s) return null
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                const d = new Date(s)
+                return isNaN(d.getTime()) ? null : d
+            }
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                const [dd, mm, yyyy] = s.split('/').map(Number)
+                const d = new Date(yyyy, mm - 1, dd)
+                return isNaN(d.getTime()) ? null : d
+            }
+            const d2 = new Date(s)
+            return isNaN(d2.getTime()) ? null : d2
+        }
+        const agg = new Map() // key = ISO YYYY-MM-DD
+        proximasList.forEach(g => {
+            if (!g.fechaVencimiento) return
+            const iso = g.fechaVencimiento
+            const prev = agg.get(iso) || { cantidad: 0, monto: 0 }
+            prev.cantidad += 1
+            prev.monto += Number(g.montoBruto) || 0
+            agg.set(iso, prev)
+        })
+        const sortedIso = Array.from(agg.keys()).sort()
+        const arr = sortedIso.map(iso => {
+            const v = agg.get(iso)
+            const dt = parseDate(iso)
+            const dia = dt ? esLabel.format(dt) : iso
+            return { dia, ...v }
+        })
+        const cantidad = arr.map(d => ({ opcion: d.dia, cantidad: d.cantidad, filtro: 'Cantidad' }))
+        const monto = arr.map(d => ({ opcion: d.dia, cantidad: d.monto, filtro: 'Monto' }))
+        return [...cantidad, ...monto]
+    }, [proximasList])
+
+    // Detalles por día para tooltip (listado de nombres)
+    const detallesBarra = useMemo(() => {
+        const esLabel = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'short' })
+        const map = new Map()
+        proximasList.forEach(g => {
+            if (!g.fechaVencimiento) return
+            const dt = new Date(g.fechaVencimiento)
+            if (isNaN(dt.getTime())) return
+            const key = esLabel.format(dt)
+            const arr = map.get(key) || []
+            arr.push(g.nombre || `Garantía ${g.id}`)
+            map.set(key, arr)
+        })
+        return Object.fromEntries(map)
+    }, [proximasList])
+
+    // Datos para gráfico de dona (por tipo de operación)
+    const datosDona = useMemo(() => {
+        const counts = new Map()
+        const montos = new Map()
+        proximasList.forEach(g => {
+            const key = g.tipoOperacion || 'Sin Tipo'
+            counts.set(key, (counts.get(key) || 0) + 1)
+            montos.set(key, (montos.get(key) || 0) + (Number(g.montoBruto) || 0))
+        })
+        const porCantidad = Array.from(counts.entries()).map(([op, val]) => ({ opcion: op, cantidad: val, filtro: 'Cantidad' }))
+        const porMonto = Array.from(montos.entries()).map(([op, val]) => ({ opcion: op, cantidad: val, filtro: 'Monto' }))
+        return [...porCantidad, ...porMonto]
+    }, [proximasList])
+
+    const opcionesBarra = ['Cantidad', 'Monto']
+    const opcionesDona = ['Cantidad', 'Monto']
+
+    const KPICard = ({ title, value, icon: IconComp, color = 'primary' }) => (
+        // <Card
+        //     sx={{
+        //         borderRadius: 3,
+        //         background: isDark
+        //             ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.24)}, ${alpha(theme.palette.background.default, 0.18)})`
+        //             : `linear-gradient(135deg, ${alpha(theme.palette[color].main, 0.05)}, ${alpha(theme.palette[color].main, 0.02)})`,
+        //         border: isDark
+        //             ? `1px solid ${alpha(theme.palette.common.white, 0.08)}`
+        //             : `1px solid ${alpha(theme.palette[color].main, 0.1)}`,
+        //         boxShadow: isDark ? `0 6px 14px ${alpha('#000', 0.6)}` : theme.shadows[2],
+        //     }}
+        // >
+        <Card
+            sx={{
+                height: "100%",
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette[color].main, 0.2)}`,
+                // backgroundColor: alpha(theme.palette[color].main, 0.15),
+                backgroundColor: !isDark ? theme.palette.background.main : alpha(theme.palette[color].main, 0.15),
+                transition: "all 0.3s ease",
+                "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 8px 25px ${alpha(theme.palette[color].main, 0.15)}`,
+                },
+                // "&::before": {
+                //     content: '""',
+                //     position: "absolute",
+                //     top: 0,
+                //     left: 0,
+                //     right: 0,
+                //     height: 3,
+                //     backgroundColor: theme.palette[color].main,
+                // },
+            }}
+        >
+            <CardContent>
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar sx={{ width: 48, height: 48, backgroundColor: alpha(theme.palette[color].main, isDark ? 0.12 : 0.40), color: theme.palette[color].main }}>
+                        <IconComp />
+                    </Avatar>
+                    <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>{title}</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette[color].main }}>{value}</Typography>
+                    </Box>
+                </Stack>
+            </CardContent>
+        </Card>
+    )
+
+    return (
+        <>
+            <Box sx={{ my: 4 }}>
+                <Slide in direction="up" timeout={1000}>
+                    <Typography
+                        sx={{
+                            fontSize: { xs: "1rem", md: "1.2rem" },
+                            color: alpha(theme.palette.primary.contrastText, 0.9),
+                            textAlign: "center",
+                            fontWeight: 500,
+                            mb: { xs: 1, xl: 4 },
+                            mt: { xs: 1, xl: 4 },
+                        }}
+                    >
+                        Monto Disponible General
+                    </Typography>
+                </Slide>
+                <Grid container spacing={2} sx={{ mb: { xs: 2, md: 3, xl: 4 } }}>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                height: "100%",
+                                p: 2,
+                                // mb: 3,
+                                backgroundColor: theme.palette.background.paper,
+                                border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                                borderRadius: 2,
+                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                "&:hover": {
+                                    boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
+                                    borderColor: alpha(theme.palette.primary.main, 0.2),
+                                },
+                            }}
+                        >
+                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                                <FilterIcon
+                                    sx={{
+                                        mr: 1,
+                                        color: theme.palette.primary.main,
+                                        fontSize: 20,
+                                    }}
+                                />
+                                <Typography
+                                    variant="subtitle2"
+                                    sx={{
+                                        fontWeight: 600,
+                                        color: theme.palette.text.primary,
+                                        letterSpacing: "0.02em",
+                                        // mb: 1
+                                    }}
+                                >
+                                    Filtros de Búsqueda
+                                </Typography>
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "flex-end",
+                                    justifyContent: "flex-start",
+                                    gap: 2,
+                                    flexWrap: "wrap",
+                                }}
+                            >
+                                <TextField
+                                    label="Vigencia hasta"
+                                    type="date"
+                                    size="small"
+                                    value={vigenciaHasta}
+                                    onChange={(e) => setVigenciaHasta(e.target.value)}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                        sx: {
+                                            fontWeight: 600,
+                                            color: theme.palette.primary.main,
+                                            fontSize: "0.875rem",
+                                            letterSpacing: "0.025em",
+                                            "&.Mui-focused": {
+                                                color: theme.palette.primary.dark,
+                                            },
+                                        },
+                                    }}
+                                    inputProps={{
+                                        min: hoyISO,
+                                        style: {
+                                            fontSize: "0.875rem",
+                                            fontWeight: 500,
+                                            cursor: "pointer",
+                                        },
+                                    }}
+                                    sx={{
+                                        minWidth: 220,
+                                        "& .MuiOutlinedInput-root": {
+                                            backgroundColor: theme.palette.background.default,
+                                            borderRadius: 2,
+                                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                            "& input[type='date']": {
+                                                cursor: "pointer",
+                                                "&::-webkit-calendar-picker-indicator": {
+                                                    cursor: "pointer",
+                                                    padding: "4px",
+                                                    borderRadius: "4px",
+                                                    transition: "all 0.2s ease",
+                                                    "&:hover": {
+                                                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                                    },
+                                                },
+                                                "&::-webkit-datetime-edit": {
+                                                    padding: "2px 0",
+                                                },
+                                                "&::-webkit-datetime-edit-fields-wrapper": {
+                                                    padding: "0",
+                                                },
+                                                "&::-webkit-datetime-edit-text": {
+                                                    color: theme.palette.text.secondary,
+                                                    padding: "0 2px",
+                                                },
+                                                "&::-webkit-datetime-edit-month-field": {
+                                                    color: theme.palette.text.primary,
+                                                    fontWeight: 500,
+                                                },
+                                                "&::-webkit-datetime-edit-day-field": {
+                                                    color: theme.palette.text.primary,
+                                                    fontWeight: 500,
+                                                },
+                                                "&::-webkit-datetime-edit-year-field": {
+                                                    color: theme.palette.text.primary,
+                                                    fontWeight: 500,
+                                                },
+                                            },
+                                            "&:hover": {
+                                                backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                                                transform: "translateY(-1px)",
+                                                boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.12)}`,
+                                                "& .MuiOutlinedInput-notchedOutline": {
+                                                    borderColor: theme.palette.primary.main,
+                                                    borderWidth: 1.5,
+                                                },
+                                            },
+                                            "&.Mui-focused": {
+                                                backgroundColor: alpha(theme.palette.primary.main, 0.03),
+                                                transform: "translateY(-2px)",
+                                                boxShadow: `0 6px 24px ${alpha(theme.palette.primary.main, 0.16)}, 0 0 0 3px ${alpha(theme.palette.primary.main, 0.08)}`,
+                                                "& .MuiOutlinedInput-notchedOutline": {
+                                                    borderColor: theme.palette.primary.main,
+                                                    borderWidth: 2,
+                                                },
+                                            },
+                                        },
+                                        "& .MuiInputBase-input": {
+                                            padding: "12px 14px",
+                                            fontWeight: 500,
+                                            color: theme.palette.text.primary,
+                                        },
+                                        "& .MuiOutlinedInput-notchedOutline": {
+                                            borderColor: alpha(theme.palette.divider, 0.3),
+                                            transition: "all 0.2s ease-in-out",
+                                        },
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <DateRangeIcon
+                                                sx={{
+                                                    mr: 1.5,
+                                                    color: theme.palette.primary.main,
+                                                    fontSize: 20,
+                                                    transition: "color 0.2s ease-in-out",
+                                                }}
+                                            />
+                                        ),
+                                    }}
+                                />
+
+                                <Tooltip
+                                    title={vigenciaHasta ? "Limpiar filtro de fecha" : "No hay filtros aplicados"}
+                                    arrow
+                                    TransitionComponent={Fade}
+                                    TransitionProps={{ timeout: 200 }}
+                                >
+                                    <span>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            startIcon={<ClearIcon sx={{ fontSize: 16 }} />}
+                                            onClick={() => setVigenciaHasta("")}
+                                            disabled={!vigenciaHasta}
+                                            sx={{
+                                                minWidth: 100,
+                                                height: 40,
+                                                borderRadius: 1.5,
+                                                textTransform: "none",
+                                                fontWeight: 500,
+                                                fontSize: "0.875rem",
+                                                letterSpacing: "0.02em",
+                                                border: `1px solid ${alpha(theme.palette.text.secondary, 0.2)}`,
+                                                color: theme.palette.text.secondary,
+                                                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                "&:hover": {
+                                                    backgroundColor: alpha(theme.palette.error.main, 0.04),
+                                                    borderColor: alpha(theme.palette.error.main, 0.3),
+                                                    color: theme.palette.error.main,
+                                                    transform: "translateY(-1px)",
+                                                    boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.15)}`,
+                                                },
+                                                "&:active": {
+                                                    transform: "translateY(0)",
+                                                },
+                                                "&.Mui-disabled": {
+                                                    backgroundColor: alpha(theme.palette.action.disabled, 0.02),
+                                                    borderColor: alpha(theme.palette.action.disabled, 0.1),
+                                                    color: theme.palette.action.disabled,
+                                                },
+                                            }}
+                                        >
+                                            Limpiar
+                                        </Button>
+                                    </span>
+                                </Tooltip>
+                            </Box>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <KPICard title="Total Disponible" value={currency.format(totalDisponibleGeneralFiltrado)} icon={AttachMoney} color="success" />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <KPICard title="Productos (línea general)" value={cantidadProductosLimiteFiltrado?.toLocaleString()} icon={TrendingUp} color="warning" />
+                    </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        {datosBarraLimites.length > 0 ? (
+                            <GraficoBarraApexDetalle
+                                datos={datosBarraLimites}
+                                opciones={opcionesBarraLimites}
+                                titulo="Disponible por cuenta / producto"
+                                usarTooltipNativo={!esMobile}
+                                mostrarValoresEnBarra={false}
+                                cortarEtiquetasCada={18}
+                                tooltipValueFormatter={(v, { category }) => `${currency.format(v)} • Vigencia: ${fechaPorCuenta[category] || ''}`}
+                            />
+                        ) : (
+                            <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                <CardContent>
+                                    <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Typography variant="body2" color="text.secondary">No hay informacion para mostrar</Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </Grid>
+                </Grid>
+            </Box>
+
+            <Box sx={{ my: 4 }}>
+                <Slide in direction="up" timeout={1000}>
+                    <Typography
+                        sx={{
+                            fontSize: { xs: "1rem", md: "1.2rem" },
+                            color: alpha(theme.palette.primary.contrastText, 0.9),
+                            textAlign: "center",
+                            fontWeight: 500,
+                            mb: { xs: 1, xl: 4 },
+                            mt: { xs: 1, xl: 4 },
+                        }}
+                    >
+                        Garantías a Vencer en los próximos 7 días
+                    </Typography>
+                </Slide>
+                <Grid container spacing={2} sx={{ mb: { xs: 2, md: 3, xl: 4 } }}>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <KPICard title="Total Garantías" value={totalGarantias?.toLocaleString()} icon={CheckCircle} color="secondary" />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <KPICard title="Monto Total" value={currency.format(montoTotal)} icon={AttachMoney} color="success" />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <KPICard title="Vencimientos Críticos (3 días)" value={criticosCantidad?.toLocaleString()} icon={WarningAmber} color="warning" />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <KPICard title="Monto en Riesgo (3 días)" value={currency.format(criticosMonto)} icon={TrendingUp} color="error" />
+                    </Grid>
+                </Grid>
+
+                <Grid container spacing={2}>
+                    <Grid item xs={12} xl={7}>
+                        {datosBarra.length > 0 ? (
+                            <GraficoBarraApexDetalle
+                                detalles={detallesBarra}
+                                datos={datosBarra}
+                                opciones={opcionesBarra}
+                                titulo="Garantías por día (Cantidad/Monto)"
+                            />
+                        ) : (
+                            <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                <CardContent>
+                                    <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Typography variant="body2" color="text.secondary">No hay informacion para mostrar</Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </Grid>
+                    <Grid item xs={12} xl={5}>
+                        {datosDona.length > 0 ? (
+                            <GraficoDonaApex
+                                datos={datosDona}
+                                opciones={opcionesDona}
+                                titulo="Por tipo de operación"
+                            />
+                        ) : (
+                            <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                <CardContent>
+                                    <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Typography variant="body2" color="text.secondary">No hay informacion para mostrar</Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </Grid>
+                </Grid>
+            </Box>
+        </>
+    )
+}

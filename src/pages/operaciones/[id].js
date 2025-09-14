@@ -60,11 +60,11 @@ const IdOperacion = () => {
 
   // Datos calculados
   const currentOperation = useMemo(() => {
-    return operaciones?.find((item) => item.id == paramID)
+    return operaciones?.find((item) => String(item.id) === String(paramID))
   }, [operaciones, paramID])
 
   const filteredGarantias = useMemo(() => {
-    return garantiasOP?.filter((item) => item.new_operacionid == paramID) || []
+    return garantiasOP?.filter((item) => String(item.new_operacionid) === String(paramID)) || []
   }, [garantiasOP, paramID])
 
   // const filteredDocumentos = useMemo(() => {
@@ -89,11 +89,14 @@ const IdOperacion = () => {
   }, [operaciones, garantiasOP, documentosOP])
 
   useEffect(() => {
-    debugger
     if (documentosOP?.length > 0) {
-      setFilteredDocumentos(documentosOP?.filter((item) => item.new_operacionid == paramID) || [])
+      setFilteredDocumentos(
+        documentosOP?.filter((item) => String(item.new_operacionid) === String(paramID)) || []
+      )
+    } else {
+      setFilteredDocumentos([])
     }
-  }, [documentosOP])
+  }, [documentosOP, paramID])
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -153,7 +156,7 @@ const IdOperacion = () => {
                 lineHeight: 1.3,
               }}
             >
-              {value || "-"}
+              {value ?? "-"}
             </Typography>
             {subtitle && (
               <Typography
@@ -364,6 +367,7 @@ const IdOperacion = () => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
           <Tooltip title="Volver a operaciones" arrow>
             <IconButton
+              aria-label="Volver a operaciones"
               onClick={() => router.push("/operaciones")}
               sx={{
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),

@@ -1,6 +1,7 @@
 import React from 'react'
 import FormControl from '@mui/material/FormControl';
-import { FormHelperText, useMediaQuery } from '@mui/material';
+import { FormHelperText, useMediaQuery, useTheme, alpha } from '@mui/material';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import {
     Controller,
     useFormState
@@ -13,7 +14,40 @@ const CustomSearchSelectHook = ({ name, lab, value, helperText, rules, options, 
     // const formState = useFormState()
     const [open, setOpen] = React.useState(false);
     const loading = open && options.length === 0;
+    const theme = useTheme()
     const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
+    const paperSx = {
+        borderRadius: 3,
+        overflow: 'hidden',
+        boxShadow: theme.shadows[4],
+        border: `1px solid ${theme.palette.divider}`,
+    }
+    const thumbColor = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.5 : 0.35)
+    const thumbHover = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.7 : 0.5)
+    const trackColor = alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.3 : 0.4)
+    const listboxSx = {
+        maxHeight: 320,
+        padding: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        overscrollBehavior: 'contain',
+        '& li': { padding: '8px 16px' },
+        '&::-webkit-scrollbar': { width: 10, height: 10 },
+        '&::-webkit-scrollbar-thumb': {
+            backgroundColor: thumbColor,
+            borderRadius: 8,
+            border: `2px solid ${trackColor}`,
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: thumbHover,
+        },
+        '&::-webkit-scrollbar-track': {
+            backgroundColor: trackColor,
+            borderRadius: 8,
+        },
+        scrollbarWidth: 'thin',
+        scrollbarColor: `${thumbColor} ${trackColor}`,
+    }
 
     React.useEffect(() => {
         let active = true;
@@ -26,6 +60,44 @@ const CustomSearchSelectHook = ({ name, lab, value, helperText, rules, options, 
     }, [loading]);
 
     return (
+        <>
+        <GlobalStyles styles={(theme) => {
+            const thumbColor = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.5 : 0.35)
+            const thumbHover = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.7 : 0.5)
+            const trackColor = alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.3 : 0.4)
+            return {
+                '.MuiAutocomplete-paper': {
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    boxShadow: theme.shadows[4],
+                    border: `1px solid ${theme.palette.divider}`,
+                },
+                '.MuiAutocomplete-listbox': {
+                    maxHeight: 320,
+                    padding: 0,
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    overscrollBehavior: 'contain',
+                    '& li': { padding: '8px 16px' },
+                    '&::-webkit-scrollbar': { width: 10, height: 10 },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: thumbColor,
+                        borderRadius: 8,
+                        border: `2px solid ${trackColor}`,
+                    },
+                    '&::-webkit-scrollbar-thumb:hover': { backgroundColor: thumbHover },
+                    '&::-webkit-scrollbar-track': { backgroundColor: trackColor, borderRadius: 8 },
+                    // Oculta flechas de arriba/abajo del scrollbar en WebKit
+                    '&::-webkit-scrollbar-button': {
+                        width: 0,
+                        height: 0,
+                        display: 'none',
+                    },
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: `${thumbColor} ${trackColor}`,
+                },
+            }
+        }} />
         <Autocomplete
             open={open}
             onOpen={() => { setOpen(true) }}
@@ -38,6 +110,16 @@ const CustomSearchSelectHook = ({ name, lab, value, helperText, rules, options, 
             color="success"
             fullWidth
             size={esPantallaChica ? 'small' : 'medium'}
+            slotProps={{
+                paper: { sx: paperSx },
+                listbox: { sx: listboxSx },
+                popper: { sx: { zIndex: 1300 } },
+            }}
+            componentsProps={{
+                paper: { sx: paperSx },
+                listbox: { sx: listboxSx },
+                popper: { sx: { zIndex: 1300 } },
+            }}
             renderInput={(params) => (
                 <TextField
                     {...params}
@@ -58,6 +140,7 @@ const CustomSearchSelectHook = ({ name, lab, value, helperText, rules, options, 
                 />
             )}
         />
+        </>
     )
 }
 

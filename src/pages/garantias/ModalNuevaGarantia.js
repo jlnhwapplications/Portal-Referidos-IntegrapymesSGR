@@ -41,6 +41,7 @@ import {
   Tooltip,
   Skeleton,
 } from "@mui/material"
+import { stepConnectorClasses } from "@mui/material/StepConnector"
 import {
   Close,
   Security,
@@ -73,6 +74,7 @@ import CustomCurrencyField from "@/@core/components/customFields/CustomCurrencyF
 import { cargarECheck } from '@/redux/Garantias';
 import { useDropzone } from "react-dropzone"
 import { useDispatch } from "react-redux"
+import { ValidateCUITCUIL } from "@/utils/validators"
 // Esquemas de validación optimizados
 
 // const createValidationSchemas = (tipoCarga) => {
@@ -244,37 +246,44 @@ const tasaValue = (value) => {
 
 const periocidadDePagoValue = (value) => {
   switch (value) {
-    case "100000000":
-      return "MENSUAL"
     case "100000001":
-      return "BIMESTRAL"
+      return "MENSUAL"
     case "100000002":
-      return "TRIMESTRAL"
+      return "BIMESTRAL"
     case "100000003":
-      return "CUATRIMESTRAL"
+      return "TRIMESTRAL"
     case "100000004":
-      return "SEMESTRAL"
+      return "CUATRIMESTRAL"
     case "100000005":
-      return "ANUAL"
+      return "SEMESTRAL"
     case "100000006":
-      return "OTRO"
+      return "ANUAL"
     case "100000007":
+      return "OTRO"
+    case "100000008":
       return "PAGO UNICO"
     default:
-      return "FIJA"
+      return ""
   }
 }
 
+// Constantes
+const MAX_FILE_SIZE = 15 * 1024 * 1024 // 15MB
+
 // Utilidades
-const formatCurrency = (amount, currency = "USD") => {
-  if (!amount && amount !== 0) return "N/A"
+const formatCurrency = (amount, currency = "ARS", opts = {}) => {
+  if (amount === null || amount === undefined || amount === "") return "N/A"
+  const numeric = typeof amount === "string" ? Number(String(amount).replace(/[^\d.-]/g, "")) : amount
+  if (Number.isNaN(numeric)) return "N/A"
+
+  const defaultDecimals = currency === "USD" ? 2 : 0
   const formatter = new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    currency,
+    minimumFractionDigits: opts.minimumFractionDigits ?? defaultDecimals,
+    maximumFractionDigits: opts.maximumFractionDigits ?? defaultDecimals,
   })
-  return formatter.format(amount)
+  return formatter.format(numeric)
 }
 
 const getOptionLabel = (options, value) => {
@@ -387,17 +396,20 @@ const CustomStepIcon = ({ active, completed, icon, className }) => {
 
 // Componente de Stepper Connector personalizado
 const CustomStepConnector = styled(StepConnector)(({ theme }) => ({
-  "& .MuiStepConnector-line": {
+  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+    top: 24, // centra la línea con íconos de ~48px
+  },
+  [`& .${stepConnectorClasses.line}`]: {
     borderColor: alpha(theme.palette.primary.main, 0.3),
     borderTopWidth: 2,
     borderRadius: 1,
     transition: "all 0.3s ease",
   },
-  "&.Mui-active .MuiStepConnector-line": {
+  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line}`]: {
     borderColor: theme.palette.primary.main,
     boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`,
   },
-  "&.Mui-completed .MuiStepConnector-line": {
+  [`&.${stepConnectorClasses.completed} .${stepConnectorClasses.line}`]: {
     borderColor: theme.palette.success.main,
   },
 }))
@@ -600,17 +612,13 @@ const CustomFormField = ({ name, label, required = false, helperText, children, 
 const EnhancedDropzone = ({ files, setFiles }) => {
   const theme = useTheme()
   const [isDragOver, setIsDragOver] = useState(false)
+  const [errorsDrop, setErrorsDrop] = useState([])
 
   const multiple = true
-  const maxSize = 15728640 // 15MB
+  const maxSize = MAX_FILE_SIZE
   const acceptedTypes = {
-    "application/pdf": [".pdf"],
-    "image/*": [".png", ".jpg", ".jpeg"],
-    "application/msword": [".doc"],
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
     "application/vnd.ms-excel": [".xls"], // Excel 97-2003
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], // Excel moderno
-    "text/csv": [".csv"]
   }
 
   const totalSize = useMemo(() => {
@@ -633,7 +641,7 @@ const EnhancedDropzone = ({ files, setFiles }) => {
             file: file.name,
             errors: errors.map((e) => e.message),
           }))
-          setErrors(newErrors)
+          setErrorsDrop(newErrors)
         }
 
         if (acceptedFiles.length > 0) {
@@ -677,6 +685,7 @@ const EnhancedDropzone = ({ files, setFiles }) => {
         },
       }}
     >
+      <input {...getInputProps()} />
       <CloudUpload
         sx={{
           fontSize: 48,
@@ -702,6 +711,14 @@ const EnhancedDropzone = ({ files, setFiles }) => {
           />
         </Zoom>
       )}
+      {errorsDrop.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          {errorsDrop.map((err, idx) => (
+            <Alert key={`${err.file}-${idx}`} severity="error" sx={{ mb: 1 }}>
+              {err.file}: {err.errors.join(", ")}
+            </Alert>
+          ))}
+        </Box>)}
     </Paper>
   )
 }
@@ -884,85 +901,99 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
   //     mode: "onChange",
   //   })
 
-  const createValidationSchemas = (tipoCarga) => {
+  const createUnifiedSchema = (tipoCarga, montoDisponible) => {
     if (tipoCarga === '' || tipoCarga === '100000000') {
-      return [
-        yup.object({}), // Paso 0: Tipo de carga
-        yup.object({
-          tipoDeOperacion: yup.string().required("El tipo de operación es requerido"),
-          acreedor: yup.object({
-            value: yup.string().required("El acreedor es requerido"),
-          }),
-          montoBruto: yup.number().min(1, "El monto debe ser mayor a 0").required("El monto es requerido"),
-          fechaVencimiento: yup.mixed().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion != "11"
-              ? yup.date().min(new Date(), "La fecha no puede ser menor a hoy").required("La fecha es requerida").nullable()
-              : yup.mixed().notRequired();
-          }),
+      return yup.object({
+        tipoDeOperacion: yup.string().required("El tipo de operación es requerido"),
+        acreedor: yup
+          .mixed()
+          .nullable()
+          .required("El acreedor es requerido"),
+        montoBruto: yup
+          .number()
+          .transform((v, o) => (typeof o === 'string' ? Number(o.replace(/[^\d.-]/g, '')) : v))
+          .typeError("El monto debe ser numérico")
+          .min(1, "El monto debe ser mayor a 0")
+          .test('lte-disponible', 'El monto excede el disponible', (v) => (typeof v === 'number' ? v <= (montoDisponible || Infinity) : false))
+          .required("El monto es requerido"),
+        fechaVencimiento: yup.mixed().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion != "11"
+            ? yup
+              .date()
+              .min(new Date(), "La fecha no puede ser menor a hoy")
+              .required("La fecha es requerida")
+              .nullable()
+            : yup.mixed().notRequired();
         }),
-        yup.object({
-          formatoDelCheque: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion == "4" || tipoDeOperacion == "13"
-              ? yup.string().required("El formato del cheque es requerido")
-              : yup.string().notRequired();
-          }),
-          tasa: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion == "11"
-              ? yup.string().required("La tasa es requerida")
-              : yup.string().notRequired();
-          }),
-          sistemaAmortizacion: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion == "11"
-              ? yup.string().required("El sistema de amortización es requerido")
-              : yup.string().notRequired();
-          }),
-          periocidadDePago: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion == "11"
-              ? yup.string().required("La periodicidad de pago es requerida")
-              : yup.string().notRequired();
-          }),
-          plazoDias: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion == "11"
-              ? yup.string().required("El plazo en meses es requerido")
-              : yup.string().notRequired();
-          }),
-          tipoCHPD: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
-            return tipoDeOperacion != "11"
-              ? yup.string().required("El tipo CHPD es requerido")
-              : yup.string().notRequired();
-          }),
-          razonSocialLibrador: yup.string().when("tipoCHPD", (tipoCHPD) => {
-            return tipoCHPD == "100000001"
-              ? yup.string().required("La razón social del librador es requerida")
-              : yup.string().notRequired();
-          }),
-          cuitLibrador: yup.string().when("tipoCHPD", (tipoCHPD) => {
-            return tipoCHPD == "100000001"
-              ? yup.string().required("El CUIT del librador es requerido")
-              : yup.string().notRequired();
-          }),
+        formatoDelCheque: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion == "4" || tipoDeOperacion == "13"
+            ? yup.string().required("El formato del cheque es requerido")
+            : yup.string().notRequired();
         }),
-        yup.object({}), // Paso 3: Confirmación
-      ];
-    } else {
-      return [
-        yup.object({}), // Paso 0
-        yup.object({}), // Paso 1
-        yup.object({}), // Paso 2
-        yup.object({}), // Paso 3
-      ];
+        tasa: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion == "11"
+            ? yup.string().required("La tasa es requerida")
+            : yup.string().notRequired();
+        }),
+        sistemaAmortizacion: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion == "11"
+            ? yup.string().required("El sistema de amortización es requerido")
+            : yup.string().notRequired();
+        }),
+        periocidadDePago: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion == "11"
+            ? yup.string().required("La periodicidad de pago es requerida")
+            : yup.string().notRequired();
+        }),
+        plazoDias: yup.mixed().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion == "11"
+            ? yup
+              .number()
+              .transform((v, o) => (typeof o === 'string' ? Number(o.replace(/[^\d.-]/g, '')) : v))
+              .typeError("El plazo en meses es requerido")
+              .integer("El plazo debe ser un número entero")
+              .min(1, "Debe ser mayor a 0")
+              .required("El plazo en meses es requerido")
+            : yup.mixed().notRequired();
+        }),
+        tipoCHPD: yup.string().when("tipoDeOperacion", (tipoDeOperacion) => {
+          return tipoDeOperacion != "11"
+            ? yup.string().required("El tipo CHPD es requerido")
+            : yup.string().notRequired();
+        }),
+        razonSocialLibrador: yup.string().when("tipoCHPD", (tipoCHPD) => {
+          return tipoCHPD == "100000001"
+            ? yup.string().required("La razón social del librador es requerida")
+            : yup.string().notRequired();
+        }),
+        cuitLibrador: yup.string().when("tipoCHPD", (tipoCHPD) => {
+          return tipoCHPD == "100000001"
+            ? yup
+              .string()
+              .matches(/^[0-9]{11}$/, "El CUIT debe tener 11 dígitos")
+              .required("El CUIT del librador es requerido")
+            : yup.string().notRequired();
+        }),
+        numeroCheque: yup
+          .string()
+          .nullable()
+          .test('valid-nro', 'Número de cheque inválido', (v) => !v || /^[0-9]{6,20}$/.test(String(v))),
+        observaciones: yup.string().nullable(),
+      })
     }
-  };
+    // Carga masiva: validación del formulario no aplica (se valida archivo por UI)
+    return yup.object({})
+  }
 
-  const validationSchemas = useMemo(
-    () => createValidationSchemas(tipoCarga),
-    [tipoCarga] // 🔹 se recalcula cuando cambia tipoCarga
-  );
+  const validationSchema = useMemo(
+    () => createUnifiedSchema(tipoCarga, montoDisponible),
+    [tipoCarga, montoDisponible]
+  )
 
   const methods = useForm({
     shouldUnregister: false,
     defaultValues,
-    resolver: yupResolver(validationSchemas[activeStep]),
+    resolver: yupResolver(validationSchema),
     mode: "onChange",
   });
 
@@ -1035,18 +1066,39 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
   // }, [tipoDeOperacion, setValue, watch, formDataPersistence])
 
   const handleNext = useCallback(async () => {
-    debugger
     if (activeStep === 0 && !tipoCarga) return
 
-    const esPasoValido = await trigger()
-    if (!esPasoValido) return
+    // Validación por paso y tipo de carga
+    let fieldsToValidate = []
+    if (tipoCarga === '100000000') {
+      if (activeStep === 1) {
+        const op = watch('tipoDeOperacion')
+        fieldsToValidate = ['tipoDeOperacion', 'acreedor', 'montoBruto']
+        if (op !== '11') fieldsToValidate.push('fechaVencimiento')
+      } else if (activeStep === 2) {
+        const op = watch('tipoDeOperacion')
+        if (op === '11') {
+          fieldsToValidate = ['tasa', 'plazoDias', 'periocidadDePago', 'sistemaAmortizacion']
+        } else {
+          fieldsToValidate = ['tipoCHPD']
+          if (op === '4' || op === '13') fieldsToValidate.push('formatoDelCheque')
+        }
+      }
+    } else if (tipoCarga === '100000001') {
+      // Carga masiva: solo asegurar archivo en paso 1 (ya se deshabilita botón, pero reafirmamos)
+      if (activeStep === 1 && files.length === 0) return
+    }
 
-    // Save current step data before moving to next
+    if (fieldsToValidate.length > 0) {
+      const esPasoValido = await trigger(fieldsToValidate)
+      if (!esPasoValido) return
+    }
+
+    // Guardar data del paso actual y avanzar
     const currentData = watch()
     setFormDataPersistence((prev) => ({ ...prev, ...currentData }))
-
     setActiveStep((prev) => prev + 1)
-  }, [activeStep, tipoCarga, trigger, watch])
+  }, [activeStep, tipoCarga, trigger, watch, files])
 
   const handleBack = useCallback(() => {
     const currentData = watch()
@@ -1097,7 +1149,7 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
         }
       }
 
-      if (tipoDeOperacion === "13" || tipoDeOperacion === "17") {
+      if (tipoDeOperacion === "17") {
         datos.formatoDelCheque = ""
       }
       createGarantia(datos, referido?.accountid, token, toast)
@@ -1126,7 +1178,7 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
       }
       const formData = new FormData();
       for (let index = 0; index < files.length; index++) {
-        if (files[index].size >= 15000000) {
+        if (files[index].size > MAX_FILE_SIZE) {
           toast.error('El archivo no puede superar los 15 megas');
           setFiles([])
           return
@@ -1331,6 +1383,7 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
                             label="Monto Bruto"
                             rules={{ required: "Required!" }}
                             req="true"
+                            labelPlacement="external"
                           />
                           {/* <CustomFormField
                             name="montoBruto"
@@ -1378,6 +1431,7 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
                                     <DesktopDatePicker
                                       {...field}
                                       views={["day", "month", "year"]}
+                                      minDate={moment()}
                                       renderInput={(params) => (
                                         <TextField
                                           {...params}
@@ -1807,25 +1861,29 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
                           Tipo de Operación: {OPTIONS.tipoDeOperacion.find((op) => op.value === tipoDeOperacion)?.label}
                         </Typography>
                         <Typography variant="body2">Acreedor: {watch("acreedor")?.label}</Typography>
-                        <Typography variant="body2">Monto: {formatCurrency(watch("montoBruto")?.toLocaleString(), 'USD')}</Typography>
+                        <Typography variant="body2">Monto: {formatCurrency(Number(watch("montoBruto")), 'ARS')}</Typography>
                         {tipoDeOperacion === "11" &&
                           (
                             <>
                               <Typography variant="body2">tasa: {tasaValue(watch("tasa"))}</Typography>
                               <Typography variant="body2">Plazo en meses: {(watch("plazoDias")?.toLocaleString())}</Typography>
                               <Typography variant="body2">Sistema de Amortizacion: {sistemaAmortizacionValue(watch("sistemaAmortizacion")?.toLocaleString())}</Typography>
-                              <Typography variant="body2">Periocidad de Pago: {periocidadDePagoValue(watch("periocidadDePago")?.toLocaleString())}</Typography>
+                              <Typography variant="body2">Periocidad de Pago: {OPTIONS.periocidadDePago.find((p) => p.value === watch("periocidadDePago"))?.label || ''}</Typography>
                             </>
                           )
                         }
                         {tipoDeOperacion !== "11" &&
                           (
                             <>
-                              <Typography variant="body2">Tipo CHPD: {watch("tipoCHPD")?.toLocaleString()}</Typography>
+                              <Typography variant="body2">Tipo CHPD: {OPTIONS.tipoCHPD.find((t) => t.value === watch("tipoCHPD"))?.label || ''}</Typography>
                               {watch("razonSocialLibrador") ? (<Typography variant="body2">Razon Social Librador: {watch("razonSocialLibrador")?.toLocaleString()}</Typography>) : null}
                               {watch("cuitLibrador") ? (<Typography variant="body2">Cuit Librador: {watch("cuitLibrador")?.toLocaleString()}</Typography>) : null}
                               <Typography variant="body2">Formato del cheque: {formatoDelChequeValue(watch("formatoDelCheque")?.toLocaleString())}</Typography>
-                              {watch("fechaVencimiento") ? (<Typography variant="body2">Fecha de Vencimiento:{watch("fechaVencimiento")?.toLocaleString()}</Typography>) : null}
+                              {watch("fechaVencimiento") ? (
+                                <Typography variant="body2">
+                                  Fecha de Vencimiento: {moment(watch("fechaVencimiento")).format("DD-MM-YYYY")}
+                                </Typography>
+                              ) : null}
                             </>
                           )
                         }

@@ -25,10 +25,11 @@ import { Garantias } from "@/context/GetGarantiasContex";
 import TablaCargaMasiva from "../views/garantias/TablaCargaMasiva";
 import GarantiasTabs, { GarantiasStatsBar, TabPanel } from "./GarantiasTabs";
 import GarantiasStatsCards from "./GarantiasStatsCards";
+import GraficoBarraApexDetalle from "@/@core/components/graficos/GraficoBarraApexDetalle";
 
 const GarantiaIndex = () => {
   const { garantias, estadoGarantias, loadingGarantias } = useContext(Garantias);
-  
+
   const [value, setValue] = useState("0");
   const theme = useTheme()
   const isDark = theme.palette.mode === "dark"
@@ -62,7 +63,7 @@ const GarantiaIndex = () => {
     const monto = Number(garantia.new_monto) || 0;
     return acumulador + monto;
   }, 0);
-  
+
   // Filtrar garantías por estado para cada pestaña
   const filteredGarantias = useMemo(() => {
     switch (activeTab) {
@@ -124,11 +125,11 @@ const GarantiaIndex = () => {
               sx={{
                 backgroundColor: alpha(theme.palette[color].main, 0.1),
                 color: theme.palette[color].main,
-                width: {xs: 40, xl: 56},
-                height: {xs: 40, xl: 56},
+                width: { xs: 40, xl: 56 },
+                height: { xs: 40, xl: 56 },
               }}
             >
-              <Icon sx={{ fontSize: {xs: 18, xl: 28}  }} />
+              <Icon sx={{ fontSize: { xs: 18, xl: 28 } }} />
             </Avatar>
             {trend && (
               <Chip
@@ -142,7 +143,7 @@ const GarantiaIndex = () => {
           <Box flex={1} display="flex" flexDirection="column" justifyContent="center" sx={{ mt: 2 }}>
             <Typography
               sx={{
-                fontSize: {xs: 22, xl: 26},
+                fontSize: { xs: 22, xl: 26 },
                 fontWeight: 700,
                 color: theme.palette[color].main,
                 mb: 1,
@@ -153,7 +154,7 @@ const GarantiaIndex = () => {
             </Typography>
             <Typography
               sx={{
-                fontSize: {xs: 18, xl: 20},
+                fontSize: { xs: 18, xl: 20 },
                 fontWeight: 600,
                 color: theme.palette.text.primary,
                 mb: 0.5,
@@ -164,7 +165,7 @@ const GarantiaIndex = () => {
             {subtitle && (
               <Typography
                 sx={{
-                  fontSize: {xs: 12, xl: 14},
+                  fontSize: { xs: 12, xl: 14 },
                   color: theme.palette.text.secondary,
                   lineHeight: 1.4,
                 }}
@@ -317,7 +318,23 @@ const GarantiaIndex = () => {
                     {/* <CircularProgress /> */}
                     <Skeleton variant="rounded" animation="wave" width="100%" height={180} />
                   </Box>
-                </Grid> : <GraficoBarraApex datos={estadoGarantias} titulo="Estadios de las Garantías" />
+                </Grid> :
+                estadoGarantias?.length > 0 ?
+                  <GraficoBarraApexDetalle
+                    datos={estadoGarantias}
+                    // opciones={opcionesBarraLimites}
+                    titulo="Estadios de las Garantías"
+                    usarTooltipNativo
+                    mostrarValoresEnBarra={true}
+                    // cortarEtiquetasCada={18}
+                    tooltipValueFormatter={(v, { category }) => `${currency.format(v)}`}
+                  /> : <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                    <CardContent>
+                      <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">No hay informacion para mostrar</Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
             }
           </Grid>
           <Grid item xs={12} md={12} xl={6}>
@@ -328,8 +345,18 @@ const GarantiaIndex = () => {
                     {/* <CircularProgress /> */}
                     <Skeleton variant="rounded" animation="wave" width="100%" height={180} />
                   </Box>
-                </Grid> : <GraficoDonaApex datos={estadoGarantias} titulo="Estadios de las Garantías" />
+                </Grid> :
+                estadoGarantias?.length > 0 ?
+                  <GraficoDonaApex datos={estadoGarantias} titulo="Estadios de las Garantías" />
+                  : <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                    <CardContent>
+                      <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">No hay informacion para mostrar</Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
             }
+
           </Grid>
         </Grid>
       </Box>

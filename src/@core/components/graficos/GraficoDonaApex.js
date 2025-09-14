@@ -2,19 +2,20 @@ import React, { useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types';
 import Chart from 'src/@core/components/react-apexcharts'
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  Box,
-  Typography,
-  FormControl,
-  Select,
-  MenuItem,
-  Chip,
-  IconButton,
-  Tooltip,
-  Avatar,
-  Grid,
+    Card,
+    CardContent,
+    CardHeader,
+    Box,
+    Typography,
+    FormControl,
+    Select,
+    MenuItem,
+    Chip,
+    IconButton,
+    Tooltip,
+    Avatar,
+    Grid,
+    useMediaQuery,
 } from "@mui/material"
 import { useTheme } from '@mui/material/styles';
 import { PieChart as PieChartIcon, Download as DownloadIcon, Refresh as RefreshIcon } from "@mui/icons-material"
@@ -23,12 +24,13 @@ const colors = ["rgb(84, 230, 0)", "rgb(255, 45, 0)", "rgb(255, 163, 25)", "rgb(
     "rgb(255, 45, 0)", "rgb(243, 156, 18)", "rgb(87, 124, 96)", "rgb(77, 103, 117)", "rgb(239, 226, 152)"]
 
 const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo = "Distribución de datos", colors = [],
-    onRefresh, onExport }) => {
+    onRefresh, onExport, tooltipValueFormatter = null }) => {
     // const isDark = theme.palette.mode === "dark"
     const [datosGrafico, setDatosGraficos] = React.useState([])
     const [opcion, setOpcion] = React.useState([])
     const theme = useTheme();
     const isDark = theme.palette.mode === "dark"
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'))
 
     useEffect(() => {
         setDatosGraficos(datos)
@@ -210,9 +212,7 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
                     fontWeight: 600,
                     colors: ["#ffffff"],
                 },
-                formatter: (val, opts) => {
-                    return val.toFixed(1) + "%"
-                },
+                formatter: (val, opts) => val.toFixed(1) + "%",
                 dropShadow: {
                     enabled: true,
                     top: 1,
@@ -227,31 +227,42 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
             },
             tooltip: {
                 theme: isDark ? "dark" : "light",
+                followCursor: true,
                 style: {
                     fontSize: "12px",
                     fontFamily: theme.typography.fontFamily,
                 },
                 y: {
-                    formatter: (val) => val.toLocaleString() + " unidades",
+                    formatter: (val, opts) => {
+                        try {
+                            if (typeof tooltipValueFormatter === 'function') {
+                                const ctx = {
+                                    category: opts?.w?.globals?.labels?.[opts?.dataPointIndex],
+                                    seriesIndex: opts?.seriesIndex,
+                                    dataPointIndex: opts?.dataPointIndex,
+                                    w: opts?.w,
+                                    opcion
+                                }
+                                return tooltipValueFormatter(val, ctx)
+                            }
+                        } catch (_) { }
+                        return opcion === 'Monto' ? new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(val) : val.toLocaleString() + ' unidades'
+                    },
                 },
-                custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+                custom: ({ series, seriesIndex, w }) => {
                     const value = series[seriesIndex]
                     const label = w.globals.labels[seriesIndex]
-                    const percentage = ((value / series.reduce((a, b) => a + b, 0)) * 100).toFixed(1)
+                    const total = series.reduce((a, b) => a + b, 0)
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
+                    const formatted = (opcion === 'Monto'
+                        ? new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value)
+                        : `${value.toLocaleString()}`)
 
                     return `
-          <div style="padding: 12px; border-radius: 8px; background: ${isDark ? "rgba(30, 37, 63, 0.95)" : "rgba(255, 255, 255, 0.95)"
-                        }; border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"
-                        }; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-            <div style="font-weight: 600; color: ${theme.palette.text.primary}; margin-bottom: 4px;">
-              ${label}
-            </div>
-            <div style="font-weight: 700; font-size: 16px; color: ${chartColors[seriesIndex]};">
-              ${value.toLocaleString()} unidades
-            </div>
-            <div style="font-size: 12px; color: ${theme.palette.text.secondary}; margin-top: 4px;">
-              ${percentage}% del total
-            </div>
+          <div style="padding: 12px; border-radius: 8px; background: ${isDark ? 'rgba(30, 37, 63, 0.95)' : 'rgba(255, 255, 255, 0.95)'}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div style="font-weight: 600; color: ${theme.palette.text.primary}; margin-bottom: 4px;">${label}</div>
+            <div style="font-weight: 700; font-size: 16px; color: ${chartColors[seriesIndex]};">${formatted}</div>
+            <div style="font-size: 12px; color: ${theme.palette.text.secondary}; margin-top: 4px;">${percentage}% del total</div>
           </div>
         `
                 },
@@ -369,9 +380,10 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
         <Card
             sx={{
                 borderRadius: 4,
-                background: isDark
-                    ? "linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)"
-                    : "linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)",
+                backgroundColor: theme.palette.background.main,
+                // background: isDark
+                //     ? "linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)"
+                //     : "linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)",
                 border: `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)"}`,
                 boxShadow: isDark ? "0 8px 32px rgba(0, 0, 0, 0.3)" : "0 8px 32px rgba(0, 0, 0, 0.08)",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -384,7 +396,7 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
             <CardHeader
                 sx={{ pb: 2 }}
                 title={
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                             <Box
                                 sx={{
@@ -394,9 +406,11 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    width: { xs: 32, sm: 40 },
+                                    height: { xs: 32, sm: 40 },
                                 }}
                             >
-                                <PieChartIcon sx={{ color: theme.palette.primary.main, fontSize: 24 }} />
+                                <PieChartIcon sx={{ color: theme.palette.primary.main, fontSize: { xs: 20, sm: 24 } }} />
                             </Box>
                             <Box>
                                 <Typography
@@ -405,22 +419,23 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
                                         fontWeight: 700,
                                         color: theme.palette.text.primary,
                                         mb: 0.5,
+                                        fontSize: { xs: 16, sm: 18 },
                                     }}
                                 >
                                     {titulo}
                                 </Typography>
                                 {subtitulo && (
-                                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: { xs: 12, sm: 13 } }}>
                                         {subtitulo}
                                     </Typography>
                                 )}
                             </Box>
                         </Box>
 
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: { xs: 'wrap', sm: 'nowrap' }, justifyContent: { xs: 'flex-start', sm: 'flex-end' }, alignSelf: { xs: 'stretch', sm: 'auto' }, width: { xs: '100%', sm: 'auto' } }}>
                             {/* Selector de opciones */}
                             {opciones?.length > 0 && (
-                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                                <FormControl size="small" sx={{ minWidth: { xs: 140, sm: 160 } }} fullWidth={isXs}>
                                     <Select
                                         value={opcion}
                                         onChange={handleChange}
@@ -445,7 +460,7 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
 
                             {/* Chip con total */}
                             <Chip
-                                label={`Total: ${total.toLocaleString()}`}
+                                label={isXs ? `${total.toLocaleString()}` : `Total: ${total.toLocaleString()}`}
                                 size="small"
                                 sx={{
                                     backgroundColor: theme.palette.primary.main + "20",
@@ -457,7 +472,7 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
                             {/* Botones de acción */}
                             {onRefresh && (
                                 <Tooltip title="Actualizar datos">
-                                    <IconButton onClick={onRefresh} size="small">
+                                    <IconButton onClick={onRefresh} size="small" aria-label="Actualizar datos">
                                         <RefreshIcon />
                                     </IconButton>
                                 </Tooltip>
@@ -465,7 +480,7 @@ const GraficoDonaApex = ({ datos, opciones, titulo, opcionPrincipal, subtitulo =
 
                             {onExport && (
                                 <Tooltip title="Exportar datos">
-                                    <IconButton onClick={onExport} size="small">
+                                    <IconButton onClick={onExport} size="small" aria-label="Exportar datos">
                                         <DownloadIcon />
                                     </IconButton>
                                 </Tooltip>

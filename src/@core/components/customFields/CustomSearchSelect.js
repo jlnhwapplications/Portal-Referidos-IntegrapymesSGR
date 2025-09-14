@@ -1,4 +1,5 @@
-import { FormHelperText, useMediaQuery, useTheme } from "@mui/material";
+import { FormHelperText, useMediaQuery, useTheme, alpha } from "@mui/material";
+import GlobalStyles from "@mui/material/GlobalStyles";
 import Autocomplete from "@mui/material/Autocomplete";
 import CircularProgress from "@mui/material/CircularProgress";
 import FormControl from "@mui/material/FormControl";
@@ -27,6 +28,38 @@ const CustomSearchSelect = ({
   const loading = open && options.length === 0;
   const theme = useTheme()
   const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
+  const paperSx = {
+    borderRadius: 3,
+    overflow: 'hidden',
+    boxShadow: theme.shadows[4],
+    border: `1px solid ${theme.palette.divider}`,
+  }
+  const thumbColor = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.5 : 0.35)
+  const thumbHover = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.7 : 0.5)
+  const trackColor = alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.3 : 0.4)
+  const listboxSx = {
+    maxHeight: 320,
+    padding: 0,
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    overscrollBehavior: 'contain',
+    '& li': { padding: theme.spacing(1, 2) },
+    '&::-webkit-scrollbar': { width: 10, height: 10 },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: thumbColor,
+      borderRadius: 8,
+      border: `2px solid ${trackColor}`,
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: thumbHover,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: trackColor,
+      borderRadius: 8,
+    },
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${thumbColor} ${trackColor}`,
+  }
 
   React.useEffect(() => {
     let active = true;
@@ -51,9 +84,56 @@ const CustomSearchSelect = ({
           color="success"
           error={Boolean(formState.errors && formState.errors[name])}
         >
+          <GlobalStyles styles={(theme) => {
+            const thumbColor = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.5 : 0.35)
+            const thumbHover = alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.7 : 0.5)
+            const trackColor = alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.3 : 0.4)
+            return {
+              '.MuiAutocomplete-paper': {
+                borderRadius: 3,
+                overflow: 'hidden',
+                boxShadow: theme.shadows[4],
+                border: `1px solid ${theme.palette.divider}`,
+              },
+              '.MuiAutocomplete-listbox': {
+                maxHeight: 320,
+                padding: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                overscrollBehavior: 'contain',
+                '& li': { padding: theme.spacing(1, 2) },
+                '&::-webkit-scrollbar': { width: 10, height: 10 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: thumbColor,
+                  borderRadius: 8,
+                  border: `2px solid ${trackColor}`,
+                },
+                '&::-webkit-scrollbar-thumb:hover': { backgroundColor: thumbHover },
+                '&::-webkit-scrollbar-track': { backgroundColor: trackColor, borderRadius: 8 },
+                // Oculta flechas de arriba/abajo del scrollbar en WebKit
+                '&::-webkit-scrollbar-button': {
+                  width: 0,
+                  height: 0,
+                  display: 'none',
+                },
+                scrollbarWidth: 'thin',
+                scrollbarColor: `${thumbColor} ${trackColor}`,
+              },
+            }
+          }} />
           <Autocomplete
             open={open}
             disabled={disabled}
+            slotProps={{
+              paper: { sx: paperSx },
+              listbox: { sx: listboxSx },
+              popper: { sx: { zIndex: 1300 } },
+            }}
+            componentsProps={{
+              paper: { sx: paperSx },
+              listbox: { sx: listboxSx },
+              popper: { sx: { zIndex: 1300 } },
+            }}
             isOptionEqualToValue={(option, value) => option.value === value.value}
             onOpen={() => {
               setOpen(true);
@@ -78,6 +158,13 @@ const CustomSearchSelect = ({
               "& .MuiOutlinedInput-root": {
                 borderRadius: 3,
               },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderRadius: 3,
+              },
+              "& .MuiAutocomplete-paper": {
+                borderRadius: 3,
+                overflow: 'hidden',
+              },
             }}
             renderInput={(params) => (
               <TextField
@@ -87,8 +174,33 @@ const CustomSearchSelect = ({
                 error={Boolean(formState.errors && formState.errors[name])}
                 required={req}
                 placeholder={placeholder}
+                sx={{
+                  // Asegura el borde redondeado del input outlined
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderRadius: 3,
+                  },
+                  '& fieldset': {
+                    borderRadius: 3,
+                  },
+                  // Evita que el borde corte el label cuando está shrink
+                  '& .MuiInputLabel-root': {
+                    zIndex: 1,
+                    '&.MuiInputLabel-shrink': {
+                      px: 0.5,
+                      // backgroundColor: theme.palette.background.paper,
+                      display: 'inline-block',
+                    },
+                    '& .MuiFormLabel-asterisk': {
+                      color: theme.palette.error.dark,
+                    },
+                  },
+                }}
                 InputProps={{
                   ...params.InputProps,
+                  notched: true,
                   endAdornment: (
                     <React.Fragment>
                       {loading ? <CircularProgress color="inherit" size={20} /> : null}
@@ -97,11 +209,9 @@ const CustomSearchSelect = ({
                   ),
                 }}
                 InputLabelProps={{
+                  shrink: true,
                   sx: {
-                    color: theme.palette.text.primary, // color del label
-                    "& .MuiFormLabel-asterisk": {
-                      color: theme.palette.error.dark,
-                    },
+                    color: theme.palette.text.primary,
                   },
                 }}
               />

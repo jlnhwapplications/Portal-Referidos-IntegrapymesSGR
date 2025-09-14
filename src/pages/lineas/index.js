@@ -33,7 +33,7 @@ import PageHeader from "@/@core/components/page-header"
 import useGetLimites from "@/hooks/useGetLimites"
 import LimitCard from "./LimitCard"
 import ApexChartWrapper from '@/@core/styles/libs/react-apexcharts'// Asegúrate de que esta ruta sea correcta
-import { Icon } from "@iconify/react"
+// import { Icon } from "@iconify/react"
 
 const Index = () => {
     const theme = useTheme()
@@ -45,10 +45,9 @@ const Index = () => {
         setActiveTab(newValue)
     }
 
-    useEffect(() => {
-        debugger
-        console.log(limiteGral)
-    }, [limiteGral])
+    // useEffect(() => {
+    //     console.log(limiteGral)
+    // }, [limiteGral])
 
     // Cálculos de KPIs para Líneas
     const kpis = useMemo(() => {
@@ -88,7 +87,7 @@ const Index = () => {
 
     const dollarFormatter = new Intl.NumberFormat("es-AR", {
         style: "currency",
-        currency: "USD",
+        currency: "ARS",
     })
 
     // Configuración de gráficos ApexCharts
@@ -572,8 +571,8 @@ const Index = () => {
                                 <Paper
                                     elevation={isDark ? 6 : 4}
                                     sx={{
-                                        bgcolor: theme.palette.background,
-                                        border: theme.palette.border.default,
+                                        backgroundColor: theme.palette.background.paper,
+                                        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
                                         borderRadius: 3,
                                         overflow: "hidden",
                                         background: isDark
@@ -623,7 +622,7 @@ const Index = () => {
                                                 },
                                                 "&.Mui-selected": {
                                                     color: isDark ? "#64b5f6" : "primary.main",
-                                                    fontWeight: "black",
+                                                    fontWeight: 900,
                                                     background: isDark
                                                         ? "linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(66, 165, 245, 0.1) 100%)"
                                                         : "linear-gradient(135deg, rgba(25, 118, 210, 0.08) 0%, rgba(25, 118, 210, 0.04) 100%)",
@@ -699,7 +698,7 @@ const Index = () => {
                                                 </Box>
                                                 <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                                                     {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                             <AnimatedGrid delay={index * 150}>
                                                                 <LimitCard data={limite} />
                                                             </AnimatedGrid>
@@ -725,7 +724,7 @@ const Index = () => {
 
                                                 <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                                                     {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                             <AnimatedGrid delay={index * 150}>
                                                                 <LimitCard data={limite} />
                                                             </AnimatedGrid>
@@ -753,7 +752,7 @@ const Index = () => {
                                                 </Box>
                                                 <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                                                     {limites?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                             <AnimatedGrid delay={index * 150}>
                                                                 <LimitCard data={limite} />
                                                             </AnimatedGrid>
@@ -779,7 +778,7 @@ const Index = () => {
 
                                                 <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                                                     {limites?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={index}>
+                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                             <AnimatedGrid delay={index * 150}>
                                                                 <LimitCard data={limite} />
                                                             </AnimatedGrid>

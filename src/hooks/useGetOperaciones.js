@@ -28,7 +28,7 @@ const UseGetOperaciones = () => {
 
     const fetchData = (accountid, token) => {
         try {
-            debugger
+            
             dispatch(obtenerOperaciones(referido?.accountid, token))
                 .then(data => {
                     if (data?.length > 0) {
@@ -44,7 +44,7 @@ const UseGetOperaciones = () => {
                                     id: element["new_operacionid"],
                                     new_nrooperacion: element["new_nrooperacion"],
                                     new_name: element["new_name"],
-                                    new_fechadeenvio: element["new_fechadeenvio"] ? moment(new Date(element["new_fechadeenvio"])).format('DD/MM/yyyy') : '',
+                                    new_fechadeenvio: element["new_fechadeenvio"] ? moment(new Date(element["new_fechadeenvio"])).format('DD/MM/YYYY') : '',
                                     new_destinodefondo: element["_new_destinodefondo_value@OData.Community.Display.V1.FormattedValue"],
                                     new_montototalcomision: element["new_montototalcomision@OData.Community.Display.V1.FormattedValue"],
                                     new_acreedor: element["_new_acreedor_value@OData.Community.Display.V1.FormattedValue"],
@@ -59,8 +59,8 @@ const UseGetOperaciones = () => {
                                     new_montototal: element["new_montototal"],
                                     createdon: element["createdon@OData.Community.Display.V1.FormattedValue"],
                                     fechaCreacion:  new Date(element["createdon"]),
-                                    fechaCreacion_str: element["createdon"] ? moment(new Date(element["createdon"])).format('DD/MM/yyyy') : '',
-                                    new_fechadeinstrumentacion: element["new_fechadeinstrumentacion"] ? moment(new Date(element["new_fechadeinstrumentacion"])).format('DD/MM/yyyy') : '',
+                                    fechaCreacion_str: element["createdon"] ? moment(new Date(element["createdon"])).format('DD/MM/YYYY') : '',
+                                    new_fechadeinstrumentacion: element["new_fechadeinstrumentacion"] ? moment(new Date(element["new_fechadeinstrumentacion"])).format('DD/MM/YYYY') : '',
                                     new_cantidadgarantias: element["new_cantidadgarantias"],
                                     new_montodelaoperacion: element["new_montodelaoperacion@OData.Community.Display.V1.FormattedValue"],
                                     new_montodelaoperacion_value: element["new_montodelaoperacion"],
@@ -134,7 +134,6 @@ const UseGetOperaciones = () => {
             return new Promise((resolve, reject) => {
                 dispatch(cargarDocumentacionPorOperacion(formData, id, token))
                     .then(() => {
-                        debugger
                         return fetchData("", token);
                     })
                     .then(() => {
