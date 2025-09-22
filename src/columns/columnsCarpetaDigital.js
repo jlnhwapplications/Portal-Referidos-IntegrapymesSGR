@@ -576,76 +576,153 @@ export const columns_carperta_digital_inicio = (theme) => [
     // },
 ]
 
-// export const columns_carperta_digital_inicio = [
-//     {
-//         flex: 0.25,
-//         field: 'new_name',
-//         minWidth: 200,
-//         headerName: 'Documento',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     {/* {renderUserAvatar(row)} */}
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_name}
+//  id: el["new_documentacionporcuentaid"],
+//           new_documentacionporcuentaid: el["new_documentacionporcuentaid"],
+//           new_name: el["new_name"],
+//           socio_nombre: accountName,
+//           new_cuentaid: el["_new_cuentaid_value"] ?? el["new_cuentaid"],
+//           new_cuentaid_formatted:
+//             el["_new_cuentaid_value@OData.Community.Display.V1.FormattedValue"] ?? accountName,
+//           new_documentoid: el["_new_documentoid_value"] ?? el["new_documentoid"],
+//           new_documentoid_value: el["_new_documentoid_value"] ?? el["new_documentoid"],
+//           new_documentoid_formatted:
+//             el["_new_documentoid_value@OData.Community.Display.V1.FormattedValue"] ?? null,
+//           createdon: el["createdon"]
+//             ? moment(new Date(el["createdon"]).toISOString()).format("DD/MM/YYYY")
+//             : "",
+//           createdon_value: el["createdon"] ?? null,
+//           new_fechadevencimiento: el["new_fechadevencimiento"]
+//             ? moment(new Date(el["new_fechadevencimiento"]).toISOString()).format("DD/MM/YYYY")
+//             : "",
+//           new_fechadevencimiento_value: el["new_fechadevencimiento"] ?? null,
+
+// Definición de columnas mejoradas
+//                         <Typography variant="body2" color="text.primary" noWrap>
+//                             {doc.new_documentoid_formatted || doc.new_name || 'Sin dato'}
 //                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'statuscodeNOMBRE',
-//         headerName: 'Estado',
-//         renderCell: ({ row }) => (
-//             <CustomChip
-//                 skin='light'
-//                 label={row.statuscodeNOMBRE}
-//                 color={statusObj[row.statuscodeNOMBRE].color}
-//                 sx={{
-//                     height: 24,
-//                     fontSize: '0.75rem',
-//                     textTransform: 'capitalize',
-//                     '& .MuiChip-label': { fontWeight: 600, lineHeight: 1.4 }
-//                 }}
-//             />
-//         )
-//     },
-//     {
-//         flex: 0.2,
-//         minWidth: 120,
-//         field: 'fechaVencimiento',
-//         headerName: 'Fecha de Vencimiento',
-//         renderCell: ({ row }) => {
-//             return (
-//                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-//                     {/* {renderUserAvatar(row)} */}
-//                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-//                         <Typography
-//                             sx={{
-//                                 mb: -0.5,
-//                                 fontWeight: 600,
-//                                 lineHeight: 1.72,
-//                                 fontSize: '0.875rem',
-//                                 letterSpacing: '0.22px'
-//                             }}
-//                         >
-//                             {row.new_fechadevencimiento}
+//                     </TableCell>
+//                     <TableCell>
+//                         <Typography variant="body2" color="text.secondary" noWrap>
+//                             {doc.socio_nombre || doc.new_cuentaid_formatted || 'Sin dato'}
 //                         </Typography>
-//                     </Box>
-//                 </Box>
-//             )
-//         }
-//     }
-// ]
+//                     </TableCell>
+//                     <TableCell>
+//                         <Typography variant="body2" color="text.secondary">
+//                             {doc.new_fechadevencimiento || 'Sin fecha'}
+//                         </Typography>
+//                     </TableCell>
+//                     <TableCell align="right">
+//                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
+//                             {doc.diasRestantes ?? '-'}
+//                         </Typography>
+export const columns_carperta_digital_dashboard_referidores = (theme) => [
+    {
+        flex: 0.4,
+        field: "doc.new_name",
+        minWidth: 280,
+        headerName: "Documento",
+        renderCell: ({ row }) => {
+            return (
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                        py: 2,
+                        px: 1,
+                    }}
+                >
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Tooltip title={row.new_name}>
+                            <Typography
+                                sx={{
+                                    fontWeight: 600,
+                                    color: theme.palette.text.primary,
+                                    fontSize: { xs: 12, xl: 14 },
+                                    lineHeight: 1.4,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                }}
+                            >
+                                {row.new_name}
+                            </Typography>
+                        </Tooltip>
+                    </Box>
+                </Box>
+            )
+        },
+    },
+    {
+        flex: 0.4,
+        field: "doc.socio_nombre",
+        minWidth: 220,
+        headerName: "Socio",
+        renderCell: ({ row }) => {
+            return (
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                        py: 2,
+                        px: 1,
+                    }}
+                >
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Tooltip title={row.socio_nombre}>
+                            <Typography
+                                sx={{
+                                    fontWeight: 600,
+                                    color: theme.palette.text.primary,
+                                    fontSize: { xs: 12, xl: 14 },
+                                    lineHeight: 1.4,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                }}
+                            >
+                                {row.socio_nombre}
+                            </Typography>
+                        </Tooltip>
+                    </Box>
+                </Box>
+            )
+        },
+    },
+    {
+        flex: 0.4,
+        field: "doc.diasRestantes",
+        minWidth: 120,
+        headerName: "Días restantes",
+        renderCell: ({ row }) => {
+            return (
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                        py: 2,
+                        px: 1,
+                    }}
+                >
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                            sx={{
+                                fontWeight: 600,
+                                color: theme.palette.text.primary,
+                                fontSize: { xs: 12, xl: 14 },
+                                lineHeight: 1.4,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            {row.diasRestantes}
+                        </Typography>
+                    </Box>
+                </Box>
+            )
+        },
+    }
+]

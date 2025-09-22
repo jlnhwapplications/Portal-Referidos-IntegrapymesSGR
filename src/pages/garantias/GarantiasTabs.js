@@ -52,6 +52,8 @@ export default function GarantiasTabs({ activeTab, handleChangeTabs, garantiasCo
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
     const ishightScreen = useMediaQuery('(min-width:1280px) and (max-width:1920px)');
+    const isCompactWidth = useMediaQuery('(max-width: 1366px)');
+    const shouldUseScrollable = isCompactWidth || ishightScreen;
     // Configuración de tabs con iconos y contadores
     const tabsConfig = [
         {
@@ -122,13 +124,16 @@ export default function GarantiasTabs({ activeTab, handleChangeTabs, garantiasCo
                     <TabList
                         value={activeTab}
                         onChange={handleChangeTabs}
-                        scrollButtons="auto"
-                        variant={ishightScreen ? 'scrollable' : 'fullWidth'}
-                        centered={ishightScreen ? false : true}
+                        scrollButtons={shouldUseScrollable ? 'auto' : false}
+                        variant={shouldUseScrollable ? 'scrollable' : 'fullWidth'}
+                        centered={!shouldUseScrollable}
                         allowScrollButtonsMobile
                         aria-label="Garantías Tabs"
                         sx={{
                             minHeight: { xs: 56, sm: 64, md: 72 },
+                            px: { xs: 1, sm: 2, md: 3 },
+                            overflowX: shouldUseScrollable ? 'auto' : 'hidden',
+                            scrollbarWidth: shouldUseScrollable ? 'thin' : 'auto',
                             "& .MuiTabs-flexContainer": {
                                 height: "100%",
                             },
@@ -143,7 +148,9 @@ export default function GarantiasTabs({ activeTab, handleChangeTabs, garantiasCo
                                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                                 position: "relative",
                                 overflow: "hidden",
-                                minWidth: { xs: 120, sm: 140, md: 160 },
+                                minWidth: shouldUseScrollable ? { xs: 140, sm: 160, md: 180 } : { xs: 120, sm: 140, md: 160 },
+                                flex: shouldUseScrollable ? '0 0 auto' : '1 1 auto',
+                                flexShrink: shouldUseScrollable ? 0 : 1,
                                 "&::before": {
                                     content: '""',
                                     position: "absolute",
@@ -219,7 +226,7 @@ export default function GarantiasTabs({ activeTab, handleChangeTabs, garantiasCo
                                                     fontSize: "0.7rem",
                                                     lineHeight: 1,
                                                 }}
-                                            >
+                    >
                                                 {tab.description}
                                             </Typography>
                                         </Box>
@@ -326,7 +333,7 @@ export function GarantiasStatsBar({ stats = {} }) {
                                 bgcolor: alpha(stat.color, 0.1),
                                 color: stat.color,
                             }}
-                        >
+                    >
                             {stat.icon}
                         </Box>
                         <Box>
@@ -346,3 +353,12 @@ export function GarantiasStatsBar({ stats = {} }) {
 
 // Exportar también el TabPanel para uso externo
 export { TabPanel }
+
+
+
+
+
+
+
+
+

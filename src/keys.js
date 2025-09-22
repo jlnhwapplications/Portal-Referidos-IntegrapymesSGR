@@ -7,7 +7,7 @@ const UnidadDeNegocio = `${process.env.NEXT_PUBLIC_UNIDADNEGOCIO}`
 // const RecaptchaKey = "6LeALiAcAAAAABv5WAeRHUmaf5GfqNSBYn8wTKON"; 
 //PARAMETROS
 const onboardingHabilitado = true
-const readOnlyDatos = false
+const readOnlyDatos = true
 const referidorOnboarding = true
 const lufeHabilitado = true
 const DireccionOnbHabilitado = false

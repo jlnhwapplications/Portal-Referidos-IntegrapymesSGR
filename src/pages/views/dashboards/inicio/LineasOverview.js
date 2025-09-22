@@ -18,14 +18,13 @@ const LineasOverview = () => {
   const isDark = theme.palette.mode === "dark"
 
   // Formatear moneda
-  const formatCurrency = (amount, currency = "USD") => {
-    if (!amount && amount !== 0) return "$0"
+  const formatCurrency = (amount, currency = "ARS") => {
+    if (!amount && amount !== 0) return null
     const numAmount = typeof amount === "string" ? Number.parseFloat(amount.replace(/[^\d.-]/g, "")) : amount
     if (isNaN(numAmount)) return amount
-
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
-      currency: currency === "USD" ? "ARS" : "ARS",
+      currency: currency === "USD" ? "USD" : "ARS",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(numAmount)
@@ -188,9 +187,9 @@ const LineasOverview = () => {
               // Determinar el monto y etiqueta según el tipo
               const isGeneral = item.new_lineatipodeoperacion == 100000000
               const amount = isGeneral
-                ? item.new_montodisponiblegeneral_value
-                : item.new_montodisponibleporoperacion_value
-              const amountLabel = isGeneral ? "Monto Disponible General" : "Monto Disp. por Operación"
+                ? item.new_montodisponiblegeneral
+                : item.new_montodisponibleporoperacion
+              const amountLabel = isGeneral ? "Monto Disponible" : "Monto Disponible"
 
               // Simular estado de la línea
               const lineStatus = getLineStatus(amount)
@@ -236,7 +235,7 @@ const LineasOverview = () => {
                             letterSpacing: "0.25px",
                           }}
                         >
-                          {item.new_lineatipodeoperacion}
+                          {item.new_lineatipodeoperacion} - {item.new_tipochpd || ""}
                         </Typography>
                         {/* <Chip
                           label={lineStatus.status}
@@ -294,7 +293,7 @@ const LineasOverview = () => {
                         sx={{
                           fontWeight: 700,
                           color: operationColors.color,
-                          fontSize: {xs: 12, xl: 14},
+                          fontSize: { xs: 12, xl: 14 },
                           lineHeight: 1.2,
                           letterSpacing: "0.22px",
                           mb: 0.5,

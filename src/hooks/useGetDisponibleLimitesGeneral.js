@@ -38,6 +38,8 @@ const useGetDisponibleLimitesGeneral = () => {
         "<filter type='and'>" +
         "<condition attribute='new_lineatipodeoperacion' operator='eq' value='100000000'/>" +
         "<condition attribute='statecode' operator='eq' value='0'/>" +
+        "<condition attribute='statuscode' operator='eq' value='100000001'/>" +
+        "<condition attribute='new_mostrarenportalsocio' operator='eq' value='1'/>" +
         "</filter>" +
         "<link-entity name='account' from='accountid' to='new_cuenta' link-type='inner' alias='ad'>" +
         "<filter type='and'>" +

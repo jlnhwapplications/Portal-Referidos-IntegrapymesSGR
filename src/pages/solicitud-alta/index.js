@@ -259,6 +259,7 @@ const SolicitudAlta = (props) => {
         pais: null,
         destinoLineaDeCredito: null,
         lineaDeCredito: null,
+        Observaciones: ''
     }
 
     const docsValues = {
@@ -444,13 +445,13 @@ const SolicitudAlta = (props) => {
                 return personeria == '100000000' ? yup.string().required() : yup.string().notRequired()
             }),
             condicionImp: yup.object().required(),
-            facturacionIngreso: yup.string().required("Ingresa tu facturacion/ingresos del último año"),
+            // facturacionIngreso: yup.string().required("Ingresa tu facturacion/ingresos del último año"),
             lineaDeCredito: (LineaDeCreditoHabilitado) ? yup.string().required("Ingresa tu línea de crédito") : yup.string().notRequired(),
             destinoLineaDeCredito: (LineaDeCreditoHabilitado) ? yup.object().required() : yup.object().notRequired(),
         }),
         //validacion paso 4
         yup.object({
-            cantidadMujeresDecision: yup.string().required(),
+            // cantidadMujeresDecision: yup.string().required(),
         }),
         //validacion paso 5
         yup.object({}),
@@ -536,6 +537,7 @@ const SolicitudAlta = (props) => {
             pais: null,
             destinoLineaDeCredito: null,
             lineaDeCredito: null,
+            Observaciones: ''
         })
         localStorage.removeItem("docsValues");
         localStorage.removeItem("formValues");

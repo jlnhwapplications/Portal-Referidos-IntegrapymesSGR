@@ -1376,7 +1376,6 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
                             />
                           </CustomFormField>
                         </Grid>
-
                         <Grid item xs={12} sm={6}>
                           <CustomCurrencyField
                             name="montoBruto"
@@ -1414,13 +1413,11 @@ export default function ModalNuevaGarantiaComplete({ open, handleClose, montoDis
                             />
                           </CustomFormField> */}
                         </Grid>
-
                         {tipoDeOperacion !== "11" && (
                           <Grid item xs={12} sm={6}>
                             <CustomFormField
                               name="fechaVencimiento"
                               label="Fecha de Vencimiento"
-                              required
                               error={errors.fechaVencimiento?.message}
                             >
                               <Controller

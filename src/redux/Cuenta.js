@@ -1218,7 +1218,8 @@ export const obtenerEntidadLUFE = (cuit, token) => async (dispatch) => {
     dispatch({
         type: LOADING_ENTIDAD_LUFE
     })
-    axios.get(`https://hw365api.azurewebsites.net/api/lufe/consultarentidad?cuit=${cuit}`,
+    axios.get(`${UrlApi}api/lufe/consultarentidad?cuit=${cuit}`,
+    // axios.get(`https://hw365api.azurewebsites.net/api/lufe/consultarentidad?cuit=${cuit}`,
         {
             headers: {
                 "Authorization": `Bearer ${token}`

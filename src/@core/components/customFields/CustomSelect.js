@@ -13,40 +13,45 @@ const CustomSelect = ({ name, label, value, helperText, options, rules, variant 
     const formState = useFormState()
     const theme = useTheme()
     const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
+    const labelId = `${name}-label`
+    const selectId = `${name}-select`
+
+    const labelBackground = theme.palette.background.paper
+
     return (
         <Controller
             name={name}
             render={({ field: { onChange, onBlur, value, ref } }) => (
                 <FormControl required={required} variant={variant} fullWidth margin="normal" error={Boolean(formState.errors && formState.errors[name])}>
                     <InputLabel
+                        id={labelId}
+                        shrink
                         required
                         sx={{
                             color: theme.palette.text.primary,
-                            bottom: 3,
-                            "& .MuiFormLabel-asterisk": {
+                            // backgroundColor: labelBackground,
+                            px: 0.75,
+                            '& .MuiFormLabel-asterisk': {
                                 color: theme.palette.error.dark,
                             },
                         }}
                     >{label}</InputLabel>
                     <Select
+                        id={selectId}
+                        labelId={labelId}
                         value={value}
                         error={Boolean(formState.errors && formState.errors[name])}
                         label={label}
+                        notched={Boolean(label)}
                         onChange={onChange}
                         onBlur={onBlur}
                         fullWidth
-                        // sx={{
-                        //     borderRadius: 3,
-                        // }}
+                        inputRef={ref}
                         sx={{
                             borderRadius: 3,
-                            ...(esPantallaChica && {
-                                "& .MuiSelect-select": {
-                                    
-                                }
-                            })
                         }}
                         size={esPantallaChica ? 'small' : 'medium'}
+                        {...restProps}
                     >
                         {options?.map((option) => (
                             <MenuItem key={option.value} value={option.value}>
@@ -58,7 +63,6 @@ const CustomSelect = ({ name, label, value, helperText, options, rules, variant 
                 </FormControl>
             )}
             rules={rules}
-            {...restProps}
         />
     )
 }

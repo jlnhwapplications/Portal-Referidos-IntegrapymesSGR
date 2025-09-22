@@ -104,11 +104,13 @@ const UseGetGarantias = () => {
           }
         })
         .catch((error) => {
+          debugger
           setGarantias([]);
           setEstadoGarantias([]);
         });
       // console.log(err)
     } catch (error) {
+      debugger
       console.log(error);
     }
   };
@@ -154,7 +156,6 @@ const UseGetGarantias = () => {
     setCargandoGarantia(true);
 
     return new Promise((resolve, reject) => {
-      debugger;
       dispatch(cargarGarantiaPromise(datos, referido?.accountid, token, toast))
         .then(() => {
           return fetchData(id, token);
@@ -173,7 +174,6 @@ const UseGetGarantias = () => {
   function createECheck(formData, id, token, toast) {
     setCargandoGarantia(true);
     return new Promise((resolve, reject) => {
-      debugger;
       dispatch(cargarECheck(formData, referido?.accountid, token, toast))
         // dispatch(cargarGarantiaPromise(datos, referido?.accountid, token, toast))
         .then(() => {

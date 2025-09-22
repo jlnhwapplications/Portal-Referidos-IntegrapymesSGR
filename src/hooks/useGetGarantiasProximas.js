@@ -60,7 +60,7 @@ const useGetGarantiasProximas = () => {
         { entidad, fetch },
         { headers: { Authorization: `Bearer ${tk}` } }
       );
-      debugger
+
       const data = Array.isArray(response.data) ? response.data : [];
       const formatted = data.map((element) => ({
         id: element["new_garantiaid"],

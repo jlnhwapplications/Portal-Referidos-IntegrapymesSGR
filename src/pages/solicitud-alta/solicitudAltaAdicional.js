@@ -897,7 +897,7 @@ const SolicitudAltaAdicional = (
                                 label="Cant. Mujeres en Puestos de Toma de Decisión"
                                 helperText="Escribe la cantidad"
                                 rules={{ required: "Required!" }}
-                                req="true"
+                                // req="true"
                                 type="number"
                                 variant="outlined"
                             />

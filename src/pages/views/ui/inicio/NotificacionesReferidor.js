@@ -247,7 +247,6 @@ const NotificacionesReferidor = () => {
 
   // Memoized filtered notifications
   const { pendingNotifications, completedNotifications, totalPending } = useMemo(() => {
-    debugger
     if (!notificacionesReferidor) return { pendingNotifications: [], completedNotifications: [], totalPending: 0 }
 
     const pending = notificacionesReferidor.filter(item => item.statecode === 0)
@@ -294,26 +293,6 @@ const NotificacionesReferidor = () => {
       setTimeout(handleDropdownClose, 300)
     }
   }, [router, handleDropdownClose])
-
-  // Handle task completion response
-  // useEffect(() => {
-  //   if (inactivarTareaSelector === "EXITO") {
-  //     setLoadingIds(new Set())
-  //     dispatch(obtenerTareas(referido?.accountid, token))
-  //   } else if (inactivarTareaSelector === "ERROR") {
-  //     setLoadingIds(new Set())
-  //   }
-  // }, [inactivarTareaSelector, dispatch, referido?.accountid, token])
-
-  // useEffect(() => {
-  //   debugger
-  //   if (inactivarTareaSelector === "EXITO") {
-  //     setLoadingIds(new Set())
-  //     dispatch(obtenerTareas(user?.accountid, token))
-  //   } else if (inactivarTareaSelector === "ERROR") {
-  //     setLoadingIds(new Set())
-  //   }
-  // }, [inactivarTareaSelector])
 
   return (
     <Fragment>

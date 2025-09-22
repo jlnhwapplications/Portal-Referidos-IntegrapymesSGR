@@ -18,11 +18,32 @@ const CustomTextField = ({
   disabled = false,
   inputLabelProps = true,
   iconoClose = false,
+  maxLength = 100,
   ...restProps
 }) => {
+  const {
+    multiline = false,
+    minRows: minRowsProp,
+    maxRows: maxRowsProp,
+    inputProps: inputPropsProp,
+    ...forwardProps
+  } = restProps
+
   const formState = useFormState();
   const theme = useTheme()
   const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
+  const resolvedMinRows = multiline ? (minRowsProp ?? rows) : undefined
+  const resolvedMaxRows = multiline ? maxRowsProp : undefined
+  const resolvedInputProps = React.useMemo(() => {
+    if (inputPropsProp || typeof maxLength === 'number') {
+      return {
+        ...(inputPropsProp || {}),
+        ...(typeof maxLength === 'number' ? { maxLength } : {}),
+      }
+    }
+    return undefined
+  }, [inputPropsProp, maxLength])
+
   return (
     <Controller
       name={name}
@@ -33,7 +54,9 @@ const CustomTextField = ({
           onChange={onChange}
           onBlur={onBlur}
           value={value}
-          rows={rows}
+          rows={!multiline ? rows : undefined}
+          minRows={resolvedMinRows}
+          maxRows={resolvedMaxRows}
           ref={ref}
           error={Boolean(formState.errors && formState.errors[name])}
           helperText={formState.errors[name] ? helperText : null}
@@ -41,7 +64,7 @@ const CustomTextField = ({
           variant="outlined"
           fullWidth
           required={req}
-          multiline={restProps.multiline}
+          multiline={multiline}
           disabled={disabled}
           size={esPantallaChica ? 'small' : 'medium'}
           sx={{
@@ -50,7 +73,8 @@ const CustomTextField = ({
               borderRadius: 3,
             },
           }}
-          {...restProps}
+          inputProps={resolvedInputProps}
+          {...forwardProps}
           InputProps={{
             readOnly: readOnly,
             endAdornment,
@@ -82,3 +106,4 @@ const CustomTextField = ({
 };
 
 export default CustomTextField;
+

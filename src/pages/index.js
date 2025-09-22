@@ -25,6 +25,7 @@ import {
     useMediaQuery,
     Skeleton,
     Paper,
+    CardHeader,
 } from "@mui/material";
 import React, { Fragment, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { AuthContext } from "@/context/AuthContext";
@@ -57,8 +58,9 @@ import {
     FilterList as FilterIcon,
     CalendarToday as CalendarIcon,
     Clear as ClearIcon,
-    DateRange as DateRangeIcon
+    DateRange as DateRangeIcon,
 } from "@mui/icons-material"
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import { useSettings } from "@/@core/hooks/useSettings";
 import { useRouter } from "next/router";
 import NotificationDropdown from "@/@core/layouts/components/shared-components/NotificationDropdown";
@@ -69,7 +71,10 @@ import GraficoBarraApexDetalle from "@/@core/components/graficos/GraficoBarraApe
 import GraficoDonaApex from "@/@core/components/graficos/GraficoDonaApex";
 import useGetGarantiasProximas from "@/hooks/useGetGarantiasProximas";
 import useGetDisponibleLimitesGeneral from "@/hooks/useGetDisponibleLimitesGeneral";
+import useGetDocumentacionPorCuentaPendiente from "@/hooks/useGetDocumentacionPorCuentaPendiente";
 import { CheckCircle, WarningAmber } from "@mui/icons-material";
+import Table from "@/@core/components/table/Table";
+import { columns_carperta_digital_dashboard_referidores } from "@/columns/columnsCarpetaDigital";
 
 // Animated Background Component
 const AnimatedBackground = ({ isDark }) => {
@@ -302,7 +307,10 @@ const FiltersCard = ({
                         <Grid item xs={12} md={8}>
                             <Stack direction="row" spacing={1} flexWrap="wrap">
                                 {statusOptions?.map((option) => (
-                                    <Tooltip key={option.value} title={`Filtrar por ${option.label.toLowerCase()}`} arrow>
+                                    <Tooltip
+                                        key={option.value}
+                                        title={<Typography sx={{color: '#fff'}} fontSize={'0.9rem'}>{`Filtrar por ${option.label.toLowerCase()}. ${option.descEstado}`}</Typography>}
+                                        arrow>
                                         <Chip
                                             label={`${option.label} (${option.count})`}
                                             onClick={() => setStatusFilter(option.value)}
@@ -326,6 +334,7 @@ const FiltersCard = ({
                                                     boxShadow: theme.shadows[6],
                                                 },
                                             }}
+                                        // icon={<QuestionMarkIcon fontSize="10" />}    
                                         />
                                     </Tooltip>
                                 ))}
@@ -399,7 +408,7 @@ const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig, limi
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     sx={{
-                        height: viewMode === "grid" ? 320 : 200,
+                        height: viewMode === "grid" ? 320 : 220,
                         display: "flex",
                         flexDirection: viewMode === "grid" ? "column" : { xs: "column", sm: "row" },
                         borderRadius: 3,
@@ -734,31 +743,36 @@ const Index = () => {
     const totalPages = Math.ceil(filteredData.length / itemsPerPage)
 
     const statusOptions = useMemo(() => [
-        { value: "all", label: "Todos los estados", count: referidos?.length || 0 },
-        {
-            value: "100000000",
-            label: "Activo",
-            count: referidos?.filter((r) => r.new_estadodelsocio === 100000000).length || 0,
-        },
-        {
-            value: "100000001",
-            label: "Alta Pendiente",
-            count: referidos?.filter((r) => r.new_estadodelsocio === 100000001).length || 0,
-        },
-        {
-            value: "100000006",
-            label: "Pendiente de firma",
-            count: referidos?.filter((r) => r.new_estadodelsocio === 100000006).length || 0,
-        },
+        { value: "all", label: "Todos los estados", count: referidos?.length || 0, descEstado: "" },
         {
             value: "100000002",
             label: "Inicial",
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000002).length || 0,
+            descEstado: "La pyme fue cargada en el sistema y está lista para comenzar el proceso de evaluación. Aún no se han iniciado revisiones."
         },
         {
             value: "100000003",
             label: "Análisis de Riesgo",
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000003).length || 0,
+            descEstado: "Nuestro equipo está evaluando la información de la pyme para cumplir con políticas de prevención de fraude, crédito y normativas regulatorias."
+        },
+        {
+            value: "100000001",
+            label: "Alta Pendiente",
+            count: referidos?.filter((r) => r.new_estadodelsocio === 100000001).length || 0,
+            descEstado: "La pyme fue aprobada en el análisis de riesgo y está en proceso de creación de cuenta. Solo resta completar pasos internos de configuración."
+        },
+        {
+            value: "100000006",
+            label: "Pendiente de firma",
+            count: referidos?.filter((r) => r.new_estadodelsocio === 100000006).length || 0,
+            descEstado: "La pyme necesita firmar la documentación de alta. Puedes recordarles revisar su correo o el portal para finalizar este paso."
+        },
+        {
+            value: "100000000",
+            label: "Activo",
+            count: referidos?.filter((r) => r.new_estadodelsocio === 100000000).length || 0,
+            descEstado: "La pyme ya fue dada de alta correctamente. Puedes comenzar a referirle productos y operar de manera normal."
         },
     ], [referidos])
 
@@ -774,6 +788,129 @@ const Index = () => {
         return map
     }, [dispPorCuenta])
     const fmtCurrency = useMemo(() => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }), [])
+
+    const {
+        documentacionPendiente,
+        loadingDocumentacion,
+        error: errorDocumentacion,
+        refetch: refetchDocumentacion,
+    } = useGetDocumentacionPorCuentaPendiente()
+
+    const parseFechaDocumento = useCallback((value) => {
+        if (!value) return null
+        const direct = new Date(value)
+        if (!Number.isNaN(direct.getTime())) return direct
+        if (typeof value === 'string') {
+            const isoMatch = value.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})/)
+            if (isoMatch) {
+                const year = Number(isoMatch[1])
+                const month = Number(isoMatch[2]) - 1
+                const day = Number(isoMatch[3])
+                const parsed = new Date(year, month, day)
+                if (!Number.isNaN(parsed.getTime())) return parsed
+            }
+            const latinMatch = value.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/)
+            if (latinMatch) {
+                const day = Number(latinMatch[1])
+                const month = Number(latinMatch[2]) - 1
+                const year = Number(latinMatch[3])
+                const parsed = new Date(year, month, day)
+                if (!Number.isNaN(parsed.getTime())) return parsed
+            }
+        }
+        return null
+    }, [])
+
+    const shortenDocId = useCallback((value) => {
+        if (!value) return 'SIN ID'
+        const upperId = String(value).toUpperCase()
+        if (upperId.length <= 8) return upperId
+        return `${upperId.slice(0, 4)}...${upperId.slice(-4)}`
+    }, [])
+
+    const calculateDaysUntil = useCallback((value) => {
+        const dueDate = parseFechaDocumento(value)
+        if (!dueDate) return null
+        const normalizedDue = new Date(dueDate.getTime())
+        const today = new Date()
+        normalizedDue.setHours(0, 0, 0, 0)
+        today.setHours(0, 0, 0, 0)
+        const diffMs = normalizedDue.getTime() - today.getTime()
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+        return diffDays < 0 ? 0 : diffDays
+    }, [parseFechaDocumento])
+
+    const documentacionProcesada = useMemo(() => {
+        const labelsCount = new Map()
+        return (documentacionPendiente || []).map((doc) => {
+            const baseLabel = shortenDocId(doc?.id || doc?.new_documentacionporcuentaid)
+            const count = labelsCount.get(baseLabel) || 0
+            labelsCount.set(baseLabel, count + 1)
+            const chartLabel = count > 0 ? `${baseLabel} (${count + 1})` : baseLabel
+            const diasRestantes = calculateDaysUntil(doc?.new_fechadevencimiento_value)
+            return {
+                ...doc,
+                diasRestantes,
+                chartLabel,
+            }
+        }).sort((a, b) => {
+            if (a.diasRestantes == null && b.diasRestantes == null) return 0
+            if (a.diasRestantes == null) return 1
+            if (b.diasRestantes == null) return -1
+            return a.diasRestantes - b.diasRestantes
+        })
+    }, [documentacionPendiente, calculateDaysUntil, shortenDocId])
+
+    const documentacionAgrupadaPorDia = useMemo(() => {
+        const formatter = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'short' })
+        const groups = new Map()
+            ; (documentacionProcesada || []).forEach((doc) => {
+                const dueDate = parseFechaDocumento(doc?.new_fechadevencimiento_value) || parseFechaDocumento(doc?.new_fechadevencimiento)
+                let key = 'sin-fecha'
+                let label = 'Sin fecha'
+                if (dueDate) {
+                    const year = dueDate.getFullYear()
+                    const month = String(dueDate.getMonth() + 1).padStart(2, '0')
+                    const day = String(dueDate.getDate()).padStart(2, '0')
+                    key = `${year}-${month}-${day}`
+                    label = formatter.format(dueDate)
+                }
+                const entry = groups.get(key) || { key, label, docs: [] }
+                entry.docs.push(doc)
+                groups.set(key, entry)
+            })
+        return Array.from(groups.values()).sort((a, b) => {
+            if (a.key === 'sin-fecha') return 1
+            if (b.key === 'sin-fecha') return -1
+            return a.key.localeCompare(b.key)
+        })
+    }, [documentacionProcesada, parseFechaDocumento])
+
+    const datosBarraDocumentacion = useMemo(() => {
+        return documentacionAgrupadaPorDia.map((item) => ({
+            opcion: item.label,
+            cantidad: item.docs.length,
+            filtro: 'Cantidad',
+        }))
+    }, [documentacionAgrupadaPorDia])
+
+    const detallesDocumentacion = useMemo(() => {
+        return documentacionAgrupadaPorDia.reduce((acc, item) => {
+            acc[item.label] = item.docs.map((doc) => {
+                const docName = doc.new_documentoid_formatted || doc.new_name || 'Sin dato'
+                const accountName = doc.socio_nombre || doc.new_cuentaid_formatted || 'Sin dato'
+                return `Documento: ${docName} - Cuenta: ${accountName}`
+            })
+            return acc
+        }, {})
+    }, [documentacionAgrupadaPorDia])
+
+    const opcionesBarraDocumentacion = ['Cantidad']
+
+    const tooltipDocumentacionFormatter = useCallback((value) => {
+        const total = Number(value) || 0
+        return `${total} documento${total === 1 ? '' : 's'}`
+    }, [])
 
     const getStatusConfig = useCallback((status) => {
         const configs = {
@@ -1015,9 +1152,132 @@ const Index = () => {
                         </Box>
                     </Fade>
                 )}
-
                 {/* KPIs y Gráficos de Garantías Próximas a Vencer */}
                 <GarantiasProximasOverview />
+                <Box sx={{ my: 4 }}>
+                    <Slide in direction="up" timeout={1000}>
+                        <Typography
+                            sx={{
+                                fontSize: { xs: "1rem", md: "1.2rem" },
+                                color: alpha(theme.palette.primary.contrastText, 0.9),
+                                textAlign: "center",
+                                fontWeight: 500,
+                                mb: { xs: 1, xl: 4 },
+                                mt: { xs: 1, xl: 4 },
+                            }}
+                        >
+                            Documentacion pendiente (30 dias)
+                        </Typography>
+                    </Slide>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} xl={7}>
+                            {loadingDocumentacion ? (
+                                <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                    <CardContent>
+                                        <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <CircularProgress size={30} />
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            ) : documentacionProcesada.length > 0 ? (
+                                <GraficoBarraApexDetalle
+                                    datos={datosBarraDocumentacion}
+                                    opciones={opcionesBarraDocumentacion}
+                                    titulo="Documentacion por vencer"
+                                    subtitulo="Documentos por dia"
+                                    detalles={detallesDocumentacion}
+                                    onRefresh={refetchDocumentacion}
+                                    mostrarValoresEnBarra={false}
+                                    tooltipValueFormatter={tooltipDocumentacionFormatter}
+                                />
+                            ) : (
+                                <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                    <CardContent>
+                                        <Box sx={{ p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {errorDocumentacion ? 'No se pudo obtener la documentacion' : 'No hay documentacion pendiente'}
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </Grid>
+                        <Grid item xs={12} xl={5}>
+                            {loadingDocumentacion ? (
+                                <Card sx={{ borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                    <CardHeader
+                                        title="Detalle de documentos"
+                                        subheader={documentacionProcesada.length ? `${documentacionProcesada.length} registros` : 'Sin registros'}
+                                        // action={
+                                        //     <Tooltip title="Actualizar">
+                                        //         <span>
+                                        //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
+                                        //                 <RefreshIcon fontSize="small" />
+                                        //             </IconButton>
+                                        //         </span>
+                                        //     </Tooltip>
+                                        // }
+                                    />
+                                    <CardContent sx={{ pt: 0, flexGrow: 1 }}>
+                                        <Box sx={{ py: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <CircularProgress size={30} />
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            ) : errorDocumentacion ? (
+                                <Card sx={{ borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                    <CardHeader
+                                        title="Detalle de documentos"
+                                        subheader={documentacionProcesada.length ? `${documentacionProcesada.length} registros` : 'Sin registros'}
+                                        // action={
+                                        //     <Tooltip title="Actualizar">
+                                        //         <span>
+                                        //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
+                                        //                 <RefreshIcon fontSize="small" />
+                                        //             </IconButton>
+                                        //         </span>
+                                        //     </Tooltip>
+                                        // }
+                                    />
+                                    <CardContent sx={{ pt: 0, flexGrow: 1 }}>
+                                        <Box sx={{ py: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Typography variant="body2" color="error">
+                                                Ocurrio un error al cargar la documentacion.
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            ) : documentacionProcesada.length === 0 ? (
+                                <Card sx={{ borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column', background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>
+                                    <CardHeader
+                                        title="Detalle de documentos"
+                                        subheader={documentacionProcesada.length ? `${documentacionProcesada.length} registros` : 'Sin registros'}
+                                        // action={
+                                        //     <Tooltip title="Actualizar">
+                                        //         <span>
+                                        //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
+                                        //                 <RefreshIcon fontSize="small" />
+                                        //             </IconButton>
+                                        //         </span>
+                                        //     </Tooltip>
+                                        // }
+                                    />
+                                    <CardContent sx={{ pt: 0, flexGrow: 1 }}>
+                                        <Box sx={{ py: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                No hay documentacion pendiente.
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            ) : <Table
+                                name={"Documentación Digital"}
+                                data={documentacionProcesada?.length > 0 ? documentacionProcesada : []}
+                                columns={columns_carperta_digital_dashboard_referidores(theme)}
+                            />}
+                        </Grid>
+                    </Grid>
+                </Box>
             </Container>
         </Box>
     )
@@ -1528,7 +1788,7 @@ function GarantiasProximasOverview() {
                                 usarTooltipNativo={!esMobile}
                                 mostrarValoresEnBarra={false}
                                 cortarEtiquetasCada={18}
-                                tooltipValueFormatter={(v, { category }) => `${currency.format(v)} • Vigencia: ${fechaPorCuenta[category] || ''}`}
+                                tooltipValueFormatter={(v, { category }) => `${currency.format(v)} - Vigencia: ${fechaPorCuenta[category] || ''}`}
                             />
                         ) : (
                             <Card sx={{ borderRadius: 3, background: isDark ? alpha(theme.palette.background.paper, 0.2) : undefined, border: isDark ? `1px solid ${alpha(theme.palette.common.white, 0.08)}` : undefined }}>

@@ -1,4 +1,3 @@
-// import { Box, CircularProgress, Grid, LinearProgress, Tab, Typography, useTheme } from "@mui/material";
 import { Box, useTheme, Container, Grid, Typography, IconButton, Button, Chip, Skeleton, Fade, Card, CardContent, Avatar, alpha } from "@mui/material"
 import {
   Security,
@@ -20,7 +19,6 @@ import GraficoBarraApex from "@/@core/components/graficos/GraficoBarraApex";
 import GraficoDonaApex from "@/@core/components/graficos/GraficoDonaApex";
 import PageHeader from "@/@core/components/page-header";
 import { columns_garantias, columns_garantias_mejoradas, columns_garantias_mejoradas_estado } from "@/columns/columnsGarantias";
-// import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Garantias } from "@/context/GetGarantiasContex";
 import TablaCargaMasiva from "../views/garantias/TablaCargaMasiva";
 import GarantiasTabs, { GarantiasStatsBar, TabPanel } from "./GarantiasTabs";

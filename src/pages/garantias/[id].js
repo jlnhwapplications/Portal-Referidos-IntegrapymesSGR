@@ -303,7 +303,7 @@ const IdGarantia = () => {
     // }
 
     // Función para formatear moneda
-    const formatAmount = (amount, currency = "USD") => {
+    const formatAmount = (amount, currency = "ARS") => {
         if (!amount && amount !== 0) return null
         const numAmount = typeof amount === "string" ? Number.parseFloat(amount.replace(/[^\d.-]/g, "")) : amount
         if (isNaN(numAmount)) return amount

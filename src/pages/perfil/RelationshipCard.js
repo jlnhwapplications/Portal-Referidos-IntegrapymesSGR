@@ -25,6 +25,7 @@ import {
 } from "@mui/icons-material"
 import { useEffect } from "react"
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { readOnlyDatos } from "@/keys";
 const RelationshipCard = ({ relationship, onEdit, onDelete, onView, index }) => {
   const theme = useTheme()
 
@@ -189,57 +190,46 @@ const RelationshipCard = ({ relationship, onEdit, onDelete, onView, index }) => 
           </Box>
         </Stack>
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
-          {/* <Tooltip title="Ver detalles" arrow> new_porcentajebeneficiario new_porcentajedeparticipacion
-            <IconButton
-              size="small"
-              onClick={() => onView?.(relationship)}
-              sx={{
-                backgroundColor: alpha(theme.palette.info.main, 0.1),
-                color: theme.palette.info.main,
-                "&:hover": {
-                  backgroundColor: alpha(theme.palette.info.main, 0.2),
-                  transform: "scale(1.1)",
-                },
-                transition: "all 0.2s ease-in-out",
-              }}
-            >
-              <VisibilityIcon fontSize="small" />
-            </IconButton>
-          </Tooltip> */}
-          <Tooltip title="Editar relación" arrow>
-            <IconButton
-              size="small"
-              onClick={() => onEdit?.(relationship)}
-              sx={{
-                backgroundColor: alpha(theme.palette.warning.main, 0.1),
-                color: theme.palette.warning.main,
-                "&:hover": {
-                  backgroundColor: alpha(theme.palette.warning.main, 0.2),
-                  transform: "scale(1.1)",
-                },
-                transition: "all 0.2s ease-in-out",
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Eliminar relación" arrow>
-            <IconButton
-              size="small"
-              onClick={() => onDelete?.(relationship)}
-              sx={{
-                backgroundColor: alpha(theme.palette.error.main, 0.1),
-                color: theme.palette.error.main,
-                "&:hover": {
-                  backgroundColor: alpha(theme.palette.error.main, 0.2),
-                  transform: "scale(1.1)",
-                },
-                transition: "all 0.2s ease-in-out",
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {
+            !readOnlyDatos && (
+              <>
+                <Tooltip title="Editar relación" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => onEdit?.(relationship)}
+                    sx={{
+                      backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                      color: theme.palette.warning.main,
+                      "&:hover": {
+                        backgroundColor: alpha(theme.palette.warning.main, 0.2),
+                        transform: "scale(1.1)",
+                      },
+                      transition: "all 0.2s ease-in-out",
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Eliminar relación" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => onDelete?.(relationship)}
+                    sx={{
+                      backgroundColor: alpha(theme.palette.error.main, 0.1),
+                      color: theme.palette.error.main,
+                      "&:hover": {
+                        backgroundColor: alpha(theme.palette.error.main, 0.2),
+                        transform: "scale(1.1)",
+                      },
+                      transition: "all 0.2s ease-in-out",
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )
+          }
         </Box>
       </CardContent>
     </Card>

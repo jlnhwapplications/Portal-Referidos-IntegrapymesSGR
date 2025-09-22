@@ -75,7 +75,6 @@ const ModalAdjuntoGarantia = ({ open, handleClose, id }) => {
         setSelectedFiles(filtered);
     };
 
-
     const multiple = true
     const maxSize = 15728640 // 15MB
     const acceptedTypes = {

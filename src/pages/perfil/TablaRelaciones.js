@@ -6,6 +6,7 @@ import { Relaciones } from "@/context/GetRelacionesContext" // Asegúrate de que
 import RelationshipCard from "./RelationshipCard" // Nuevo componente de tarjeta
 import { AuthContext } from "@/context/AuthContext"
 import EditIcon from '@mui/icons-material/Edit';
+import { readOnlyDatos } from '../../keys'
 
 const TablaRelaciones = () => {
   const theme = useTheme()
@@ -162,25 +163,30 @@ const TablaRelaciones = () => {
         <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
           Mis Vinculaciones
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenNew}
-          sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 600,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-            "&:hover": {
-              background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
-              transform: "translateY(-2px)",
-              boxShadow: theme.shadows[8],
-            },
-            transition: "all 0.3s ease",
-          }}
-        >
-          Añadir Relación
-        </Button>
+        {
+          !readOnlyDatos && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenNew}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                "&:hover": {
+                  background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+                  transform: "translateY(-2px)",
+                  boxShadow: theme.shadows[8],
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              Añadir Relación
+            </Button>
+          )
+        }
+
       </Box>
 
       {!loadingRelaciones ? (

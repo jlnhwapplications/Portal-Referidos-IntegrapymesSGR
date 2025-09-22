@@ -14,6 +14,7 @@ const CustomCurrencyField = ({ name, label, Component, rules, helperText, type, 
     const theme = useTheme()
     const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
     const hasError = Boolean(formState.errors && formState.errors[name])
+    const isRequired = req === true || req === 'true'
     return (
         <Controller
             name={name}
@@ -22,7 +23,17 @@ const CustomCurrencyField = ({ name, label, Component, rules, helperText, type, 
                     variant="outlined"
                     fullWidth
                     margin={labelPlacement === 'external' ? 'none' : 'normal'}
+                    required={isRequired}
                     error={hasError}
+                    sx={{
+                        ...(labelPlacement === 'internal' && isRequired
+                            ? {
+                                  '& .MuiFormLabel-asterisk, & .MuiInputLabel-asterisk': {
+                                      color: theme.palette.error.main,
+                                  },
+                              }
+                            : {}),
+                    }}
                 >
                     {label && labelPlacement === 'external' && (
                         <Typography
@@ -38,7 +49,7 @@ const CustomCurrencyField = ({ name, label, Component, rules, helperText, type, 
                             }}
                         >
                             {label}
-                            {req && (
+                            {isRequired && (
                                 <Typography component="span" color="error.main" sx={{ fontSize: '1rem' }}>
                                     *
                                 </Typography>
@@ -52,19 +63,26 @@ const CustomCurrencyField = ({ name, label, Component, rules, helperText, type, 
                         currencySymbol={symbol}
                         outputFormat="string"
                         onChange={(event, val) => onChange(val)}
-                        required={req}
+                        required={isRequired}
                         helperText={labelPlacement === 'internal' ? (hasError ? formState.errors[name]?.message : helperText) : undefined}
                         error={hasError}
-                        InputLabelProps={labelPlacement === 'internal' ? { sx: { '& .MuiFormLabel-asterisk': { color: 'error.main' } } } : undefined}
+                        InputLabelProps={labelPlacement === 'internal' ? { sx: { '& .MuiFormLabel-asterisk, & .MuiInputLabel-asterisk': { color: 'error.main' } } } : undefined}
+                        InputProps={{
+                            sx: {
+                                borderRadius: 3,
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderRadius: 3,
+                                },
+                            }
+                        }}
                         placeholder='0.00'
                         size={esPantallaChica ? 'small' : 'medium'}
                         sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                            },
-                            '& .MuiOutlinedInput-root fieldset': {
-                                borderRadius: 2,
-                            },
+                            ...(labelPlacement === 'internal' && isRequired ? {
+                                '& .MuiFormLabel-asterisk, & .MuiInputLabel-asterisk': {
+                                    color: 'error.main',
+                                }
+                            } : {})
                         }}
                         {...restProps}
                     />

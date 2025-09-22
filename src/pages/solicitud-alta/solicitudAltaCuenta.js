@@ -12,7 +12,8 @@ import useGetCondicionesAFIP from '@/hooks/useGetCondicionesAFIP';
 import UseGetDestinoDeFondos from '@/hooks/useGetDestinoDeFondos';
 import UseGetSectorEconomico from '@/hooks/useGetSectorEconomico';
 import { Info } from '@mui/icons-material';
-import { alpha, Avatar, Box, Container, Divider, Fade, Typography, useTheme } from '@mui/material';
+import { alpha, Avatar, Box, Container, Divider, Fade, TextField, Typography, useTheme } from '@mui/material';
+import CustomTextField from '@/@core/components/customFields/CustomTextField';
 
 const SolicitudAltaCuenta = ({ personeria, token, actividadPrincipal, actividadAfip }) => {
     const dispatch = useDispatch()
@@ -129,35 +130,66 @@ const SolicitudAltaCuenta = ({ personeria, token, actividadPrincipal, actividadA
                             name="facturacionIngreso"
                             label="Facturación/Ingresos Último Año"
                             rules={{ required: "Required!" }}
-                            helperText="Ingresa tu facturacion/ingresos del último año"
-                            req="true"
+                            // helperText="Ingresa tu facturacion/ingresos del último año"
+                            req="false"
                         />
                     </Grid>
                     {
                         LineaDeCreditoHabilitado ?
-                            <>
-                                <Grid xs={12} sm={6} item sx={{ pt: 0, pb: 0 }}>
-                                    <CustomSearchSelect
-                                        name="destinoLineaDeCredito"
-                                        lab="Destino Línea de Crédito"
-                                        helperText="Por favor seleccione un valor"
-                                        options={opcionesDestinoDeFondos}
-                                        noOptions={opcionesDestinoDeFondos?.length === 0 ? true : false}
-                                        rules={{ required: "Required!" }}
-                                        req="true"
-                                    />
-                                </Grid>
-                                <Grid xs={12} sm={6} item sx={{ pt: 0, pb: 0 }}>
-                                    <CustomCurrencyField
-                                        name="lineaDeCredito"
-                                        label="Línea de Crédito"
-                                        rules={{ required: "Required!" }}
-                                        helperText="Ingresa tu línea de crédito"
-                                        req="true"
-                                    />
-                                </Grid>
-                            </> : null
+                            <Grid xs={12} item sx={{ pt: 0, pb: 0 }}>
+                                <Box
+                                    sx={{
+                                        my: 1,
+                                        p: { xs: 2, xl: 3 },
+                                        borderRadius: 3,
+                                        border: `1px solid ${alpha(theme.palette.primary.main, isDark ? 0.4 : 0.2)}`,
+                                        backgroundColor: isDark ? alpha(theme.palette.primary.main, 0.08) : alpha(theme.palette.primary.light, 0.12)
+                                    }}
+                                >
+                                    <Typography fontWeight="600" sx={{ fontSize: { xs: 16, xl: 18 }, mb: 1 }} color="text.primary">
+                                        Destino de Fondos
+                                    </Typography>
+                                    {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        Indica el destino y el monto estimado de la linea solicitada.
+                                    </Typography> */}
+                                    <Grid container spacing={2}>
+                                        <Grid xs={12} sm={6} item>
+                                            <CustomSearchSelect
+                                                name="destinoLineaDeCredito"
+                                                lab="Destino Linea de Credito"
+                                                helperText="Por favor seleccione un valor"
+                                                options={opcionesDestinoDeFondos}
+                                                noOptions={opcionesDestinoDeFondos?.length === 0 ? true : false}
+                                                rules={{ required: "Required!" }}
+                                                req="true"
+                                            />
+                                        </Grid>
+                                        <Grid xs={12} sm={6} item>
+                                            <CustomCurrencyField
+                                                name="lineaDeCredito"
+                                                label="Linea de Credito"
+                                                rules={{ required: "Required!" }}
+                                                // helperText="Ingresa tu linea de credito"
+                                                req="true"
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            </Grid> : null
                     }
+                    <Grid xs={12} item sx={{ pt: 0, pb: 0 }}>
+                        <CustomTextField
+                            Component={TextField}
+                            name="observaciones"
+                            label="Observaciones"
+                            helperText="Ingresa una descripción"
+                            placeholder="Descripción de la actividad, reseña, referencias"
+                            multiline={true}
+                            minRows={2}
+                            maxRows={3}
+                            maxLength={2000}
+                        />
+                    </Grid>
                     {/* <Grid xs={12} sm={6} item sx={{ pt: 0, pb: 0 }}>
                         {
                             referidorOnboarding ?

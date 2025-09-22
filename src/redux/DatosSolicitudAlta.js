@@ -454,7 +454,6 @@ export const agregarDocumentoAcarpeta = (carpetas) => (dispatch) => {
 }
 
 export const cargarSolicitudDeAlta = (solicitud, files, token, referidoId) => async (dispatch) => {
-    debugger
     dispatch({
         type: LOADING_ONBOARDING,
         loadingOnboarding: true,
@@ -887,7 +886,9 @@ const crearSolicitud = (solicitud, invitacion, token, referidoId) => new Promise
                 "provincia": solicitud?.provincia ? solicitud.provincia.value : "",
                 "pais": solicitud?.pais?.value ? solicitud.pais.value : "",
                 "destinoLineaDeCredito": solicitud?.destinoLineaDeCredito?.value ? solicitud.destinoLineaDeCredito.value : "",
-                "lineaDeCredito": solicitud?.lineaDeCredito ? solicitud.lineaDeCredito : ""
+                "lineaDeCredito": solicitud?.lineaDeCredito ? solicitud.lineaDeCredito : "",
+                "observaciones": solicitud?.observaciones ? solicitud.observaciones : ""
+
             },
             {
                 headers: {
