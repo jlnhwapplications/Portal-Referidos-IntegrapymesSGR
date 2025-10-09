@@ -80,6 +80,7 @@ export const obtenerTodosLimitesPorLineas = (cuentaid, token) => async (dispatch
                 "<attribute name='new_mostrarenportalsocio' />" +
                 "<attribute name='new_vigenciahasta' />" +
                 "<attribute name='statecode' />" +
+                "<attribute name='new_cuenta' />" +
                 "<order attribute='createdon' descending='false' />" +
                 "<filter type='and'>" +
                 // "<condition attribute='statecode' operator='eq' value='0' />" +

@@ -20,7 +20,7 @@ import Icon from '@/@core/components/icon'
 import { Button, Tooltip, Typography, useTheme } from '@mui/material'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
-const QuickSearchToolbar = ({ value, onChange, clearSearch, canExport, addRow, toggle, name, description }) => {
+const QuickSearchToolbar = ({ value, onChange, clearSearch, canExport, addRow, toggle, name, description, exportFileName, exportColumnFields }) => {
   // const { toggle, canExport, name, description } = props
   const theme = useTheme()
   const isDark = theme.palette.mode === "dark"
@@ -75,6 +75,23 @@ const QuickSearchToolbar = ({ value, onChange, clearSearch, canExport, addRow, t
             </IconButton>
           </Tooltip>
         )}
+        {
+          canExport && (
+            <GridToolbarExport
+              disabled={!canExport}
+              csvOptions={{
+                utf8WithBom: true,
+                allColumns: false,
+                shouldCellBeExported: (params) => params.field !== "__check__",
+                ...(exportFileName ? { fileName: exportFileName } : {}),
+                ...(exportColumnFields?.length ? { fields: exportColumnFields } : {})
+              }}
+              printOptions={{
+                disableToolbarButton: true
+              }}
+            />
+          )
+        }
 
         {/* Cuadro de búsqueda */}
         <TextField

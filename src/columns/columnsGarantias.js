@@ -80,21 +80,24 @@ function EnhancedTextCell({ value, subtitle = null, icon = null, color = "text.p
         </Avatar>
       )}
       <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            color: color,
-            lineHeight: 1.4,
-            fontSize: "0.875rem",
-            letterSpacing: "0.1px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {value || "N/A"}
-        </Typography>
+        <Tooltip title={value}>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: color,
+              lineHeight: 1.4,
+              fontSize: "0.875rem",
+              letterSpacing: "0.1px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {/* {account?.name?.length > 20 ? `${account.name.substr(0, 20)}...` : account.name} {value || "N/A"} */}
+            {value ? (value?.length > 20 ? `${value.substr(0, 20)}...` : value) : "N/A"}
+          </Typography>
+        </ Tooltip>
         {subtitle && (
           <Typography
             variant="caption"
@@ -198,22 +201,29 @@ function StatusChip({ status, variant = "filled" }) {
 }
 
 // Componente para mostrar montos formateados
-function MoneyCell({ amount, currency = "USD", subtitle = null }) {
+function MoneyCell({ amount, currency = "Pesos Argentinos", subtitle = null }) {
   const theme = useTheme()
   const isDark = theme.palette.mode === "dark"
 
-  const formatCurrency = (amount, currency) => {
-    if (!amount && amount !== 0) return "N/A"
-
-    const formatter = new Intl.NumberFormat("en-US", {
+  const formatCurrency = (amount, currency = "ARS") => {
+    if (currency === "Dolares Americanos" || currency === "USD") {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })
+        .format(amount)
+        .replace("$", "U$S");
+    }
+    return new Intl.NumberFormat("es-AR", {
       style: "currency",
-      currency: currency,
+      currency: "ARS",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    })
+    }).format(amount);
 
-    return formatter.format(amount)
-  }
+  };
 
   const getAmountColor = (amount) => {
     // if (!amount || amount === 0) return "text.secondary"
@@ -455,19 +465,20 @@ const RowOptions = ({ id }) => {
 export const columns_garantias_mejoradas = [
   {
     flex: 0.12,
-    maxWidth: 140,
+    maxWidth: 100,
     sortable: false,
-    field: "actions",
-    headerName: "Acciones",
-    headerAlign: "center",
-    align: "center",
+    // field: "actions",
+    // headerName: "Acciones",
+    // headerAlign: "center",
+    // align: "center",
     renderCell: ({ row }) => <ActionsCell row={row} />,
   },
   {
     flex: 0.12,
     field: "new_ndeordendelagarantiaotorgada",
-    minWidth: 140,
-    headerName: "Nro de Orden",
+    minWidth: 80,
+    maxWidth: 120,
+    headerName: "N° Orden",
     type: "number",
     align: "left",         // 👈 valores alineados a la izquierda
     headerAlign: "left",   // 👈 encabezado alineado a la izquierda
@@ -484,8 +495,11 @@ export const columns_garantias_mejoradas = [
   {
     flex: 0.2,
     minWidth: 180,
+    maxWidth: 220,
     field: "new_tipodeoperacion",
     headerName: "Tipo de Operación",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     renderCell: ({ row }) => (
       <EnhancedTextCell
         value={row.new_tipodeoperacion}
@@ -495,26 +509,19 @@ export const columns_garantias_mejoradas = [
     ),
   },
   {
-    flex: 0.2,
-    minWidth: 180,
-    field: "new_acreedor",
-    headerName: "Acreedor",
-    renderCell: ({ row }) => (
-      <EnhancedTextCell
-        value={row.new_acreedor}
-        subtitle="Entidad acreedora"
-        icon={<AccountBalance fontSize="small" />}
-      />
-    ),
-  },
-  {
     flex: 0.15,
     minWidth: 140,
     field: "statuscode_value",
     headerName: "Estado",
-    headerAlign: "center",
-    align: "center",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     renderCell: ({ row }) => <StatusChip status={row.statuscode_value} />,
+  },
+  {
+    field: "transactioncurrencyid",
+    headerName: "Divisa",
+    hide: true, // Ocultamos en UI, pero se exporta gracias a allColumns en el toolbar
+    valueGetter: ({ row }) => row.transactioncurrencyid,
   },
   {
     flex: 0.18,
@@ -525,18 +532,74 @@ export const columns_garantias_mejoradas = [
     align: "left",         // 👈 valores alineados a la izquierda
     headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     valueGetter: ({ row }) => safeParseFloat(row.new_monto),
-    renderCell: ({ row }) => <MoneyCell amount={row.new_monto} currency="USD" subtitle="Valor de la garantía" />,
+    renderCell: ({ row }) => <MoneyCell amount={row.new_monto} currency={row.transactioncurrencyid} subtitle={row.transactioncurrencyid} />,
+  },
+  {
+    flex: 0.2,
+    minWidth: 200,
+    field: "new_librador",
+    headerName: "Librador",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    renderCell: ({ row }) => (
+      <EnhancedTextCell
+        value={row.new_librador}
+      // subtitle="Categoría de garantía"
+      // icon={<TrendingUp fontSize="small" />}
+      />
+    ),
   },
   {
     flex: 0.17,
     minWidth: 160,
-    field: "new_fechadeorigen",
-    headerName: "Fecha de Creación",
+    field: "new_fechadevencimiento",
+    headerName: "Fecha Vencimiento",
     type: "date",
-    valueGetter: ({ row }) => safeParseDate(row.new_fechadeorigen),
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseDate(row.new_fechadevencimiento),
     renderCell: ({ row }) => <EnhancedTextCell
-      value={row.new_fechadeorigen}
+      value={row.new_fechadevencimiento}
     />,
+  },
+  {
+    flex: 0.17,
+    minWidth: 160,
+    field: "new_fechadenegociacion",
+    headerName: "Fecha Monetización",
+    type: "date",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseDate(row.new_fechadenegociacion),
+    renderCell: ({ row }) => <EnhancedTextCell
+      value={row.new_fechadenegociacion}
+    />,
+  },
+  // {
+  //   flex: 0.17,
+  //   minWidth: 160,
+  //   field: "new_fechadeorigen",
+  //   headerName: "Fecha de Creación",
+  //   type: "date",
+  //   valueGetter: ({ row }) => safeParseDate(row.new_fechadeorigen),
+  //   renderCell: ({ row }) => <EnhancedTextCell
+  //     value={row.new_fechadeorigen}
+  //   />,
+  // },
+  {
+    flex: 0.2,
+    minWidth: 280,
+    field: "new_acreedor",
+    headerName: "Acreedor",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    renderCell: ({ row }) => (
+      <EnhancedTextCell
+        value={row.new_acreedor}
+        subtitle="Entidad acreedora"
+        icon={<AccountBalance fontSize="small" />}
+      />
+    ),
   },
 ]
 
@@ -544,19 +607,20 @@ export const columns_garantias_mejoradas = [
 export const columns_garantias_mejoradas_estado = [
   {
     flex: 0.12,
-    maxWidth: 140,
+    maxWidth: 100,
     sortable: false,
-    field: "actions",
-    headerName: "Acciones",
-    headerAlign: "center",
-    align: "center",
+    // field: "actions",
+    // headerName: "Acciones",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     renderCell: ({ row }) => <ActionsCell row={row} />,
   },
   {
     flex: 0.12,
     field: "new_ndeordendelagarantiaotorgada",
-    minWidth: 140,
-    headerName: "Nro de Orden",
+    minWidth: 80,
+    maxWidth: 120,
+    headerName: "N° Orden",
     type: "number",
     align: "left",         // 👈 valores alineados a la izquierda
     headerAlign: "left",   // 👈 encabezado alineado a la izquierda
@@ -573,6 +637,8 @@ export const columns_garantias_mejoradas_estado = [
     minWidth: 180,
     field: "new_tipodeoperacion",
     headerName: "Tipo de Operación",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     renderCell: ({ row }) => (
       <EnhancedTextCell
         value={row.new_tipodeoperacion}
@@ -580,17 +646,12 @@ export const columns_garantias_mejoradas_estado = [
     ),
   },
   {
-    flex: 0.2,
-    minWidth: 180,
-    field: "new_acreedor",
-    headerName: "Acreedor",
-    renderCell: ({ row }) => (
-      <EnhancedTextCell
-        value={row.new_acreedor}
-        subtitle="Entidad acreedora"
-        icon={<AccountBalance fontSize="small" />}
-      />
-    ),
+    field: "transactioncurrencyid",
+    headerName: "Divisa",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    hide: true, // Ocultamos en UI, pero se exporta gracias a allColumns en el toolbar
+    valueGetter: ({ row }) => row.transactioncurrencyid,
   },
   {
     flex: 0.18,
@@ -601,17 +662,75 @@ export const columns_garantias_mejoradas_estado = [
     align: "left",         // 👈 valores alineados a la izquierda
     headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     valueGetter: ({ row }) => safeParseFloat(row.new_monto),
-    renderCell: ({ row }) => <MoneyCell amount={row.new_monto} currency="USD" subtitle="Valor de la garantía" />,
+    renderCell: ({ row }) => <MoneyCell amount={row.new_monto} currency={row.transactioncurrencyid} subtitle={row.transactioncurrencyid} />,
+  },
+  {
+    flex: 0.2,
+    minWidth: 180,
+    field: "new_librador",
+    headerName: "Librador",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    renderCell: ({ row }) => (
+      <EnhancedTextCell
+        value={row.new_librador}
+      // subtitle="Categoría de garantía"
+      // icon={<TrendingUp fontSize="small" />}
+      />
+    ),
+  },
+  {
+    flex: 0.17,
+    minWidth: 160,
+    field: "new_fechadevencimiento",
+    headerName: "Fecha Vencimiento",
+    type: "date",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseDate(row.new_fechadevencimiento),
+    renderCell: ({ row }) => <EnhancedTextCell
+      value={row.new_fechadevencimiento}
+    />,
+  },
+  {
+    flex: 0.17,
+    minWidth: 160,
+    field: "new_fechadenegociacion",
+    headerName: "Fecha Monetización",
+    type: "date",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    valueGetter: ({ row }) => safeParseDate(row.new_fechadenegociacion),
+    renderCell: ({ row }) => <EnhancedTextCell
+      value={row.new_fechadenegociacion}
+    />,
   },
   {
     flex: 0.17,
     minWidth: 160,
     field: "new_fechadeorigen",
     headerName: "Fecha de Creación",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
     valueGetter: ({ row }) => safeParseDate(row.new_fechadeorigen),
     renderCell: ({ row }) => <EnhancedTextCell
       value={row.new_fechadeorigen}
     />,
+  },
+  {
+    flex: 0.2,
+    minWidth: 280,
+    field: "new_acreedor",
+    headerName: "Acreedor",
+    align: "left",         // 👈 valores alineados a la izquierda
+    headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+    renderCell: ({ row }) => (
+      <EnhancedTextCell
+        value={row.new_acreedor}
+        subtitle="Entidad acreedora"
+        icon={<AccountBalance fontSize="small" />}
+      />
+    ),
   },
 ]
 

@@ -18,6 +18,7 @@ import {
     Fade,
     IconButton,
     Tooltip,
+    Button,
 } from "@mui/material"
 import {
     CreditCard,
@@ -33,7 +34,27 @@ import PageHeader from "@/@core/components/page-header"
 import useGetLimites from "@/hooks/useGetLimites"
 import LimitCard from "./LimitCard"
 import ApexChartWrapper from '@/@core/styles/libs/react-apexcharts'// Asegúrate de que esta ruta sea correcta
+import moment from "moment"
+import useGetDisponibleLimitesGeneral from "@/hooks/useGetDisponibleLimitesGeneral"
 // import { Icon } from "@iconify/react"
+
+let xlsxLibPromise
+
+const getXlsxLib = () => {
+    if (!xlsxLibPromise) {
+        xlsxLibPromise = import("xlsx").then((module) => module.default || module)
+    }
+    return xlsxLibPromise
+}
+
+const sanitizeFileName = (baseName) =>
+    (baseName || "export")
+        .toString()
+        .trim()
+        .replace(/[\s]+/g, "_")
+        .replace(/[^a-zA-Z0-9_-]/g, "")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "")
 
 const Index = () => {
     const theme = useTheme()
@@ -44,10 +65,6 @@ const Index = () => {
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue)
     }
-
-    // useEffect(() => {
-    //     console.log(limiteGral)
-    // }, [limiteGral])
 
     // Cálculos de KPIs para Líneas
     const kpis = useMemo(() => {
@@ -89,6 +106,161 @@ const Index = () => {
         style: "currency",
         currency: "ARS",
     })
+
+    // Función profesional para formatear moneda
+    const formatCurrency = (amount, currency = "ARS") => {
+        if (currency === "Dolares Americanos" || currency === "USD") {
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            })
+                .format(amount)
+                .replace("$", "U$S");
+        }
+        return new Intl.NumberFormat("es-AR", {
+            style: "currency",
+            currency: "ARS",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(amount);
+
+    };
+
+    const getOperationName = (tipoOperacion) => {
+        const tipo = tipoOperacion?.toString() || ""
+        switch (tipo) {
+            case "100000000":
+                return "Linea General"
+            case "100000001":
+                return "Tarjeta de Credito"
+            case "100000002":
+                return "Prestamo Hipotecario"
+            case "100000003":
+                return "Prestamo Automotor"
+            case "100000004":
+                return "Prestamo Comercial"
+            case "100000005":
+                return "Linea de Inventario"
+            default:
+                return "Linea de Credito"
+        }
+    }
+
+    const exportRowsToExcel = async (rows, baseName) => {
+        if (!rows?.length || typeof window === "undefined") return
+
+        try {
+            const XLSX = await getXlsxLib()
+            const headers = rows.reduce((acc, row) => {
+                Object.keys(row || {}).forEach((key) => {
+                    if (!acc.includes(key)) acc.push(key)
+                })
+                return acc
+            }, [])
+
+            const normalizedRows = rows.map((row) => {
+                return headers.reduce((acc, key) => {
+                    const value = row?.[key]
+                    if (value === undefined || value === null) {
+                        acc[key] = ""
+                    } else if (value instanceof Date) {
+                        acc[key] = moment(value).format("DD/MM/YYYY")
+                    } else if (typeof value === "object") {
+                        acc[key] = JSON.stringify(value)
+                    } else {
+                        acc[key] = value
+                    }
+                    return acc
+                }, {})
+            })
+
+            const worksheet = XLSX.utils.json_to_sheet(normalizedRows.length ? normalizedRows : [{}], {
+                header: headers,
+            })
+            const workbook = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Datos")
+
+            const sanitizedBaseName = sanitizeFileName(baseName)
+            const timestamp = moment(new Date()).format("DD/MM/YYYY")
+            const fileName = `${sanitizedBaseName || "export"}_${timestamp}.xlsx`
+
+            XLSX.writeFile(workbook, fileName, { compression: true })
+        } catch (error) {
+            console.error("Error al exportar a Excel", error)
+        }
+    }
+
+    const generalActiveLimits = useMemo(
+        () => limiteGral?.filter((item) => item?.statecode === 0 && item?.statuscode_value === 100000001) || [],
+        [limiteGral]
+    )
+
+    const generalExpiredLimits = useMemo(
+        () => limiteGral?.filter((item) => item?.statecode === 1 && item?.statuscode_value === 2) || [],
+        [limiteGral]
+    )
+
+    const activeOperations = useMemo(
+        () => limites?.filter((item) => item?.statecode === 0 && item?.statuscode_value === 100000001) || [],
+        [limites]
+    )
+
+    const expiredOperations = useMemo(
+        () => limites?.filter((item) => item?.statecode === 1 && item?.statuscode_value === 2) || [],
+        [limites]
+    )
+
+    const handleExportGeneralLimits = () => {
+        if (!limiteGral.length) return
+        let cuenta = ''
+        if (limiteGral?.length > 0 && limiteGral[0]?.new_cuenta) [
+            cuenta = limiteGral[0]?.new_cuenta
+        ]
+        const rows = limiteGral.map((limite) => {
+            const currencyLabel = limite?._transactioncurrencyid_value || "Pesos Argentinos"
+            // const currencyCode = currencyLabel?.toUpperCase().includes("USD") ? "USD" : "ARS"
+
+            return {
+                "Tipo de linea": getOperationName(limite?.new_lineatipodeoperacion_value),
+                Producto: limite?.new_tipochpd || "",
+                "Tope general": formatCurrency(limite?.new_topeporlineacomercial, currencyLabel),
+                "Monto disponible": formatCurrency(limite?.new_montodisponiblegeneral, currencyLabel),
+                "Monto utilizado": formatCurrency(limite?.new_montoutilizadogeneral, currencyLabel),
+                Moneda: currencyLabel,
+                "Vigencia hasta": limite?.new_vigenciahasta || "",
+                Estado: limite?.statuscode || "",
+            }
+        })
+
+        exportRowsToExcel(rows, `limites_generales ${cuenta}`)
+    }
+
+    const handleExportOperacionesActivas = () => {
+        if (!limites.length) return
+        let cuenta = ''
+        if (limites?.length > 0 && limites[0]?.new_cuenta) [
+            cuenta = limites[0]?.new_cuenta
+        ]
+        const rows = limites.map((operacion) => {
+            const currencyLabel = operacion?._transactioncurrencyid_value || "Pesos Argentinos"
+            // const currencyCode = currencyLabel?.toUpperCase().includes("USD") ? "USD" : "ARS"
+
+            return {
+                "Tipo de operacion": getOperationName(operacion?.new_lineatipodeoperacion_value),
+                Producto: operacion?.new_tipochpd || "",
+                "Tope por operacion": formatCurrency(operacion?.new_topeporlineacomercial, currencyLabel),
+                "Monto disponible": formatCurrency(operacion?.new_montodisponibleporoperacion, currencyLabel),
+                "Monto utilizado": formatCurrency(operacion?.new_montoutilizadoporoperacion, currencyLabel),
+                Moneda: currencyLabel,
+                "Vigencia hasta": operacion?.new_vigenciahasta || "",
+                Estado: operacion?.statuscode || "",
+            }
+        })
+
+        exportRowsToExcel(rows, `limites_por_operacion ${cuenta}`)
+    }
 
     // Configuración de gráficos ApexCharts
     const chartOptions = useMemo(() => {
@@ -460,13 +632,6 @@ const Index = () => {
         )
     }
 
-    // if (!loadingLimites) {
-    //     return <LoadingSkeleton />
-    // }
-
-    // if (!loadingLimites) {
-    //     return <LoadingSkeleton />
-    // }
 
     return (
         <ApexChartWrapper>
@@ -683,110 +848,145 @@ const Index = () => {
                                 <CustomTabPanel value={activeTab} index={0}>
                                     {/* <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}> */}
                                     {
-                                        limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.length > 0 && (
-                                            <Box>
-                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
-                                                            Límites Activos
-                                                        </Typography>
-                                                        {/* <Typography variant="body2" color="text.secondary">
+                                        // generalActiveLimits.length > 0 && (
+                                        <Box>
+                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 3 }}>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                        Límites Activos
+                                                    </Typography>
+                                                    {/* <Typography variant="body2" color="text.secondary">
                                                             {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length} límite{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} instrumentado
                                                             {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} y disponible{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""}
                                                         </Typography> */}
-                                                    </Box>
                                                 </Box>
-                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                                                    {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
-                                                            <AnimatedGrid delay={index * 150}>
-                                                                <LimitCard data={limite} />
-                                                            </AnimatedGrid>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
+                                                <Button
+                                                    variant="outlined"
+                                                    size="small"
+                                                    startIcon={<DownloadIcon fontSize="small" />}
+                                                    onClick={handleExportGeneralLimits}
+                                                    disabled={limiteGral?.length == 0}
+                                                    sx={{
+                                                        borderRadius: 999,
+                                                        textTransform: "none",
+                                                        fontWeight: 600,
+                                                    }}
+                                                >
+                                                    Exportar límites Generales
+                                                </Button>
                                             </Box>
-                                        )}
+                                            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                {
+                                                    generalActiveLimits?.length > 0 ?
+                                                        generalActiveLimits?.map((limite, index) => (
+                                                            <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
+                                                                <AnimatedGrid delay={index * 150}>
+                                                                    <LimitCard data={limite} />
+                                                                </AnimatedGrid>
+                                                            </Grid>
+                                                        )) : <Grid item xs={12}>
+                                                            <Typography>No hay límite general activo</Typography>
+                                                        </Grid>}
+                                            </Grid>
+                                        </Box>
+                                    }
                                     {
-                                        limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length > 0 && (
-                                            <Box sx={{ mt: 2 }}>
-                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
-                                                            Límites Vencidos
-                                                        </Typography>
-                                                        {/* <Typography variant="body2" color="text.secondary">
-                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length} límite{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} vencido
-                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} o inactivo{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""}
-                                                        </Typography> */}
-                                                    </Box>
+                                        <Box sx={{ mt: 2 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 3 }}>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                        Límites Vencidos
+                                                    </Typography>
                                                 </Box>
-
-                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                                                    {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
-                                                            <AnimatedGrid delay={index * 150}>
-                                                                <LimitCard data={limite} />
-                                                            </AnimatedGrid>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
                                             </Box>
-                                        )
+                                            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                {
+                                                    generalExpiredLimits?.length > 0 ?
+                                                        generalExpiredLimits?.map((limite, index) => (
+                                                            <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
+                                                                <AnimatedGrid delay={index * 150}>
+                                                                    <LimitCard data={limite} />
+                                                                </AnimatedGrid>
+                                                            </Grid>
+                                                        ))
+                                                        : <Grid item xs={12}>
+                                                            <Typography>No hay límites generales vencidos</Typography>
+                                                        </Grid>
+                                                }
+                                            </Grid>
+                                        </Box>
                                     }
                                 </CustomTabPanel>
                                 <CustomTabPanel value={activeTab} index={1}>
                                     {
-                                        limites?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.length > 0 && (
-                                            <Box>
-                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
-                                                            Operaciones Activas
-                                                        </Typography>
-                                                        {/* <Typography variant="body2" color="text.secondary">
-                                                            {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length} límite{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} instrumentado
-                                                            {limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""} y disponible{limiteGral?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001).length !== 1 ? "s" : ""}
-                                                        </Typography> */}
-                                                    </Box>
+                                        <Box>
+                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 3 }}>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                        Límites por operación activos
+                                                    </Typography>
                                                 </Box>
-                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                                                    {limites?.filter(item => item?.statecode === 0 && item?.statuscode_value === 100000001)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
-                                                            <AnimatedGrid delay={index * 150}>
-                                                                <LimitCard data={limite} />
-                                                            </AnimatedGrid>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
+                                                <Button
+                                                    variant="outlined"
+                                                    size="small"
+                                                    startIcon={<DownloadIcon fontSize="small" />}
+                                                    onClick={handleExportOperacionesActivas}
+                                                    disabled={limites?.length == 0}
+                                                    sx={{
+                                                        borderRadius: 999,
+                                                        textTransform: "none",
+                                                        fontWeight: 600,
+                                                    }}
+                                                >
+                                                    Exportar límites por operación
+                                                </Button>
                                             </Box>
-                                        )}
+                                            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                {
+                                                    activeOperations?.length > 0 ?
+                                                        activeOperations?.map((limite, index) => (
+                                                            <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
+                                                                <AnimatedGrid delay={index * 150}>
+                                                                    <LimitCard data={limite} />
+                                                                </AnimatedGrid>
+                                                            </Grid>
+                                                        )) :
+                                                        <Grid item xs={12}>
+                                                            <Typography>No hay límites por operación activos</Typography>
+                                                        </Grid>
+                                                }
+                                            </Grid>
+                                        </Box>
+                                        // )
+                                    }
                                     {
-                                        limites?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length > 0 && (
-                                            <Box sx={{ mt: 2 }}>
-                                                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
-                                                            Operaciones Vencidas
-                                                        </Typography>
-                                                        {/* <Typography variant="body2" color="text.secondary">
-                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length} límite{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} vencido
-                                                            {limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""} o inactivo{limiteGral?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.length !== 1 ? "s" : ""}
-                                                        </Typography> */}
-                                                    </Box>
+                                        <Box sx={{ mt: 2 }}>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                                                        Límites  por operación vencidos
+                                                    </Typography>
                                                 </Box>
-
-                                                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                                                    {limites?.filter(item => item?.statecode === 1 && item?.statuscode_value === 2)?.map((limite, index) => (
-                                                        <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
-                                                            <AnimatedGrid delay={index * 150}>
-                                                                <LimitCard data={limite} />
-                                                            </AnimatedGrid>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
                                             </Box>
-                                        )
+
+                                            <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                                                {
+                                                    expiredOperations?.length > 0 ?
+                                                        expiredOperations?.map((limite, index) => (
+                                                            <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
+                                                                <AnimatedGrid delay={index * 150}>
+                                                                    <LimitCard data={limite} />
+                                                                </AnimatedGrid>
+                                                            </Grid>
+                                                        )) :
+                                                        <Grid item xs={12}>
+                                                            <Typography sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                                                                No hay límites por operación vencidos
+                                                            </Typography>
+                                                        </Grid>
+                                                }
+                                            </Grid>
+                                        </Box>
                                     }
                                 </CustomTabPanel>
                             </>

@@ -1305,7 +1305,7 @@ const SolicitudAlta = (props) => {
                 razonSocial: data.person === "100000000" ? data.razonSocial : '',
                 nombre: data.person === "100000001" ? data.nombre : '',
                 apellido: data.person === "100000001" ? data.apellido : '',
-                porcentaje: Number(item.porcentaje) > 0 ? Number(item.porcentaje).toFixed(2).toString() : 0,
+                porcentaje: Number(data.porcentaje) > 0 ? Number(data.porcentaje).toFixed(2).toString() : 0,
                 tipoRelacion: "100000001", // Accionista
                 tipoRelacionAccionista: data.relacionAccionista || '',
                 relacionDirecta: false,

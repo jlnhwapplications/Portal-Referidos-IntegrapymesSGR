@@ -19,14 +19,19 @@ const UseGetLimites = () => {
                 dispatch(obtenerTodosLimitesPorLineas(referido?.accountid, token))
                     .then(data => {
                         if (data?.length > 0) {
-                            var limiteGeneral = data.filter(item => item.new_lineatipodeoperacion == 100000000)
+                            var limiteGeneral = data.filter(item => 
+                                    item.new_lineatipodeoperacion == 100000000
+                                    && item.statecode == 0 
+                                    && item.statuscode == 100000001
+                                )
                             if (limiteGeneral.length > 0) {
                                 let utilizado = 0
                                 let disponible = 0
                                 let datos = {
                                     tope: 0,
                                     utilizado: 0,
-                                    disponible: 0
+                                    disponible: 0,
+                                    divisa: "Pesos Argentinos"
                                 }
                                 let datosLimites = []
                                 var tope = parseInt(limiteGeneral[0].new_topeporlineacomercial)
@@ -40,6 +45,9 @@ const UseGetLimites = () => {
                                 disponible = tope - utilizado
                                 if (disponible > 0) {
                                     datos.disponible = disponible
+                                }
+                                if(limiteGeneral[0]["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"]){
+                                    datos.divisa = limiteGeneral[0]["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"]
                                 }
                                 setDataLimite(datos)
                             }
@@ -63,8 +71,9 @@ const UseGetLimites = () => {
                                     new_topeporlineacomercialusd: item.new_topeporlineacomercialusd > 0 ? item.new_topeporlineacomercialusd : 0,
                                     new_vigenciahasta: item.new_vigenciahasta ? moment(new Date(item.new_vigenciahasta)).format('DD/MM/yyyy') : '',
                                     statuscode: item["statuscode@OData.Community.Display.V1.FormattedValue"],
-                                    statuscode_value: item?.statuscode,
+                                    statuscode_value: item?.statuscode, 
                                     statecode: item?.statecode,
+                                    new_cuenta: item["_new_cuenta_value@OData.Community.Display.V1.FormattedValue"],
                                     _transactioncurrencyid_value: item["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"]
                                 }
                                 arrayLimites.push(limite)

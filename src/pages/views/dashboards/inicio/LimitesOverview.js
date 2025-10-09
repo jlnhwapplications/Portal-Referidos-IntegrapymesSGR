@@ -27,157 +27,179 @@ const LimitesOverview = () => {
   const tope = dataLimite?.tope || 0
   const utilizationPercentage = tope > 0 ? (dataLimite?.utilizado / tope) * 100 : 0
   const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
-  const formatCurrency = (amount) => {
-    if (!amount && amount !== 0) return "$0"
+  // const formatCurrency = (amount, ) => {
+  //   if (!amount && amount !== 0) return "$0"
+  //   return new Intl.NumberFormat("en-US", {
+  //     style: "currency",
+  //     currency: "USD",
+  //     minimumFractionDigits: 0,
+  //     maximumFractionDigits: 0,
+  //   }).format(amount)
+  // }
+
+  const formatCurrency = (amount, currency = "ARS") => {
+    if (currency === "Pesos Argentinos" || currency === "ARS") {
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount)
-  }
+    })
+      .format(amount)
+      .replace("$", "U$S");
+  };
 
   // Configuración mejorada de ApexCharts
-  const chartOptions = {
-    chart: {
-      sparkline: { enabled: true },
-      animations: {
-        enabled: true,
-        easing: "easeinout",
-        speed: 800,
-        animateGradually: {
+  function getChartOptions(divisa = "Pesos Argentinos") {
+    return {
+      chart: {
+        sparkline: { enabled: true },
+        animations: {
           enabled: true,
-          delay: 150,
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 350,
-        },
-      },
-    },
-    colors: ["#10B981", "#F59E0B"], // Verde para disponible, naranja para utilizado
-    stroke: {
-      width: 0,
-      lineCap: "round",
-    },
-    legend: { show: false },
-    dataLabels: { enabled: false },
-    labels: ["Disponible", "Utilizado"],
-    states: {
-      hover: {
-        filter: {
-          type: "lighten",
-          value: 0.1,
-        },
-      },
-      active: {
-        filter: {
-          type: "darken",
-          value: 0.1,
-        },
-      },
-    },
-    plotOptions: {
-      pie: {
-        customScale: 0.95,
-        expandOnClick: false,
-        donut: {
-          size: "75%",
-          labels: {
-            show: true,
-            name: {
-              show: true,
-              fontSize: "14px",
-              fontFamily: theme.typography.fontFamily,
-              fontWeight: 600,
-              color: theme.palette.text.secondary,
-              offsetY: 25,
-              formatter: (val) => val,
-            },
-            value: {
-              show: true,
-              fontSize: "16px",
-              fontFamily: theme.typography.fontFamily,
-              fontWeight: 700,
-              color: theme.palette.text.primary,
-              offsetY: -15,
-              formatter: (val) => formatCurrency(val),
-            },
-            total: {
-              show: true,
-              showAlways: true,
-              label: "Tope Total",
-              fontSize: "12px",
-              fontFamily: theme.typography.fontFamily,
-              fontWeight: 600,
-              color: theme.palette.text.secondary,
-              formatter: (w) => {
-                const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-                return formatCurrency(total)
-              },
-            },
+          easing: "easeinout",
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150,
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350,
           },
         },
       },
-    },
-    tooltip: {
-      enabled: true,
-      theme: isDark ? "dark" : "light",
-      style: {
-        fontSize: "12px",
-        fontFamily: theme.typography.fontFamily,
+      colors: ["#10B981", "#F59E0B"], // Verde para disponible, naranja para utilizado
+      stroke: {
+        width: 0,
+        lineCap: "round",
       },
-      y: {
-        formatter: (val) => formatCurrency(val),
+      legend: { show: false },
+      dataLabels: { enabled: false },
+      labels: ["Disponible", "Utilizado"],
+      states: {
+        hover: {
+          filter: {
+            type: "lighten",
+            value: 0.1,
+          },
+        },
+        active: {
+          filter: {
+            type: "darken",
+            value: 0.1,
+          },
+        },
       },
-      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-        const value = series[seriesIndex]
-        const label = w.globals.labels[seriesIndex]
-        const percentage = ((value / (series[0] + series[1])) * 100).toFixed(1)
-
-        return `
-          <div style="padding: 12px; border-radius: 8px; background: ${isDark ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 0.95)"
-          }; border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"
-          }; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-            <div style="font-weight: 600; color: ${theme.palette.text.primary}; margin-bottom: 4px;">
-              ${label}
-            </div>
-            <div style="font-weight: 700; font-size: 16px; color: ${seriesIndex === 0 ? "#10B981" : "#F59E0B"};">
-              ${formatCurrency(value)}
-            </div>
-            <div style="font-size: 12px; color: ${theme.palette.text.secondary}; margin-top: 4px;">
-              ${percentage}% del total
-            </div>
-          </div>
-        `
-      },
-    },
-    responsive: [
-      {
-        breakpoint: 768,
-        options: {
-          plotOptions: {
-            pie: {
-              customScale: 0.8,
-              donut: {
-                size: "70%",
-                labels: {
-                  name: {
-                    fontSize: "12px",
-                  },
-                  value: {
-                    fontSize: "14px",
-                  },
-                  total: {
-                    fontSize: "10px",
-                  },
+      plotOptions: {
+        pie: {
+          customScale: 0.95,
+          expandOnClick: false,
+          donut: {
+            size: "75%",
+            labels: {
+              show: true,
+              name: {
+                show: true,
+                fontSize: "14px",
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 600,
+                color: theme.palette.text.secondary,
+                offsetY: 25,
+                formatter: (val) => val,
+              },
+              value: {
+                show: true,
+                fontSize: "16px",
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 700,
+                color: theme.palette.text.primary,
+                offsetY: -15,
+                formatter: (val) => formatCurrency(val, divisa),
+              },
+              total: {
+                show: true,
+                showAlways: true,
+                label: "Tope Total",
+                fontSize: "12px",
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 600,
+                color: theme.palette.text.secondary,
+                formatter: (w) => {
+                  const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                  return formatCurrency(total, divisa)
                 },
               },
             },
           },
         },
       },
-    ],
+      tooltip: {
+        enabled: true,
+        theme: isDark ? "dark" : "light",
+        style: {
+          fontSize: "12px",
+          fontFamily: theme.typography.fontFamily,
+        },
+        y: {
+          formatter: (val) => formatCurrency(val, divisa),
+        },
+        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+          const value = series[seriesIndex]
+          const label = w.globals.labels[seriesIndex]
+          const percentage = ((value / (series[0] + series[1])) * 100).toFixed(1)
+
+          return `
+          <div style="padding: 12px; border-radius: 8px; background: ${isDark ? "rgba(0, 0, 0, 0.9)" : "rgba(255, 255, 255, 0.95)"
+            }; border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"
+            }; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
+            <div style="font-weight: 600; color: ${theme.palette.text.primary}; margin-bottom: 4px;">
+              ${label}
+            </div>
+            <div style="font-weight: 700; font-size: 16px; color: ${seriesIndex === 0 ? "#10B981" : "#F59E0B"};">
+              ${formatCurrency(value, divisa)}
+            </div>
+            <div style="font-size: 12px; color: ${theme.palette.text.secondary}; margin-top: 4px;">
+              ${percentage}% del total
+            </div>
+          </div>
+        `
+        },
+      },
+      responsive: [
+        {
+          breakpoint: 768,
+          options: {
+            plotOptions: {
+              pie: {
+                customScale: 0.8,
+                donut: {
+                  size: "70%",
+                  labels: {
+                    name: {
+                      fontSize: "12px",
+                    },
+                    value: {
+                      fontSize: "14px",
+                    },
+                    total: {
+                      fontSize: "10px",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    }
   }
 
   return (
@@ -252,7 +274,7 @@ const LimitesOverview = () => {
                 position: "relative",
               }}
             >
-              <ReactApexcharts type='donut' height={esPantallaChica ? 220 : 280} width="100%" series={[dataLimite?.disponible ? dataLimite.disponible : 0, dataLimite?.utilizado ? dataLimite.utilizado : 0]} options={chartOptions} />
+              <ReactApexcharts type='donut' height={esPantallaChica ? 220 : 280} width="100%" series={[dataLimite?.disponible ? dataLimite.disponible : 0, dataLimite?.utilizado ? dataLimite.utilizado : 0]} options={getChartOptions(dataLimite?.divisa)} />
               {/* <ReactApexChart type="donut" height={280} width="100%" series={chartSeries} options={chartOptions} /> */}
             </Box>
           </Grid>
@@ -372,7 +394,7 @@ const LimitesOverview = () => {
                     mb: 1,
                   }}
                 >
-                  {formatCurrency(dataLimite?.disponible)}
+                  {formatCurrency(dataLimite?.disponible > 0 ? dataLimite?.disponible : 0)}
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -427,7 +449,7 @@ const LimitesOverview = () => {
                     mb: 1,
                   }}
                 >
-                  {formatCurrency(dataLimite?.utilizado)}
+                  {formatCurrency(dataLimite?.utilizado > 0 ? dataLimite?.utilizado : 0)}
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -487,7 +509,7 @@ const LimitesOverview = () => {
                   textAlign: "center",
                 }}
               >
-                {formatCurrency(Math.max(0, tope - dataLimite?.utilizado))}
+                {formatCurrency(dataLimite?.utilizado > 0 ? Math.max(0, tope - dataLimite?.utilizado) : 0)}
               </Typography>
               <Typography
                 variant="caption"

@@ -15,8 +15,6 @@ const LineaDeCreditoHabilitado = true
 const documentacionLufeYParametrizada = true
 const cliente = 'Integra Pymes Referidos'
 
-//Sacar times new roman - sacar requerido - achicar onboarding - sacar plazo de gracia en meses
-
 export {
     RecaptchaKey, UrlApiDynamics, UnidadDeNegocio, UrlApi, authMail,
     authPass, onboardingHabilitado, readOnlyDatos, referidorOnboarding, lufeHabilitado, DireccionOnbHabilitado, LineaDeCreditoHabilitado, documentacionLufeYParametrizada,

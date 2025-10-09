@@ -56,9 +56,21 @@ const GarantiaIndex = () => {
     }
   }
 
-  const total = garantias?.reduce((acumulador, garantia) => {
+  const montoTotalPesos = garantias?.reduce((acumulador, garantia) => {
     // aseguramos que new_monto sea número
-    const monto = Number(garantia.new_monto) || 0;
+    let monto = 0
+    if (garantia?.transactioncurrencyid == "Pesos Argentinos") {
+      monto = Number(garantia.new_monto) || 0;
+    }
+    return acumulador + monto;
+  }, 0);
+
+  const montoTotalUSD = garantias?.reduce((acumulador, garantia) => {
+    // aseguramos que new_monto sea número
+    let monto = 0
+    if (garantia?.transactioncurrencyid == "Dolares Americanos") {
+      monto = Number(garantia.new_monto) || 0;
+    }
     return acumulador + monto;
   }, 0);
 
@@ -96,13 +108,14 @@ const GarantiaIndex = () => {
   // Datos de ejemplo para estadísticas
   const statsData = {
     total: garantias?.length,
-    montoTotal: total,
+    montoTotal: montoTotalPesos,
+    montoTotalUSD: montoTotalUSD,
     vigentes: garantias?.filter((item) => item.statuscode === 100000001)?.length,
     vencidas: garantias?.filter((item) => item.statuscode === 100000000)?.length,
   }
 
   // Componente para las tarjetas de KPI
-  const KPICard = ({ title, value, subtitle, icon: Icon, color = "primary", trend }) => (
+  const KPICard = ({ title, value, subtitle, icon: Icon, color = "primary", trend, valueUSD}) => (
     <Card
       sx={{
         borderRadius: 3,
@@ -141,14 +154,14 @@ const GarantiaIndex = () => {
           <Box flex={1} display="flex" flexDirection="column" justifyContent="center" sx={{ mt: 2 }}>
             <Typography
               sx={{
-                fontSize: { xs: 22, xl: 26 },
+                fontSize: { xs: valueUSD > 0 ? 16 : 18, md: valueUSD > 0 ? 18 : 20, xl: valueUSD > 0 ? 20 : 24 },
                 fontWeight: 700,
                 color: theme.palette[color].main,
                 mb: 1,
                 lineHeight: 1.2,
               }}
             >
-              {value}
+              {value}{valueUSD > 0  && ` / U$S${(valueUSD / 1000000).toFixed(1)}M`}
             </Typography>
             <Typography
               sx={{
@@ -195,9 +208,9 @@ const GarantiaIndex = () => {
                 subtitle="Garantías registradas"
                 icon={CreditCard}
                 color="primary"
+                valueUSD={0}
               />
             </Grid>
-
             <Grid item xs={12} sm={6} md={3}>
               <KPICard
                 title="Monto Total"
@@ -205,9 +218,9 @@ const GarantiaIndex = () => {
                 subtitle="Valor total en garantías"
                 icon={AccountBalance}
                 color="success"
+                valueUSD={statsData.montoTotalUSD > 0 ?  statsData.montoTotalUSD : 0}
               />
             </Grid>
-
             <Grid item xs={12} sm={6} md={3}>
               <KPICard
                 title="Vigentes"
@@ -215,6 +228,7 @@ const GarantiaIndex = () => {
                 subtitle="Garantías activas y válidas"
                 icon={CheckCircle}
                 color="success"
+                valueUSD={0}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -224,6 +238,7 @@ const GarantiaIndex = () => {
                 subtitle="Garantías fuera de vigencia"
                 icon={Security}
                 color="info"
+                valueUSD={0}
               />
             </Grid>
           </Grid>
@@ -239,9 +254,11 @@ const GarantiaIndex = () => {
             <Box sx={{ borderRadius: 4, }}>
               <Grid container spacing={4} sx={{ borderRadius: 10, }}>
                 <Grid item xs={12} sx={{ borderRadius: 10, }}>
-                  <TablaGarantia garantias={garantias}
+                  <TablaGarantia
+                    garantias={garantias}
                     columnas={columns_garantias_mejoradas}
-                    loadingGarantias={loadingGarantias} />
+                    loadingGarantias={loadingGarantias}
+                  />
                 </Grid>
               </Grid>
             </Box>

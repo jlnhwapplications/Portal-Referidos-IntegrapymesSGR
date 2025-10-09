@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import {
@@ -11,13 +11,82 @@ import {
 import QuickSearchToolbar from "../../../@core/components/table/QuickSearchToolbar";
 import { LinearProgress, useMediaQuery, useTheme } from "@mui/material";
 
-const Table = ({ data, columns, name, addRow, toggle, canExport, description }) => {
+const Table = ({ data, columns, name, addRow, toggle, canExport, description, exportFileName }) => {
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
   });
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
+  const localeText = useMemo(() => ({
+    ...esES.components.MuiDataGrid.defaultProps.localeText,
+    toolbarExportCSV: "Descargar",
+  }), []);
+  const isSearching = searchText.trim().length > 0;
+  const rawRows = isSearching ? filteredData : data;
+  const rowsToShow = Array.isArray(rawRows) ? rawRows : [];
+  const hasRows = rowsToShow.length > 0;
+  const processedColumns = useMemo(() => {
+    if (!Array.isArray(columns)) return [];
+    return columns.map(column => ({
+      ...column,
+      headerAlign: column?.headerAlign ?? "left",
+      align: column?.align ?? "left",
+    }));
+  }, [columns]);
+  const exportColumnFields = useMemo(() => {
+    if (!Array.isArray(processedColumns)) return [];
+    return processedColumns
+      .filter(column => !!column?.field)
+      .filter(column => column.disableExport !== true)
+      .filter(column => {
+        const field = column.field;
+        if (column.hide) return false;
+        if (columnVisibilityModel[field] === false) return false;
+        return true;
+      })
+      .map(column => column.field);
+  }, [processedColumns, columnVisibilityModel]);
+
+  useEffect(() => {
+    if (!Array.isArray(columns) || columns.length === 0) {
+      setColumnVisibilityModel({});
+      return;
+    }
+
+    setColumnVisibilityModel(prevModel => {
+      const updatedModel = { ...prevModel };
+      let hasChanges = false;
+      const columnFields = new Set();
+
+      columns.forEach(column => {
+        const field = column?.field;
+        if (!field) return;
+
+        columnFields.add(field);
+
+        if (column.hide) {
+          if (updatedModel[field] !== false) {
+            updatedModel[field] = false;
+            hasChanges = true;
+          }
+        } else if (updatedModel[field] === false) {
+          delete updatedModel[field];
+          hasChanges = true;
+        }
+      });
+
+      Object.keys(updatedModel).forEach(field => {
+        if (!columnFields.has(field)) {
+          delete updatedModel[field];
+          hasChanges = true;
+        }
+      });
+
+      return hasChanges ? updatedModel : prevModel;
+    });
+  }, [columns]);
   const theme = useTheme()
   const isDark = theme?.palette?.mode === 'dark'
   const esPantallaChica = useMediaQuery(theme => theme.breakpoints.down('xl'))
@@ -28,7 +97,8 @@ const Table = ({ data, columns, name, addRow, toggle, canExport, description }) 
     setSearchText(searchValue);
     const searchRegex = new RegExp(escapeRegExp(searchValue), "i");
 
-    const filteredRows = data.filter((row) => {
+    const sourceRows = Array.isArray(data) ? data : [];
+    const filteredRows = sourceRows.filter((row) => {
       return Object.keys(row).some((field) => {
         const fieldValue = row[field];
         if (fieldValue !== undefined && fieldValue !== null) {
@@ -80,12 +150,14 @@ const Table = ({ data, columns, name, addRow, toggle, canExport, description }) 
       <DataGrid
         getRowId={(row) => row.id}
         autoHeight
-        checkboxSelection={canExport}
-        rows={filteredData.length ? filteredData : data}
-        columns={columns}
+        checkboxSelection={Boolean(canExport && hasRows)}
+        rows={rowsToShow}
+        columns={processedColumns}
         pageSizeOptions={[5, 10, 25, 50]}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={setColumnVisibilityModel}
         rowHeight={esPantallaChica ? 50 : 60}
         slots={{
           toolbar: QuickSearchToolbar,
@@ -98,10 +170,12 @@ const Table = ({ data, columns, name, addRow, toggle, canExport, description }) 
             onChange: (event) => handleSearch(event.target.value),
             addRow: addRow,
             toggle: toggle,
-            canExport: canExport,
+            canExport: canExport && hasRows,
+            exportFileName,
+            exportColumnFields,
           },
         }}
-        localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+        localeText={localeText}
         sx={{
           border: "none",
           "& .MuiDataGrid-main": {
@@ -117,19 +191,31 @@ const Table = ({ data, columns, name, addRow, toggle, canExport, description }) 
               color: theme.palette.text.primary,
               display: "flex",
               alignItems: "center",
+              justifyContent: "flex-start",
+              textAlign: "left",
             },
             "& .MuiDataGrid-columnHeaderTitle": {
               fontWeight: 600,
               fontSize: { xs: "0.7rem", xl: "0.8rem" },
+              textAlign: "left",
+            },
+            "& .MuiDataGrid-columnHeaderTitleContainer": {
+              justifyContent: "flex-start",
             },
           },
           "& .MuiDataGrid-cell": {
             borderBottom: `1px solid ${isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)"}`,
             display: "flex",
             alignItems: "center",
+            justifyContent: "flex-start",
+            textAlign: "left",
             "&:focus": {
               outline: "none",
             },
+          },
+          "& .MuiDataGrid-cellContent": {
+            textAlign: "left",
+            width: "100%",
           },
           "& .MuiDataGrid-row": {
             minHeight: { xs: "50px !important", xl: "60px !important" },

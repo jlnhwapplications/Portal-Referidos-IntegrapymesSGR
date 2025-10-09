@@ -44,6 +44,7 @@ const UseGetGarantias = () => {
                 new_monto: element["new_monto"],
                 new_monto_value: element["new_monto@OData.Community.Display.V1.FormattedValue"],
                 new_fechadevencimiento: element["new_fechadevencimiento"] ? moment(new Date(element["new_fechadevencimiento"])).format('DD/MM/yyyy') : '',
+                new_fechadenegociacion: element["new_fechadevencimiento"] ? moment(new Date(element["new_fechadevencimiento"])).format('DD/MM/yyyy') : '',
                 new_tipodegarantias: element["new_tipodegarantias@OData.Community.Display.V1.FormattedValue"],
                 new_fechadeorigen: element["new_fechadeorigen"] ? moment(new Date(element["new_fechadeorigen"])).format("DD/MM/yyyy") : '',
                 new_fechadeorigen_date: element["new_fechadeorigen"],

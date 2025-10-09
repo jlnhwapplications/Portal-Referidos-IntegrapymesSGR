@@ -586,7 +586,7 @@ const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig, limi
                                                     overflow: "hidden",
                                                 }}
                                             >
-                                                {account?.emailaddress1?.length > 30 ? `${account.emailaddress1.substr(0, 30)}...` : account?.emailaddress1}
+                                                {account?.emailaddress1?.length > 30 ? `${account.emailaddress1.toLowerCase().substr(0, 30)}...` : account?.emailaddress1.toLowerCase()}
                                             </Typography>
                                         </Box>
                                     )
@@ -754,19 +754,19 @@ const Index = () => {
             value: "100000003",
             label: "Análisis de Riesgo",
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000003).length || 0,
-            descEstado: "Nuestro equipo está evaluando la información de la pyme para cumplir con políticas de prevención de fraude, crédito y normativas regulatorias."
+            descEstado: "Nuestro equipo está evaluando la información de la pyme y el encuadre con las políticas de crédito y normativas vigentes."
         },
         {
             value: "100000001",
             label: "Alta Pendiente",
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000001).length || 0,
-            descEstado: "La pyme fue aprobada en el análisis de riesgo y está en proceso de creación de cuenta. Solo resta completar pasos internos de configuración."
+            descEstado: "La pyme fue aprobada por Comité y se encuentra en proceso de instrumentación de la línea. Solo resta el envío de la Carta Oferta para la firma."
         },
         {
             value: "100000006",
             label: "Pendiente de firma",
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000006).length || 0,
-            descEstado: "La pyme necesita firmar la documentación de alta. Puedes recordarles revisar su correo o el portal para finalizar este paso."
+            descEstado: "La pyme necesita firmar la documentación de alta. Puedes recordarles revisar su correo y/o enviar los contratos firmados por favor."
         },
         {
             value: "100000000",

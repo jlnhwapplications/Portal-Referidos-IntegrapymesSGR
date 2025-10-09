@@ -507,8 +507,16 @@ const LimitCard = ({ data }) => {
                     data.new_topeporlineacomercial,
                     data._transactioncurrencyid_value
                   )}
+            </Typography>{" "}
+            <Typography variant="body2" color="text.secondary">
+              Divisa Original: {data?._transactioncurrencyid_value || "N/A"}
             </Typography>
-            <Stack direction="row" spacing={2} justifyContent="center">
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="center"
+              sx={{ mt: 2 }}
+            >
               <Box display="flex" alignItems="center" gap={0.5}>
                 {data?.statecode === 0 ? (
                   <>

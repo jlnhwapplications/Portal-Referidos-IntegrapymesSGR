@@ -1,9 +1,10 @@
 // ** MUI Imports
 import Card from '@mui/material/Card'
 import Table from '@/@core/components/table/Table'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import ModalNuevaGarantia from '@/pages/garantias/ModalNuevaGarantia'
 import { Box, Grid, Skeleton } from '@mui/material'
+import { AuthContext } from '@/context/AuthContext'
 
 
 const TablaGarantia = ({ garantias, columnas, loadingGarantias }) => {
@@ -11,7 +12,7 @@ const TablaGarantia = ({ garantias, columnas, loadingGarantias }) => {
   const [montoDisponible, setMontoDisponible] = useState(0)
   const [acreedores, setAcreedores] = useState([])
   const [destinoDeFondos, setDestinoDeFondos] = useState([])
-
+  const { referido } = useContext(AuthContext);
   const handleOpenNew = () => {
     setOpenNew(true)
   }
@@ -32,7 +33,8 @@ const TablaGarantia = ({ garantias, columnas, loadingGarantias }) => {
             toggle={handleOpenNew}
             data={garantias?.length > 0 ? garantias : []}
             columns={columnas}
-            canExport={false}
+            canExport={true}
+            exportFileName={`Garantias ${referido?.name}`}
           />
       }
 

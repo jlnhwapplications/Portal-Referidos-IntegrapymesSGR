@@ -34,6 +34,7 @@ const useGetDisponibleLimitesGeneral = () => {
         "<attribute name='new_vigenciahasta'/>" +
         "<attribute name='new_montodisponiblegeneral'/>" +
         "<attribute name='new_cuenta'/>" +
+        "<attribute name='transactioncurrencyid'/>" +
         "<order attribute='new_name' descending='false'/>" +
         "<filter type='and'>" +
         "<condition attribute='new_lineatipodeoperacion' operator='eq' value='100000000'/>" +
@@ -71,7 +72,8 @@ const useGetDisponibleLimitesGeneral = () => {
         new_montodisponiblegeneral_value:
           el["new_montodisponiblegeneral@OData.Community.Display.V1.FormattedValue"] ?? null,
         new_cuenta: el["_new_cuenta_value@OData.Community.Display.V1.FormattedValue"] ?? el["new_cuenta"],
-        new_cuenta_value: el["_new_cuenta_value"] ?? el["new_cuenta"]
+        new_cuenta_value: el["_new_cuenta_value"] ?? el["new_cuenta"],
+        transactioncurrencyid: el["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"]
       }));
 
       setDisponibles(formatted);

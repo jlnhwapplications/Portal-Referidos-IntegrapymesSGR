@@ -200,7 +200,8 @@ const StatusChip = ({ status, value }) => {
             Activa: { color: "success", icon: CheckCircleIcon },
             Pendiente: { color: "warning", icon: PendingIcon },
             Vencida: { color: "error", icon: ErrorIcon },
-            "En Proceso": { color: "info", icon: WarningIcon },
+            "En Cartera": { color: "info", icon: WarningIcon },
+            Vigente: { color: "success", icon: CheckCircleIcon },
         }
         return configs[status] || { color: "default", icon: InfoIcon }
     }
@@ -430,6 +431,11 @@ const IdGarantia = () => {
                             icon: LocalAtmIcon,
                             label: "Divisa",
                             value: selectedGuarantee.transactioncurrencyid,
+                        },
+                        {
+                            icon: CalendarTodayIcon,
+                            label: "Fecha de Monetización",
+                            value: selectedGuarantee.new_fechadenegociacion,
                         },
                     ],
                 },

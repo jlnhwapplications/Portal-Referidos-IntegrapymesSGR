@@ -1,4 +1,4 @@
-import { yupResolver } from '@hookform/resolvers/yup'
+﻿import { yupResolver } from '@hookform/resolvers/yup'
 import { Business, CheckCircle, Close, CorporateFare, Edit, Info, Percent, Person, PersonAdd, Save, Warning } from '@mui/icons-material'
 import { Alert, alpha, Avatar, Badge, Box, Button, Card, CardContent, Chip, CircularProgress, Dialog, DialogContent, Fade, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Typography, useTheme } from '@mui/material'
 import React, { useEffect } from 'react'
@@ -23,30 +23,31 @@ const ModalAccionistas = ({
 }) => {
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
-    // Componente de sección del formulario
+    // Componente de secciÃ³n del formulario
 
     const ValidateCUITCUIL = (cuit) => {
-        let acumulado = 0;
-        let respuesta = false;
-        let digitos = cuit.split('');
-        let digito = parseInt(digitos.pop());
-
-        for (let i = 0; i < digitos.length; i++) {
-            acumulado += digitos[9 - i] * (2 + (i % 6));
+        if (!cuit) {
+            return false
         }
 
-        let verif = 11 - (acumulado % 11);
-        if (verif === 11) {
-            verif = 0;
-        } else if (verif === 10) {
-            verif = 9;
+        const digits = cuit.replace(/[^0-9]/g, '')
+        if (digits.length !== 11) {
+            return false
         }
-        respuesta = (digito === verif);
-        return respuesta;
+
+        const coefficients = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]
+        const numbers = digits.split('').map(Number)
+        const checkDigit = numbers.pop()
+
+        const sum = numbers.reduce((acc, digit, index) => acc + digit * coefficients[index], 0)
+        const mod = 11 - (sum % 11)
+
+        const expectedDigit = mod === 11 ? 0 : mod === 10 ? 9 : mod
+        return checkDigit === expectedDigit
     }
 
     const schema = Yup.object().shape({
-        person: Yup.string().required('La personería es requerida'),
+        person: Yup.string().required('La personerí­a es requerida'),
         razonSocial: Yup.string().when('person', (personeria) => {
             return personeria == '100000000' ? Yup.string().required() : Yup.string().notRequired()
         }),
@@ -56,31 +57,14 @@ const ModalAccionistas = ({
         apellido: Yup.string().when('person', (personeria) => {
             return personeria == '100000001' ? Yup.string().required() : Yup.string().notRequired()
         }),
-        // razonSocial: Yup.string()
-        //     .when('person', {
-        //         is: '100000000',
-        //         then: Yup.string().required('La razón social es requerida'),
-        //         otherwise: Yup.string().nullable(),
-        //     }),
-        // nombre: Yup.string()
-        //     .when('person', {
-        //         is: '100000001',
-        //         then: Yup.string().required('El nombre es requerido'),
-        //         otherwise: Yup.string().nullable(),
-        //     }),
-        // apellido: Yup.string()
-        //     .when('person', {
-        //         is: '100000001',
-        //         then: Yup.string().required('El apellido es requerido'),
-        //         otherwise: Yup.string().nullable(),
-        //     }),
         cuitCuil: Yup.string()
             .required('El CUIT/CUIL es requerido')
             .length(11, 'El CUIT/CUIL debe tener 11 caracteres')
             .test('valid-cuit', 'El CUIT/CUIL debe ser válido', (value) => ValidateCUITCUIL(value)),
         porcentaje: Yup.number()
-            .typeError('El porcentaje debe ser un número')
+            .typeError('El porcentaje debe ser un nÃºmero')
             .required('El porcentaje de participación es requerido')
+            .max(100, 'El porcentaje no puede superar el 100%')
     })
 
     const defaultValuesObj = {
@@ -128,6 +112,7 @@ const ModalAccionistas = ({
 
     // Acciones al enviar
     const onSubmit = (data) => {
+        debugger
         if (esActualizacion) {
             modificarAccionista(data)
         } else {
@@ -170,7 +155,7 @@ const ModalAccionistas = ({
         )
     }
 
-    // Componente de tarjeta de selección para personería
+    // Componente de tarjeta de selecciÃ³n para personerÃ­a
     const PersoneriaCard = ({ option, selected, onClick, disabled = false }) => {
         const theme = useTheme()
         const isDark = theme.palette.mode === "dark"
@@ -306,7 +291,7 @@ const ModalAccionistas = ({
                                 {esActualizacion ? "Modificar Accionista" : "Agregar Accionista"}
                             </Typography>
                             <Typography sx={{ fontSize: { xs: 12, xl: 16 } }} color="text.secondary">
-                                {esActualizacion ? "Actualizar información del accionista" : "Registrar nuevo accionista"}
+                                {esActualizacion ? "Actualizar informaciÃ³n del accionista" : "Registrar nuevo accionista"}
                             </Typography>
                         </Box>
                     </Box>
@@ -335,13 +320,13 @@ const ModalAccionistas = ({
                         {/* ...inputs... */}
                         {/* <Button type="submit">Enviar</Button> */}
 
-                        {/* Selección de Personería */}
+                        {/* SelecciÃ³n de PersonerÃ­a */}
                         <FormSection
-                            title="Tipo de Personería"
+                            title="Tipo de PersonerÃ­a"
                             icon={CorporateFare}
                             alert={{
                                 severity: "info",
-                                message: "Selecciona si se trata de una persona física o jurídica",
+                                message: "Selecciona si se trata de una persona fÃ­sica o jurÃ­dica",
                             }}
                         >
                             <Grid item xs={12}>
@@ -382,7 +367,7 @@ const ModalAccionistas = ({
                                 <Box>
                                     <Grid container spacing={3}>
                                         {personeriaSeleccionada === "100000001" ? (
-                                            // Persona Física
+                                            // Persona FÃ­sica
                                             <>
                                                 <Grid item xs={4} xl={6}>
                                                     <Controller
@@ -395,10 +380,10 @@ const ModalAccionistas = ({
                                                                 label="Nombre"
                                                                 margin="dense"
                                                                 fullWidth
-                                                                required
+                                                                required={personeriaSeleccionada === "100000001"}
                                                                 disabled={habilitarEdicion}
                                                                 error={Boolean(errors.nombre)}
-                                                                helperText={errors.nombre && "Este campo es obligatorio"}
+                                                                helperText={errors?.nombre?.message}
                                                                 InputProps={{
                                                                     startAdornment: (
                                                                         <InputAdornment position="start">
@@ -485,10 +470,10 @@ const ModalAccionistas = ({
                                                                 label="Apellido"
                                                                 margin="dense"
                                                                 fullWidth
-                                                                required
+                                                                required={personeriaSeleccionada === "100000001"}
                                                                 disabled={habilitarEdicion}
-                                                                error={Boolean(errors.nombre)}
-                                                                helperText={errors.nombre && "Este campo es obligatorio"}
+                                                                error={Boolean(errors.apellido)}
+                                                                helperText={errors?.apellido?.message}
                                                                 InputProps={{
                                                                     startAdornment: (
                                                                         <InputAdornment position="start">
@@ -510,7 +495,7 @@ const ModalAccionistas = ({
                                                 </Grid>
                                             </>
                                         ) : (
-                                            // Persona Jurídica
+                                            // Persona JurÃ­dica
                                             <Grid item xs={4} xl={6}>
                                                 <Controller
                                                     name="razonSocial"
@@ -519,13 +504,13 @@ const ModalAccionistas = ({
                                                     render={({ field }) => (
                                                         <TextField
                                                             {...field}
-                                                            label="Razón Social"
+                                                            label="RazÃ³n Social"
                                                             margin="dense"
                                                             fullWidth
-                                                            required
+                                                            required={personeriaSeleccionada === "100000000"}
                                                             disabled={habilitarEdicion}
-                                                            error={Boolean(errors.nombre)}
-                                                            helperText={errors.nombre && "Este campo es obligatorio"}
+                                                            error={Boolean(errors.razonSocial)}
+                                                            helperText={errors?.razonSocial?.message}
                                                             InputProps={{
                                                                 startAdornment: (
                                                                     <InputAdornment position="start">
@@ -548,7 +533,7 @@ const ModalAccionistas = ({
                                                     value={razonSoc}
                                                     margin="dense"
                                                     id="razonSocial"
-                                                    label="Razón Social"
+                                                    label="RazÃ³n Social"
                                                     type="text"
                                                     fullWidth
                                                     variant="outlined"
@@ -588,9 +573,9 @@ const ModalAccionistas = ({
                                                         fullWidth
                                                         required={true}
                                                         disabled={habilitarEdicion}
-                                                        error={Boolean(errors.nombre)}
+                                                        error={Boolean(errors.cuitCuil)}
                                                         placeholder='! Sin espacios ni guiones !'
-                                                        helperText={errors.nombre && "Este campo es obligatorio"}
+                                                        helperText={errors?.cuitCuil?.message}
                                                         InputProps={{
                                                             startAdornment: (
                                                                 <InputAdornment position="start">
@@ -648,13 +633,13 @@ const ModalAccionistas = ({
                                                 render={({ field }) => (
                                                     <TextField
                                                         {...field}
-                                                        label="% de participación"
+                                                        label="% de participaciÃ³n"
                                                         margin="dense"
                                                         fullWidth
                                                         required={true}
-                                                        error={Boolean(errors.nombre)}
+                                                        error={Boolean(errors.porcentaje)}
                                                         inputProps={{ min: 0, max: 100 }}
-                                                        helperText={errors.nombre && "Este campo es obligatorio"}
+                                                        helperText={errors?.porcentaje?.message}
                                                         InputProps={{
                                                             startAdornment: (
                                                                 <InputAdornment position="start">
@@ -677,7 +662,7 @@ const ModalAccionistas = ({
                                                 value={percentaje}
                                                 margin="dense"
                                                 id="porcentaje"
-                                                label="% de participación"
+                                                label="% de participaciÃ³n"
                                                 type="number"
                                                 inputProps={{ min: 0, max: 100 }}
                                                 fullWidth
@@ -705,15 +690,15 @@ const ModalAccionistas = ({
                                             /> */}
                                         </Grid>
 
-                                        {/* Relación */}
+                                        {/* RelaciÃ³n */}
                                         <Grid item xs={4} xl={6}>
                                             <Controller
                                                 name="relacionAccionista"
                                                 control={control}
                                                 render={({ field }) => (
                                                     <FormControl fullWidth sx={{ mt: 2 }}>
-                                                        <InputLabel>Relación</InputLabel>
-                                                        <Select {...field} label="Relación">
+                                                        <InputLabel>RelaciÃ³n</InputLabel>
+                                                        <Select {...field} label="RelaciÃ³n">
                                                             {tipoRelacionAccionista.map((option) => (
                                                                 <MenuItem key={option.value} value={option.value}>
                                                                     {option.label}
@@ -724,12 +709,12 @@ const ModalAccionistas = ({
                                                 )}
                                             />
                                             {/* <FormControl fullWidth sx={{ mt: 2 }}>
-                                                <InputLabel id="demo-simple-select-label">Relación</InputLabel>
+                                                <InputLabel id="demo-simple-select-label">RelaciÃ³n</InputLabel>
                                                 <Select
                                                     labelId="demo-simple-select-label"
                                                     id="demo-simple-select"
                                                     value={relacionAccionista}
-                                                    label="Relación"
+                                                    label="RelaciÃ³n"
                                                     onChange={relacionAccionistaOnChange}
                                                 // sx={{ mt: 2 }}
                                                 >
