@@ -1130,13 +1130,14 @@ const SolicitudAltaFinal = ({ ResetOnboarding, nuevaCuenta, envioConfirmado, env
                             <Alert severity="warning" variant="outlined">
                                 <AlertTitle><Typography variant="h6">Advertencia</Typography></AlertTitle>
                                 <Typography variant="h6" >
-                                    Lamentablemente, no pudimos procesar algunos de los archivos adjuntos que intentaste enviar.
+                                    {/* Lamentablemente, no pudimos procesar algunos de los archivos adjuntos que intentaste enviar.
                                     Por favor, envie por <Mailto
                                         // email={CorreoAdministracion}
                                         subject={`Documentación faltante onboarding digital ${razonSocial}`}
                                         body="">
                                         correo
-                                    </Mailto> los siguientes documentos:
+                                    </Mailto> los siguientes documentos: */}
+                                    Lamentablemente, no pudimos procesar algunos de los archivos adjuntos que intentaste enviar. Te pedimos que los subas nuevamente desde la cuenta que acabás de crear en tu onboarding.
                                 </Typography>
                                 <Box sx={{
                                     display: 'flex',

@@ -23,7 +23,6 @@ import {
 } from "@mui/material"
 import {
     Close as CloseIcon,
-    InsertDriveFile as InsertDriveFileIcon,
     Delete as DeleteIcon,
     FolderOpen as FolderOpenIcon,
     Download as DownloadIcon,
@@ -82,9 +81,15 @@ const ModalCarpeta = ({ openCarpeta, handleCloseCarpeta, carpeta, nombreDocument
             wav: AudioIcon,
             zip: ArchiveIcon,
             rar: ArchiveIcon,
+            xls: ArchiveIcon,
+            xlsx: ArchiveIcon,
+            csv: ArchiveIcon,
+            xlsb: ArchiveIcon,
+            xltx: ArchiveIcon,
+            xltm: ArchiveIcon,
         }
 
-        return iconMap[extension] || InsertDriveFileIcon
+        return iconMap[extension] || Description
     }
 
     const getFileColor = (fileName) => {

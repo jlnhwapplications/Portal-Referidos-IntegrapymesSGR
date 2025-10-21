@@ -167,7 +167,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
             if (type.includes("word") || type.includes("document")) {
                 return { icon: Description, color: "#2196f3" }
             }
-            return { icon: InsertDriveFile, color: "#757575" }
+            return { icon: Description, color: "#757575" }
         }
 
         const { icon: IconComponent, color } = getFileIcon()

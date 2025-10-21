@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { obtenerDocumentosPorCuenta } from '@/redux/CarpetaDigital'
 import { DocumentacionPorCuenta } from '@/context/GetDocumentacionPorCuentaContex';
 
-import { CheckCircle, Close, CloudUpload, Delete, Description, Image, PictureAsPdf, Warning } from '@mui/icons-material'
+import { CheckCircle, Close, CloudUpload, Delete, Description, Image, PictureAsPdf, Warning, InsertDriveFile as InsertDriveFileIcon, } from '@mui/icons-material'
 import {
   Alert, alpha, Avatar, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fade, IconButton, LinearProgress, List,
   ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Paper, Stack, styled, Tooltip, Typography, useTheme
@@ -201,7 +201,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
       if (type.includes("word") || type.includes("document")) {
         return { icon: Description, color: "#2196f3" }
       }
-      return { icon: InsertDriveFile, color: "#757575" }
+      return { icon: InsertDriveFileIcon, color: "#757575" }
     }
 
     const { icon: IconComponent, color } = getFileIcon()
