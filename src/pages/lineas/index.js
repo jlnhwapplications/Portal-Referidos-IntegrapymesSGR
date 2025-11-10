@@ -59,7 +59,7 @@ const sanitizeFileName = (baseName) =>
 const Index = () => {
     const theme = useTheme()
     const isDark = theme.palette.mode === "dark"
-    const { loadingLimites, limiteGral, limites } = useGetLimites()
+    const { loadingLimites, limiteGral, limites, dataLimite } = useGetLimites()
     const [activeTab, setActiveTab] = useState(0)
 
     const handleTabChange = (event, newValue) => {
@@ -835,7 +835,7 @@ const Index = () => {
                                                             Operaciones Activas
                                                         </Typography>
                                                         <Typography variant="caption" sx={{ opacity: 0.7, display: { xs: "none", sm: "block" } }}>
-                                                            {limites?.length} operaciones
+                                                            {limites.filter(item => item.statuscode_value  == 100000001).length} operaciones
                                                         </Typography>
                                                     </Box>
                                                 </Box>
@@ -881,12 +881,13 @@ const Index = () => {
                                                         generalActiveLimits?.map((limite, index) => (
                                                             <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                                 <AnimatedGrid delay={index * 150}>
-                                                                    <LimitCard data={limite} />
+                                                                    <LimitCard data={limite} limiteGeneral={dataLimite} />
                                                                 </AnimatedGrid>
                                                             </Grid>
                                                         )) : <Grid item xs={12}>
                                                             <Typography>No hay límite general activo</Typography>
-                                                        </Grid>}
+                                                        </Grid>
+                                                }
                                             </Grid>
                                         </Box>
                                     }
@@ -905,7 +906,7 @@ const Index = () => {
                                                         generalExpiredLimits?.map((limite, index) => (
                                                             <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                                 <AnimatedGrid delay={index * 150}>
-                                                                    <LimitCard data={limite} />
+                                                                    <LimitCard data={limite} limiteGeneral={dataLimite} />
                                                                 </AnimatedGrid>
                                                             </Grid>
                                                         ))
@@ -947,7 +948,7 @@ const Index = () => {
                                                         activeOperations?.map((limite, index) => (
                                                             <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                                 <AnimatedGrid delay={index * 150}>
-                                                                    <LimitCard data={limite} />
+                                                                    <LimitCard data={limite} limiteGeneral={dataLimite}/>
                                                                 </AnimatedGrid>
                                                             </Grid>
                                                         )) :
@@ -975,7 +976,7 @@ const Index = () => {
                                                         expiredOperations?.map((limite, index) => (
                                                             <Grid item xs={12} sm={6} lg={4} key={limite?.id || limite?.new_productosid || index}>
                                                                 <AnimatedGrid delay={index * 150}>
-                                                                    <LimitCard data={limite} />
+                                                                    <LimitCard data={limite} limiteGeneral={dataLimite} />
                                                                 </AnimatedGrid>
                                                             </Grid>
                                                         )) :

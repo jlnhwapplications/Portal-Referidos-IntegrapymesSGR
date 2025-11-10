@@ -43,23 +43,109 @@ import {
 } from "@mui/icons-material";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
 import ReactApexcharts from "@/@core/components/react-apexcharts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 
-const LimitCard = ({ data }) => {
+const LimitCard = ({ data, limiteGeneral }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [expanded, setExpanded] = useState(false);
-  const utilizationPercentage =
-    data?.new_lineatipodeoperacion_value == 100000000
-      ? (data.new_montoutilizadogeneral / data.new_topeporlineacomercial) * 100
-      : (data.new_montoutilizadoporoperacion / data.new_topeporlineacomercial) *
-        100;
-  const isHighUtilization = utilizationPercentage > 80;
-  const isMediumUtilization = utilizationPercentage > 60;
+  const [porcentajeUtilizacion, setPorcentajeUtilizacion] = useState(0);
+  const [limite, setLimite] = useState({
+    new_lineatipodeoperacion_value: "",
+    new_montoutilizadogeneral: 0,
+    new_montodisponiblegeneral: 0,
+    new_topeporlineacomercial: 0,
+    new_montoutilizadoporoperacion: 0,
+    new_limiteautorizado: 0,
+    new_tipochpd: 0,
+    _transactioncurrencyid_value: "",
+    new_vigenciahasta: "",
+    statecode: 0,
+    new_lineatipodeoperacion: "",
+  });
+
+  // const utilizationPercentage =
+  //   data?.new_lineatipodeoperacion_value == 100000000
+  //     ? (data.new_montoutilizadogeneral / data.new_topeporlineacomercial) * 100
+  //     : (data.new_montoutilizadoporoperacion / data.new_topeporlineacomercial) *
+  //       100;
+  const isHighUtilization = porcentajeUtilizacion > 80;
+  const isMediumUtilization = porcentajeUtilizacion > 60;
   const esPantallaChica = useMediaQuery((theme) =>
     theme.breakpoints.down("xl")
   );
+
+  useEffect(() => {
+    if (data?.new_lineatipodeoperacion_value == 100000000) {
+      // General
+      setPorcentajeUtilizacion(
+        (data.new_montoutilizadogeneral / data.new_topeporlineacomercial) * 100
+      );
+      setLimite({
+        new_lineatipodeoperacion_value: data.new_lineatipodeoperacion_value,
+        new_montoutilizadogeneral: data.new_montoutilizadogeneral,
+        new_topeporlineacomercial: data.new_topeporlineacomercial,
+        new_montoutilizadoporoperacion: data.new_montoutilizadoporoperacion,
+        new_limiteautorizado: data.new_topeporlineacomercial,
+        new_tipochpd: data.new_tipochpd,
+        _transactioncurrencyid_value: data._transactioncurrencyid_value,
+        new_vigenciahasta: data.new_vigenciahasta,
+        statecode: data.statecode,
+        new_montodisponiblegeneral: data.new_montodisponiblegeneral,
+        new_montodisponibleporoperacion: data.new_montodisponibleporoperacion,
+        new_lineatipodeoperacion: data.new_lineatipodeoperacion,
+      });
+    } else {
+      let disponibleCalculado =
+        data.new_topeporlineacomercial - data.new_montoutilizadoporoperacion;
+      if (limiteGeneral?.disponible < disponibleCalculado) {
+        debugger;
+        let nuevoTotal =
+          limiteGeneral?.disponible + data.new_montoutilizadoporoperacion;
+        let nuevoPorcentaje =
+          ((nuevoTotal - data.new_montoutilizadoporoperacion) /
+            data.new_topeporlineacomercial) *
+          100;
+        let nuevoDisponible = nuevoTotal - data.new_montoutilizadoporoperacion;
+        setPorcentajeUtilizacion(nuevoPorcentaje);
+        setLimite({
+          new_lineatipodeoperacion_value: data.new_lineatipodeoperacion_value,
+          new_montoutilizadogeneral: data.new_montoutilizadogeneral,
+          new_topeporlineacomercial: data.new_topeporlineacomercial,
+          new_montoutilizadoporoperacion: data.new_montoutilizadoporoperacion,
+          new_limiteautorizado: nuevoTotal,
+          new_tipochpd: data.new_tipochpd,
+          _transactioncurrencyid_value: data._transactioncurrencyid_value,
+          new_vigenciahasta: data.new_vigenciahasta,
+          statecode: data.statecode,
+          new_montodisponiblegeneral: data.new_montodisponiblegeneral,
+          new_montodisponibleporoperacion: nuevoDisponible,
+          new_lineatipodeoperacion: data.new_lineatipodeoperacion,
+        });
+      } else {
+        setPorcentajeUtilizacion(
+          (data.new_montoutilizadoporoperacion /
+            data.new_topeporlineacomercial) *
+            100
+        );
+        setLimite({
+          new_lineatipodeoperacion_value: data.new_lineatipodeoperacion_value,
+          new_montoutilizadogeneral: data.new_montoutilizadogeneral,
+          new_topeporlineacomercial: data.new_topeporlineacomercial,
+          new_montoutilizadoporoperacion: data.new_montoutilizadoporoperacion,
+          new_limiteautorizado: data.new_topeporlineacomercial,
+          new_tipochpd: data.new_tipochpd,
+          _transactioncurrencyid_value: data._transactioncurrencyid_value,
+          new_vigenciahasta: data.new_vigenciahasta,
+          statecode: data.statecode,
+          new_montodisponiblegeneral: data.new_montodisponiblegeneral,
+          new_montodisponibleporoperacion: data.new_montodisponibleporoperacion,
+          new_lineatipodeoperacion: data.new_lineatipodeoperacion,
+        });
+      }
+    }
+  }, [data]);
 
   // Función profesional para formatear moneda
   const formatCurrency = (amount, currency = "USD") => {
@@ -212,14 +298,17 @@ const LimitCard = ({ data }) => {
             total: {
               show: true,
               showAlways: true,
-              label: "Tope Total",
+              label: "Total Disponible",
               fontSize: "12px",
               fontFamily: theme.typography.fontFamily,
               fontWeight: 600,
               color: theme.palette.text.secondary,
               formatter: (w) => {
-                const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                return formatCurrency(total);
+                const raw = w?.config?.series?.[0] ?? 0; // o w?.globals?.series?.[0]
+                const first = typeof raw === "number" ? raw : Number(raw) || 0;
+                return formatCurrency(first);
+                // const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                // return formatCurrency(total);
               },
             },
           },
@@ -376,86 +465,23 @@ const LimitCard = ({ data }) => {
             fontWeight="bold"
             color="text.primary"
           >
-            {`Límite ${data?.new_lineatipodeoperacion}`}
+            {`Límite ${limite?.new_lineatipodeoperacion}`}
           </Typography>
         }
         subheader={
           <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-            {data.new_tipochpd && (
+            {limite.new_tipochpd && (
               <Business
                 fontSize="small"
                 sx={{ color: isDark ? "#b0b0b0" : "action.active" }}
               />
             )}
             <Typography variant="body2" color="text.secondary">
-              {data.new_tipochpd || ""}
+              {limite.new_tipochpd || ""}
             </Typography>
           </Box>
         }
-        // action={
-        //   <Box
-        //     display="flex"
-        //     flexDirection="column"
-        //     alignItems="flex-end"
-        //     gap={1}
-        //   >
-        //     <Chip
-        //       icon={getStatusIcon()}
-        //       label={getStatusText()}
-        //       color={getStatusColor()}
-        //       size="small"
-        //       variant="filled"
-        //       sx={{
-        //         backdropFilter: isDark ? "blur(10px)" : "none",
-        //         boxShadow: isDark ? "0 2px 8px rgba(0,0,0,0.3)" : "none",
-        //       }}
-        //     />
-        //     <Box display="flex" alignItems="center" gap={0.5}>
-        //       <CalendarToday
-        //         fontSize="small"
-        //         sx={{ color: isDark ? "#b0b0b0" : "action.active" }}
-        //       />
-        //       <Typography variant="caption" color="text.secondary">
-        //         {data.lastUpdate || "15/01/2024"}
-        //       </Typography>
-        //     </Box>
-        //   </Box>
-        // }
       />
-      {/* <CardHeader
-        sx={{
-          background: isDark
-            ? "linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)"
-            : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-          borderBottom: 1,
-          borderColor: "divider",
-        }}
-        avatar={
-          <Avatar
-            sx={{
-              bgcolor: "primary.main",
-              background: isDark
-                ? "linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)"
-                : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              boxShadow: isDark
-                ? "0 4px 12px rgba(100, 181, 246, 0.3)"
-                : "0 4px 12px rgba(102, 126, 234, 0.3)",
-            }}
-          >
-            <CreditCard />
-          </Avatar>
-        }
-        title={
-          <Typography
-            sx={{ fontSize: { xs: "0.75rem", md: "0.80rem", xl: "1.2rem" } }}
-            fontWeight="bold"
-            color="text.primary"
-          >
-            {`Límite ${data?.new_lineatipodeoperacion}`}
-          </Typography>
-        }
-      /> */}
-
       <CardContent sx={{ p: 3, mt: 2 }}>
         <Stack spacing={3}>
           {/* Límite principal - FONDO NEUTRO, SOLO MONTO EN VERDE */}
@@ -501,15 +527,13 @@ const LimitCard = ({ data }) => {
                 fontSize: { xs: "1rem", md: "1.5rem", xl: "2rem" },
               }}
             >
-              {data._transactioncurrencyid_value === "COP"
-                ? formatCompactCurrency(data.new_topeporlineacomercial, "COP")
-                : formatCurrency(
-                    data.new_topeporlineacomercial,
-                    data._transactioncurrencyid_value
-                  )}
+              {formatCurrency(
+                limite.new_topeporlineacomercial,
+                limite._transactioncurrencyid_value
+              )}
             </Typography>{" "}
             <Typography variant="body2" color="text.secondary">
-              Divisa Original: {data?._transactioncurrencyid_value || "N/A"}
+              Divisa Original: {limite?._transactioncurrencyid_value || "N/A"}
             </Typography>
             <Stack
               direction="row"
@@ -518,18 +542,18 @@ const LimitCard = ({ data }) => {
               sx={{ mt: 2 }}
             >
               <Box display="flex" alignItems="center" gap={0.5}>
-                {data?.statecode === 0 ? (
+                {limite?.statecode === 0 ? (
                   <>
                     <Schedule fontSize="small" color="action" />
                     <Typography variant="body2" color="text.secondary">
-                      Vence: {data?.new_vigenciahasta || "N/A"}
+                      Vence: {limite?.new_vigenciahasta || "N/A"}
                     </Typography>
                   </>
                 ) : (
                   <>
                     <EventBusyIcon fontSize="small" color="action" />
                     <Typography variant="body2" color="text.secondary">
-                      Venció: {data?.new_vigenciahasta || "N/A"}
+                      Venció: {limite?.new_vigenciahasta || "N/A"}
                     </Typography>
                   </>
                 )}
@@ -561,7 +585,7 @@ const LimitCard = ({ data }) => {
                 Nivel de Utilización
               </Typography>
               <Chip
-                label={`${utilizationPercentage.toFixed(1)}%`}
+                label={`${porcentajeUtilizacion.toFixed(1)}%`}
                 variant="filled"
                 color="primary"
                 size="small"
@@ -575,17 +599,18 @@ const LimitCard = ({ data }) => {
             </Box>
             <LinearProgress
               variant="determinate"
-              value={
-                data.new_topeporlineacomercial > 0
-                  ? data?.new_lineatipodeoperacion_value == 100000000
-                    ? (data?.new_montoutilizadogeneral /
-                        data.new_topeporlineacomercial) *
-                      100
-                    : (data?.new_montoutilizadoporoperacion /
-                        data.new_topeporlineacomercial) *
-                      100
-                  : 0
-              }
+              value={porcentajeUtilizacion}
+              // value={
+              //   limite.new_topeporlineacomercial > 0
+              //     ? limite?.new_lineatipodeoperacion_value == 100000000
+              //       ? (limite?.new_montoutilizadogeneral /
+              //           limite.new_topeporlineacomercial) *
+              //         100
+              //       : (limite?.new_montoutilizadoporoperacion /
+              //           limite.new_topeporlineacomercial) *
+              //         100
+              //     : 0
+              // }
               sx={{
                 height: 12,
                 borderRadius: 6,
@@ -701,21 +726,21 @@ const LimitCard = ({ data }) => {
                     height={esPantallaChica ? 200 : 240}
                     width="100%"
                     series={
-                      data?.new_lineatipodeoperacion_value == 100000000
+                      limite?.new_lineatipodeoperacion_value == 100000000
                         ? [
-                            data?.new_montodisponiblegeneral
-                              ? data.new_montodisponiblegeneral
+                            limite?.new_montodisponiblegeneral
+                              ? limite.new_montodisponiblegeneral
                               : 0,
-                            data?.new_montoutilizadogeneral
-                              ? data.new_montoutilizadogeneral
+                            limite?.new_montoutilizadogeneral
+                              ? limite.new_montoutilizadogeneral
                               : 0,
                           ]
                         : [
-                            data?.new_montodisponibleporoperacion
-                              ? data.new_montodisponibleporoperacion
+                            limite?.new_montodisponibleporoperacion
+                              ? limite.new_montodisponibleporoperacion
                               : 0,
-                            data?.new_montoutilizadoporoperacion
-                              ? data.new_montoutilizadoporoperacion
+                            limite?.new_montoutilizadoporoperacion
+                              ? limite.new_montoutilizadoporoperacion
                               : 0,
                           ]
                     }
@@ -751,7 +776,7 @@ const LimitCard = ({ data }) => {
                         flex: 1,
                       }}
                     >
-                      {data?.new_lineatipodeoperacion_value == 100000000
+                      {limite?.new_lineatipodeoperacion_value == 100000000
                         ? "Monto disponible general"
                         : "Monto disponible por operación"}
                     </Typography>
@@ -767,20 +792,20 @@ const LimitCard = ({ data }) => {
                       fontSize: { xs: 14, xl: 16 },
                     }}
                   >
-                    {data?.new_lineatipodeoperacion_value == 100000000
-                      ? formatCurrency(data?.new_montodisponiblegeneral)
-                      : formatCurrency(data?.new_montodisponibleporoperacion)}
+                    {limite?.new_lineatipodeoperacion_value == 100000000
+                      ? formatCurrency(limite?.new_montodisponiblegeneral)
+                      : formatCurrency(limite?.new_montodisponibleporoperacion)}
                   </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={
-                      data.new_topeporlineacomercial > 0
-                        ? data?.new_lineatipodeoperacion_value == 100000000
-                          ? (data?.new_montodisponiblegeneral /
-                              data.new_topeporlineacomercial) *
+                      limite.new_topeporlineacomercial > 0
+                        ? limite?.new_lineatipodeoperacion_value == 100000000
+                          ? (limite?.new_montodisponiblegeneral /
+                              limite.new_topeporlineacomercial) *
                             100
-                          : (data?.new_montodisponibleporoperacion /
-                              data.new_topeporlineacomercial) *
+                          : (limite?.new_montodisponibleporoperacion /
+                              limite.new_topeporlineacomercial) *
                             100
                         : 0
                     }
@@ -824,7 +849,7 @@ const LimitCard = ({ data }) => {
                         flex: 1,
                       }}
                     >
-                      {data?.new_lineatipodeoperacion_value == 100000000
+                      {limite?.new_lineatipodeoperacion_value == 100000000
                         ? "Monto utilizado general"
                         : "Monto utilizado por operación"}
                     </Typography>
@@ -840,20 +865,20 @@ const LimitCard = ({ data }) => {
                       mb: 1,
                     }}
                   >
-                    {data?.new_lineatipodeoperacion_value == 100000000
-                      ? formatCurrency(data?.new_montoutilizadogeneral)
-                      : formatCurrency(data?.new_montoutilizadoporoperacion)}
+                    {limite?.new_lineatipodeoperacion_value == 100000000
+                      ? formatCurrency(limite?.new_montoutilizadogeneral)
+                      : formatCurrency(limite?.new_montoutilizadoporoperacion)}
                   </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={
-                      data.new_topeporlineacomercial > 0
-                        ? data?.new_lineatipodeoperacion_value == 100000000
-                          ? (data?.new_montoutilizadogeneral /
-                              data.new_topeporlineacomercial) *
+                      limite.new_topeporlineacomercial > 0
+                        ? limite?.new_lineatipodeoperacion_value == 100000000
+                          ? (limite?.new_montoutilizadogeneral /
+                              limite.new_topeporlineacomercial) *
                             100
-                          : (data?.new_montoutilizadoporoperacion /
-                              data.new_topeporlineacomercial) *
+                          : (limite?.new_montoutilizadoporoperacion /
+                              limite.new_topeporlineacomercial) *
                             100
                         : 0
                     }
