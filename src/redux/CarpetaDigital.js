@@ -73,6 +73,7 @@ export const obtenerDocumentosPorCuenta = (accountid, token) => async (dispatch)
       "<attribute name='new_documentacionporcuentaid' />" +
       "<attribute name='new_visibleenportal' />" +
       "<attribute name='new_documentoid' />" +
+      "<attribute name='new_comentarios' />" +
       "<order attribute='new_fechadevencimiento' descending='true' />" +
       "<order attribute='new_cuentaid' descending='false' />" +
       "<filter type='and'>" +
@@ -155,7 +156,7 @@ export const cargarDocumentacionPorCuenta = (file, token, documentoId, toastCust
       cargaDocumento: "EXITO",
       documentoid: response.data,
     });
-    
+
   } catch (error) {
     dispatch({
       type: ERROR,
@@ -164,6 +165,58 @@ export const cargarDocumentacionPorCuenta = (file, token, documentoId, toastCust
     throw error; // Lanzar la excepción para manejarla en createDocuXcuenta
   }
 };
+
+export const cargarDocumentacionPorCuentaYNotificacion = (file, token, documentoId, toastCustom, nombreSocio, nombreDocumento, equipoDeNotificaciones) => async (dispatch) => {
+  dispatch({
+    type: LOADING_DOCUMENTOS,
+    cargaDocumento: "LOADING",
+  });
+
+  try {
+    const formData = new FormData();
+    formData.append("DocumentacionPorCuentaId", documentoId);
+    formData.append("NombreDocumento", nombreDocumento);
+    formData.append("NombreSocio", nombreSocio);
+    for (let index = 0; index < file.length; index++) {
+      const fileUnico = file[index];
+      formData.append("Archivos", fileUnico);
+    }
+    formData.append("teamid", equipoDeNotificaciones)
+    const configDocumentos = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "multipart/form-data",
+      },
+    };
+
+    const response = await toastCustom.promise(
+      axios.post(
+        `${UrlApi}api/socioparticipe/documentacionporcuentaynotificacionbo`,
+        formData,
+        configDocumentos
+      ),
+      {
+        loading: "Cargando...",
+        success: "Proceso exitoso.",
+        error: "Error al cargar archivo.",
+      }
+    );
+
+    dispatch({
+      type: CARGA_DOCUMENTOXCUENTA,
+      cargaDocumento: "EXITO",
+      documentoid: response.data,
+    });
+
+  } catch (error) {
+    dispatch({
+      type: ERROR,
+      cargaDocumento: "ERROR",
+    });
+    throw error; // Lanzar la excepción para manejarla en createDocuXcuenta
+  }
+};
+
 
 export const obtenerNotaADescargar = (notaid, token) => async (dispatch) => {
   dispatch({

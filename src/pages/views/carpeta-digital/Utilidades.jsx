@@ -56,7 +56,6 @@ const Utilidades = ({ utilidad, onOpenModal }) => {
         <Tooltip title="Subir Archivo" arrow>
           <IconButton
             onClick={(e) => {
-              debugger;
               if (typeof onOpenModal === "function") {
                 onOpenModal(e); 
               }

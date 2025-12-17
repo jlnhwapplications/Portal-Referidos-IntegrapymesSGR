@@ -1,4 +1,4 @@
-import { Avatar, Box, Chip, IconButton, Menu, MenuItem, Tooltip, Typography } from "@mui/material"
+import { Avatar, Box, Chip, IconButton, Menu, MenuItem, Tooltip, Typography, useTheme } from "@mui/material"
 import CustomChip from "@/@core/components/mui/chip"
 import CustomAvatar from "@/@core/components/mui/avatar"
 // ** Utils Import
@@ -140,11 +140,66 @@ const renderUserAvatar = row => {
     }
 }
 
+function EnhancedTextCell({ value, subtitle = null, icon = null, color = "text.primary" }) {
+    const theme = useTheme()
+
+    return (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1 }}>
+            {icon && (
+                <Avatar
+                    sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        color: "primary.main",
+                    }}
+                >
+                    {icon}
+                </Avatar>
+            )}
+            <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                <Tooltip title={value}>
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            fontWeight: 600,
+                            color: color,
+                            lineHeight: 1.4,
+                            fontSize: "0.875rem",
+                            letterSpacing: "0.1px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        {/* {account?.name?.length > 20 ? `${account.name.substr(0, 20)}...` : account.name} {value || "N/A"} */}
+                        {value ? (value?.length > 20 ? `${value.substr(0, 20)}...` : value) : "N/A"}
+                    </Typography>
+                </ Tooltip>
+                {subtitle && (
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            color: "text.secondary",
+                            lineHeight: 1.2,
+                            fontSize: "0.75rem",
+                            mt: 0.25,
+                        }}
+                    >
+                        {subtitle}
+                    </Typography>
+                )}
+            </Box>
+        </Box>
+    )
+}
+
 export const columns_carperta_digital = (theme, handleOpenModal) => [
     {
         flex: 0.4,
         field: "new_name",
-        minWidth: 280,
+        minWidth: 220,
+        maxWidth: 340,
         headerName: "Documento",
         renderCell: ({ row }) => {
             const documentEmoji = getDocumentIcon(row.new_name)
@@ -235,6 +290,21 @@ export const columns_carperta_digital = (theme, handleOpenModal) => [
     },
     {
         flex: 0.25,
+        minWidth: 220,
+        maxWidth: 340,
+        field: "new_comentarios",
+        headerName: "Comentarios",
+        align: "left",         // 👈 valores alineados a la izquierda
+        headerAlign: "left",   // 👈 encabezado alineado a la izquierda
+        renderCell: ({ row }) => (
+            row?.statuscodeNOMBRE === 'Pendiente' ?
+                <EnhancedTextCell
+                    value={row?.new_comentarios}
+                /> : 'N/A'
+        ),
+    },
+    {
+        flex: 0.25,
         maxWidth: 200,
         field: "fechaVencimiento",
         headerName: "Vencimiento",
@@ -316,6 +386,7 @@ export const columns_carperta_digital = (theme, handleOpenModal) => [
     {
         flex: 0.2,
         minWidth: 120,
+        maxWidth: 200,
         field: 'utilidades',
         headerName: 'Acciones',
         // header: '',

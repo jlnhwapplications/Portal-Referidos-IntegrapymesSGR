@@ -47,14 +47,14 @@ const LimitesOverview = () => {
       }).format(amount);
     }
 
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("es-AR", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })
       .format(amount)
-      .replace("$", "U$S");
+      // .replace("$", "U$S");
   };
 
   // Configuración mejorada de ApexCharts

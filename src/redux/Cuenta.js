@@ -414,6 +414,7 @@ export const obtenerMisReferidos = (accountid, token) => async (dispatch) => {
             "<attribute name='new_pais'/>" +
             "<attribute name='new_condiciondeinscripcionanteafip'/>" +
             "<attribute name='new_estadodelsocio'/>" +
+            "<attribute name='new_estadodelclienteactivo'/>" +
             "<order attribute ='name' descending='false' />" +
             "<filter type='and'>" +
             "<condition attribute='new_comercial' operator='eq' value='" + accountid + "' />" +
@@ -1000,6 +1001,64 @@ export const obtenerTareas = (accountid, token) => async (dispatch) => {
     }
 }
 
+export const obtenerTareasCuentasReferidas = (accountid, token) => async (dispatch) => {
+    // dispatch({
+    //     type: LOADING_COMPROBANTE,
+    //     loadingComprobante: true
+    // })
+
+    try {
+        if (accountid != undefined) {
+            var entidad = "tasks"
+            var fetch = "<fetch mapping='logical'>" +
+                "<entity name='task'>" +
+                "<attribute name='subject'/> " +
+                "<attribute name='prioritycode'/>" +
+                "<attribute name='scheduledend'/> " +
+                "<attribute name='createdby'/>" +
+                "<attribute name='activityid'/> " +
+                "<attribute name='statuscode'/> " +
+                "<attribute name='description'/> " +
+                "<attribute name='new_tipodenotificacion'/> " +
+                "<attribute name='createdon'/> " +
+                "<attribute name='statecode'/> " +
+                "<attribute name='regardingobjectid'/> " +
+                "<filter type='and'>" +
+                "<condition attribute='new_mostrarenportal' operator='eq' value='1' />" +
+                "</filter>" +
+                "<link-entity name='account' from='accountid' to='regardingobjectid' link-type='inner' alias='referido'>" +
+                "<filter type='and'>" +
+                "<condition attribute='new_referido' operator='eq' value='1'/>" +
+                "<condition attribute='new_comercial' operator='eq' value='" + accountid + "'/>" +
+                "</filter>" +
+                "</link-entity>" +
+                "</entity>" +
+                "</fetch>";
+
+            return new Promise((resolve, reject) => {
+                axios.post(`https://hw365api.azurewebsites.net/api/consultafetch`,
+                    {
+                        "entidad": entidad,
+                        "fetch": fetch
+                    },
+                    {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    })
+                    .then((response) => {
+                        resolve(response.data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 export const inactivarSociedadBolsa = (id, token, toast) => async (dispatch) => {
     // dispatch({
     //     type: LOADING_INACTIVACION,
@@ -1219,7 +1278,7 @@ export const obtenerEntidadLUFE = (cuit, token) => async (dispatch) => {
         type: LOADING_ENTIDAD_LUFE
     })
     axios.get(`${UrlApi}api/lufe/consultarentidad?cuit=${cuit}`,
-    // axios.get(`https://hw365api.azurewebsites.net/api/lufe/consultarentidad?cuit=${cuit}`,
+        // axios.get(`https://hw365api.azurewebsites.net/api/lufe/consultarentidad?cuit=${cuit}`,
         {
             headers: {
                 "Authorization": `Bearer ${token}`

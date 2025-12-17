@@ -9,7 +9,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
     //DOCUMENTOS
 
     const multiple = true
-    const maxSize = 15728640 // 15MB
+    const maxSize = 20971520; // 20MB
     const acceptedTypes = {
         "application/pdf": [".pdf"],
         "image/*": [".png", ".jpg", ".jpeg"],
@@ -17,7 +17,10 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
         "application/vnd.ms-excel": [".xls"], // Excel 97-2003
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], // Excel moderno
-        "text/csv": [".csv"]
+        "text/csv": [".csv"],
+        // ZIP
+        "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
     }
 
 
@@ -212,14 +215,14 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                         backdropFilter: "blur(10px)",
                     },
                 }}
-                // elevation={isDark ? 2 : 1}
-                // sx={{
-                //     mt: 3,
-                //     borderRadius: 3,
-                //     bgcolor: theme.palette.background,
-                //     border: isDark ? "1px solid #4A4063" : "1px solid #e0e0e0",
-                //     overflow: "hidden",
-                // }}
+            // elevation={isDark ? 2 : 1}
+            // sx={{
+            //     mt: 3,
+            //     borderRadius: 3,
+            //     bgcolor: theme.palette.background,
+            //     border: isDark ? "1px solid #4A4063" : "1px solid #e0e0e0",
+            //     overflow: "hidden",
+            // }}
             >
                 <Box sx={{ p: 2, bgcolor: isDark ? alpha("#64b5f6", 0.1) : alpha("#1976d2", 0.05) }}>
                     <Typography variant="subtitle2" fontWeight="bold" color="primary">
@@ -420,6 +423,7 @@ const ModalSubirArchivo = ({ open, handleClose, selectedFiles = [], setSelectedF
                         <Chip label="Imágenes" size="small" variant="outlined" />
                         <Chip label="Word" size="small" variant="outlined" />
                         <Chip label="Excel" size="small" variant="outlined" />
+                        <Chip label="ZIP" size="small" variant="outlined" />
                     </Stack>
                 </Paper>
 

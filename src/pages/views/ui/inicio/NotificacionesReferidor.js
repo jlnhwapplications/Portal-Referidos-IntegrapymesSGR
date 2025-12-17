@@ -296,7 +296,7 @@ const NotificacionesReferidor = () => {
 
   return (
     <Fragment>
-      <Tooltip title="Notificaciones" arrow>
+      <Tooltip title="Mis Notificaciones" arrow>
         <IconButton
           color="inherit"
           onClick={handleDropdownOpen}
@@ -309,7 +309,7 @@ const NotificacionesReferidor = () => {
           }}
         >
           <Badge
-            sx={{ "& .MuiBadge-badge": { fontSize: 8, height: 15, minWidth: 15 } }}
+            sx={{ "& .MuiBadge-badge": { fontSize: 10} }}
             badgeContent={totalPending}
             color="error"
             variant={totalPending > 0 ? 'standard' : 'dot'}
@@ -331,7 +331,7 @@ const NotificacionesReferidor = () => {
         <Box sx={{ p: 3, pb: 0 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography sx={{ fontWeight: 600, fontSize: { xs: 16, xl: 18 } }}>
-              Notificaciones
+              Mis Notificaciones
             </Typography>
             {totalPending > 0 && (
               <Chip

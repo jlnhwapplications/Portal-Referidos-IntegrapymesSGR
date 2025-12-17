@@ -267,8 +267,9 @@ const periocidadDePagoValue = (value) => {
   }
 }
 
+
 // Constantes
-const MAX_FILE_SIZE = 15 * 1024 * 1024 // 15MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Utilidades
 const formatCurrency = (amount, currency = "ARS", opts = {}) => {

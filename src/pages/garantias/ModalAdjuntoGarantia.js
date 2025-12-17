@@ -76,7 +76,7 @@ const ModalAdjuntoGarantia = ({ open, handleClose, id }) => {
     };
 
     const multiple = true
-    const maxSize = 15728640 // 15MB
+    const maxSize = 20971520; // 20MB
     const acceptedTypes = {
         "application/pdf": [".pdf"],
         "image/*": [".png", ".jpg", ".jpeg"],
@@ -84,7 +84,10 @@ const ModalAdjuntoGarantia = ({ open, handleClose, id }) => {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
         "application/vnd.ms-excel": [".xls"], // Excel 97-2003
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], // Excel moderno
-        "text/csv": [".csv"]
+        "text/csv": [".csv"],
+        // ZIP
+        "application/zip": [".zip"],
+        "application/x-zip-compressed": [".zip"],
     }
 
     const totalSize = useMemo(() => {
@@ -532,6 +535,8 @@ const ModalAdjuntoGarantia = ({ open, handleClose, id }) => {
                         <Chip label="PDF" size="small" variant="outlined" />
                         <Chip label="Imágenes" size="small" variant="outlined" />
                         <Chip label="Word" size="small" variant="outlined" />
+                        <Chip label="Excel" size="small" variant="outlined" />
+                        <Chip label="ZIP" size="small" variant="outlined" />
                     </Stack>
                 </Paper>
 

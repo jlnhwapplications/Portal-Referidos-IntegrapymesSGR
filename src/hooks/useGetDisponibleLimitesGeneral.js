@@ -10,6 +10,7 @@ import { UrlApi } from "@/keys";
 const useGetDisponibleLimitesGeneral = () => {
   const { token, user } = useContext(AuthContext);
   const [disponibles, setDisponibles] = useState([]);
+  const [limitesInicio, setLimitesInicio] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -35,9 +36,16 @@ const useGetDisponibleLimitesGeneral = () => {
         "<attribute name='new_montodisponiblegeneral'/>" +
         "<attribute name='new_cuenta'/>" +
         "<attribute name='transactioncurrencyid'/>" +
+        "<attribute name='new_montodisponiblegeneralbruto' />" +
+        "<attribute name='new_montoutilizadogeneralbruto' />" +
+        "<attribute name='new_montodisponibleporoperacionbruto' />" +
+        "<attribute name='new_montoutilizadoporoperacionbruto' />" +
+        "<attribute name='new_lineatipodeoperacion' />" +
+        "<attribute name='new_tipochpd' />" +
+        "<attribute name='new_topeporlineacomercial' />" +
         "<order attribute='new_name' descending='false'/>" +
         "<filter type='and'>" +
-        "<condition attribute='new_lineatipodeoperacion' operator='eq' value='100000000'/>" +
+        // "<condition attribute='new_lineatipodeoperacion' operator='eq' value='100000000'/>" +
         "<condition attribute='statecode' operator='eq' value='0'/>" +
         "<condition attribute='statuscode' operator='eq' value='100000001'/>" +
         "<condition attribute='new_mostrarenportalsocio' operator='eq' value='1'/>" +
@@ -56,7 +64,7 @@ const useGetDisponibleLimitesGeneral = () => {
         { entidad, fetch },
         { headers: { Authorization: `Bearer ${tk}` } }
       );
-      
+
       const data = Array.isArray(response.data) ? response.data : [];
       const formatted = data.map((el) => ({
         id: el["new_productosid"],
@@ -69,14 +77,23 @@ const useGetDisponibleLimitesGeneral = () => {
           ? moment(new Date(el["new_vigenciahasta"]).toISOString()).format("DD/MM/YYYY")
           : "",
         new_montodisponiblegeneral: el["new_montodisponiblegeneral"] ?? 0,
+        new_montodisponiblegeneralbruto: el["new_montodisponiblegeneralbruto"] ?? 0,
+        new_montoutilizadogeneralbruto: el["new_montoutilizadogeneralbruto"] ?? 0,
+        new_montodisponibleporoperacionbruto: el["new_montodisponibleporoperacionbruto"] ?? 0,
+        new_montoutilizadoporoperacionbruto: el["new_montoutilizadoporoperacionbruto"] ?? 0,
         new_montodisponiblegeneral_value:
           el["new_montodisponiblegeneral@OData.Community.Display.V1.FormattedValue"] ?? null,
         new_cuenta: el["_new_cuenta_value@OData.Community.Display.V1.FormattedValue"] ?? el["new_cuenta"],
         new_cuenta_value: el["_new_cuenta_value"] ?? el["new_cuenta"],
-        transactioncurrencyid: el["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"]
+        transactioncurrencyid: el["_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue"],
+        new_lineatipodeoperacion: el["new_lineatipodeoperacion"],
+        new_lineatipodeoperacion_value: el["new_lineatipodeoperacion@OData.Community.Display.V1.FormattedValue"],
+        new_tipochpd_value: el["new_tipochpd@OData.Community.Display.V1.FormattedValue"],
+        new_tipochpd: el["new_tipochpd"],
+        new_topeporlineacomercial: el["new_topeporlineacomercial"] ?? 0,
       }));
-
-      setDisponibles(formatted);
+      setDisponibles(formatted.filter(item => item.new_lineatipodeoperacion == 100000000));
+      setLimitesInicio(formatted);
     } catch (err) {
       setError(err);
       setDisponibles([]);
@@ -91,6 +108,7 @@ const useGetDisponibleLimitesGeneral = () => {
     disponibles: memoData,
     loading,
     error,
+    limitesInicio,
     refetch: () => user?.accountid && token && fetchDisponible(user.accountid, token),
   };
 };

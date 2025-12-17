@@ -13,6 +13,9 @@ const UseGetLimites = () => {
     const [limiteGral, setLimiteGral] = useState([])
     const [limitesInicio, setLimitesInicio] = useState([])
 
+//new_montodisponiblegeneralbruto new_montoutilizadogeneralbruto
+//new_montodisponibleporoperacionbruto new_montoutilizadoporoperacionbruto
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -38,7 +41,8 @@ const UseGetLimites = () => {
                                 if (tope > 0) {
                                     datos.tope = tope
                                 }
-                                utilizado = parseInt(limiteGeneral[0].new_montoutilizadogeneral)
+                                // utilizado = parseInt(limiteGeneral[0].new_montoutilizadogeneral)
+                                utilizado = parseInt(limiteGeneral[0].new_montoutilizadogeneralbruto)
                                 if (utilizado > 0) {
                                     datos.utilizado = utilizado
                                 }
@@ -60,6 +64,11 @@ const UseGetLimites = () => {
                                     new_montodisponibleporoperacion_value: item.new_montodisponibleporoperacion > 0 ? item["new_montodisponibleporoperacion@OData.Community.Display.V1.FormattedValue"] : 0,
                                     new_montodisponibleporoperacion: item.new_montodisponibleporoperacion > 0 ? item.new_montodisponibleporoperacion : 0,
                                     new_montoutilizadogeneral: item.new_montoutilizadogeneral > 0 ? item.new_montoutilizadogeneral : 0,
+                                    //BRUTOS
+                                    new_montodisponiblegeneralbruto: item.new_montodisponiblegeneralbruto > 0 ? item.new_montodisponiblegeneralbruto : 0,
+                                    new_montoutilizadogeneralbruto: item.new_montoutilizadogeneralbruto > 0 ? item.new_montoutilizadogeneralbruto : 0,
+                                    new_montodisponibleporoperacionbruto: item.new_montodisponibleporoperacionbruto > 0 ? item.new_montodisponibleporoperacionbruto : 0,
+                                    new_montoutilizadoporoperacionbruto: item.new_montoutilizadoporoperacionbruto > 0 ? item.new_montoutilizadoporoperacionbruto : 0,
                                     new_montodisponiblegeneral: item.new_montodisponiblegeneral > 0 ? item.new_montodisponiblegeneral : 0,
                                     new_montodisponiblegeneral_value: item.new_montodisponiblegeneral > 0 ? item["new_montodisponiblegeneral@OData.Community.Display.V1.FormattedValue"] : 0,
                                     new_montoutilizadoporoperacion: item.new_montoutilizadoporoperacion > 0 ? item.new_montoutilizadoporoperacion : 0,

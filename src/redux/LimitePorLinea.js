@@ -81,6 +81,10 @@ export const obtenerTodosLimitesPorLineas = (cuentaid, token) => async (dispatch
                 "<attribute name='new_vigenciahasta' />" +
                 "<attribute name='statecode' />" +
                 "<attribute name='new_cuenta' />" +
+                "<attribute name='new_montodisponiblegeneralbruto' />" +
+                "<attribute name='new_montoutilizadogeneralbruto' />" +
+                "<attribute name='new_montodisponibleporoperacionbruto' />" +
+                "<attribute name='new_montoutilizadoporoperacionbruto' />" +
                 "<order attribute='createdon' descending='false' />" +
                 "<filter type='and'>" +
                 // "<condition attribute='statecode' operator='eq' value='0' />" +

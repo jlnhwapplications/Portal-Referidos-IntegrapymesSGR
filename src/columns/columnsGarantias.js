@@ -207,14 +207,14 @@ function MoneyCell({ amount, currency = "Pesos Argentinos", subtitle = null }) {
 
   const formatCurrency = (amount, currency = "ARS") => {
     if (currency === "Dolares Americanos" || currency === "USD") {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat("es-AR", {
         style: "currency",
         currency: "USD",
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       })
         .format(amount)
-        .replace("$", "U$S");
+        // .replace("$", "U$S");
     }
     return new Intl.NumberFormat("es-AR", {
       style: "currency",

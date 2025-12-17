@@ -21,7 +21,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
   const [disabled, setDisabled] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({})
-  const { token, referido } = useContext(AuthContext);
+  const { token, referido, equipoDeNotificaciones } = useContext(AuthContext);
   const { createDocuXcuenta } = useContext(DocumentacionPorCuenta)
   const { toast } = useToast()
   const dispatch = useDispatch();
@@ -52,12 +52,12 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
   };
 
   const handleRemoveFile = (index) => {
-   const filtered = selectedFiles.filter((_, i) => i !== index);
+    const filtered = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(filtered);
   };
 
   const multiple = true
-  const maxSize = 15728640 // 15MB
+  const maxSize = 20971520; // 20MB
   const acceptedTypes = {
     "application/pdf": [".pdf"],
     "image/*": [".png", ".jpg", ".jpeg"],
@@ -65,7 +65,10 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
     "application/vnd.ms-excel": [".xls"], // Excel 97-2003
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], // Excel moderno
-    "text/csv": [".csv"]
+    "text/csv": [".csv"],
+    // ZIP
+    "application/zip": [".zip"],
+    "application/x-zip-compressed": [".zip"],
   }
 
   const totalSize = useMemo(() => {
@@ -391,18 +394,18 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
       return
     }
 
-    const formData = new FormData();
-    for (let index = 0; index < selectedFiles.length; index++) {
-      if (selectedFiles[index].size >= 15000000) {
-        toast.error('El archivo no puede superar los 15 megas');
-        setSelectedFiles([])
-        setDisabled(false)
-        return
-      }
-      let element = selectedFiles[index];
-      formData.append(`body${index}`, element);
-    }
-    createDocuXcuenta(formData, token, id, toast)
+    // const formData = new FormData();
+    // for (let index = 0; index < selectedFiles.length; index++) {
+    //   if (selectedFiles[index].size >= 15000000) {
+    //     toast.error('El archivo no puede superar los 15 megas');
+    //     setSelectedFiles([])
+    //     setDisabled(false)
+    //     return
+    //   }
+    //   let element = selectedFiles[index];
+    //   formData.append(`body${index}`, element);
+    // }
+    createDocuXcuenta(selectedFiles, token, id, toast, referido.name, data, equipoDeNotificaciones)
     // dispatch(cargarDocumentacionPorCuenta(formData, token, id))
   };
 
@@ -423,11 +426,11 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
         },
       }}
     >
-      <ModalHeader title="Cargar Documentación" onClose={handleClose} theme={theme} />
+      <ModalHeader title={`Cargar Documentación`} onClose={handleClose} theme={theme} />
 
       <DialogContent sx={{ p: 3 }}>
         {/* Chip del documento */}
-        {/* <Fade in timeout={300}>
+        <Fade in timeout={300}>
           <Box sx={{ my: 3 }}>
             <Chip
               label={data}
@@ -444,7 +447,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
               }}
             />
           </Box>
-        </Fade> */}
+        </Fade>
 
         {/* Zona de arrastrar y soltar */}
         <Paper
@@ -515,6 +518,7 @@ const ModalCarpetaDigital = ({ open, setOpen, handleClose, data, id }) => {
             <Chip label="Imágenes" size="small" variant="outlined" />
             <Chip label="Word" size="small" variant="outlined" />
             <Chip label="Excel" size="small" variant="outlined" />
+            <Chip label="ZIP" size="small" variant="outlined" />
           </Stack>
         </Paper>
 

@@ -104,6 +104,43 @@ export const obtenerUN = (token) => async (dispatch) => {
     }
 }
 
+export const obtenerEquipoUN = (token) => async (dispatch) => {
+    try {
+        var entidad = "businessunits";
+        var fetch = "<fetch  mapping='logical' distinct='false'>" +
+            "<entity name='businessunit'>" +
+            "<attribute name='new_equipodenotificacionesonboarding' />" +
+            "<order attribute='new_equipodenotificacionesonboarding' descending='false' />" +
+            "<filter type='and'>" +
+            "<condition attribute='parentbusinessunitid' operator='null' />" +
+            "</filter>" +
+            "</entity>" +
+            "</fetch>";
+
+        return new Promise((resolve, reject) => {
+            axios.post(`${UrlApi}api/consultafetch`,
+                {
+                    "entidad": entidad,
+                    "fetch": fetch
+                },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+                .then((response) => {
+                    resolve(response.data)
+                })
+                .catch(err => {
+                    reject(err)
+                })
+        })
+    }
+    catch (error) {
+       console.log(error)
+    }
+}
+
 
 export const obtenerLineasXUN = (token) => async (dispatch) => {
     dispatch({

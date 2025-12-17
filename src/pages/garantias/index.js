@@ -161,7 +161,7 @@ const GarantiaIndex = () => {
                 lineHeight: 1.2,
               }}
             >
-              {value}{valueUSD > 0  && ` / U$S${(valueUSD / 1000000).toFixed(1)}M`}
+              {value}{valueUSD > 0  && ` / US$${(valueUSD / 1000000).toFixed(1)}M`}
             </Typography>
             <Typography
               sx={{

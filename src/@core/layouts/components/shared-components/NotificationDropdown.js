@@ -317,7 +317,7 @@ const NotificationDropdown = ({ settings }) => {
           }}
         >
           <Badge
-            sx={{ "& .MuiBadge-badge": { fontSize: 8, height: 15, minWidth: 15 } }}
+            sx={{ "& .MuiBadge-badge": { fontSize: 10 } }}
             badgeContent={totalPending}
             color="error"
             variant={totalPending > 0 ? 'standard' : 'dot'}

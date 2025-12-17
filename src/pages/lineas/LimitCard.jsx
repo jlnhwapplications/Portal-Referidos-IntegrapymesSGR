@@ -63,6 +63,11 @@ const LimitCard = ({ data, limiteGeneral }) => {
     new_vigenciahasta: "",
     statecode: 0,
     new_lineatipodeoperacion: "",
+    new_topeporlineacomercialusd: 0,
+    new_montodisponiblegeneralbruto: 0,
+    new_montoutilizadogeneralbruto: 0,
+    new_montodisponibleporoperacionbruto: 0,
+    new_montoutilizadoporoperacionbruto: 0,
   });
 
   // const utilizationPercentage =
@@ -95,19 +100,42 @@ const LimitCard = ({ data, limiteGeneral }) => {
         new_montodisponiblegeneral: data.new_montodisponiblegeneral,
         new_montodisponibleporoperacion: data.new_montodisponibleporoperacion,
         new_lineatipodeoperacion: data.new_lineatipodeoperacion,
+        new_montodisponiblegeneralbruto: data.new_montodisponiblegeneralbruto,
+        new_montoutilizadogeneralbruto: data.new_montoutilizadogeneralbruto,
+        new_montodisponibleporoperacionbruto:
+          data.new_montodisponibleporoperacionbruto,
+        new_montoutilizadoporoperacionbruto:
+          data.new_montoutilizadoporoperacionbruto,
+        new_topeporlineacomercialusd:
+          data.new_topeporlineacomercialusd > 0
+            ? data.new_topeporlineacomercialusd
+            : 0,
       });
     } else {
+      // let disponibleCalculado =
+      //   data.new_topeporlineacomercial - data.new_montoutilizadoporoperacion;
       let disponibleCalculado =
-        data.new_topeporlineacomercial - data.new_montoutilizadoporoperacion;
+        data.new_topeporlineacomercial -
+        data.new_montoutilizadoporoperacionbruto;
+
       if (limiteGeneral?.disponible < disponibleCalculado) {
         debugger;
+        // let nuevoTotal =
+        //   limiteGeneral?.disponible + data.new_montoutilizadoporoperacion;
         let nuevoTotal =
-          limiteGeneral?.disponible + data.new_montoutilizadoporoperacion;
+          limiteGeneral?.disponible + data.new_montoutilizadoporoperacionbruto;
+
+        // let nuevoPorcentaje =
+        //   ((nuevoTotal - data.new_montoutilizadoporoperacion) /
+        //     data.new_topeporlineacomercial) *
+        //   100;
         let nuevoPorcentaje =
-          ((nuevoTotal - data.new_montoutilizadoporoperacion) /
+          ((nuevoTotal - data.new_montoutilizadoporoperacionbruto) /
             data.new_topeporlineacomercial) *
           100;
-        let nuevoDisponible = nuevoTotal - data.new_montoutilizadoporoperacion;
+
+        let nuevoDisponible =
+          nuevoTotal - data.new_montoutilizadoporoperacionbruto;
         setPorcentajeUtilizacion(nuevoPorcentaje);
         setLimite({
           new_lineatipodeoperacion_value: data.new_lineatipodeoperacion_value,
@@ -122,10 +150,20 @@ const LimitCard = ({ data, limiteGeneral }) => {
           new_montodisponiblegeneral: data.new_montodisponiblegeneral,
           new_montodisponibleporoperacion: nuevoDisponible,
           new_lineatipodeoperacion: data.new_lineatipodeoperacion,
+          new_montodisponiblegeneralbruto: data.new_montodisponiblegeneralbruto,
+          new_montoutilizadogeneralbruto: data.new_montoutilizadogeneralbruto,
+          new_montodisponibleporoperacionbruto:
+            data.new_montodisponibleporoperacionbruto,
+          new_montoutilizadoporoperacionbruto:
+            data.new_montoutilizadoporoperacionbruto,
+          new_topeporlineacomercialusd:
+            data.new_topeporlineacomercialusd > 0
+              ? data.new_topeporlineacomercialusd
+              : 0,
         });
       } else {
         setPorcentajeUtilizacion(
-          (data.new_montoutilizadoporoperacion /
+          (data.new_montoutilizadoporoperacionbruto /
             data.new_topeporlineacomercial) *
             100
         );
@@ -142,6 +180,16 @@ const LimitCard = ({ data, limiteGeneral }) => {
           new_montodisponiblegeneral: data.new_montodisponiblegeneral,
           new_montodisponibleporoperacion: data.new_montodisponibleporoperacion,
           new_lineatipodeoperacion: data.new_lineatipodeoperacion,
+          new_montodisponiblegeneralbruto: data.new_montodisponiblegeneralbruto,
+          new_montoutilizadogeneralbruto: data.new_montoutilizadogeneralbruto,
+          new_montodisponibleporoperacionbruto:
+            data.new_montodisponibleporoperacionbruto,
+          new_montoutilizadoporoperacionbruto:
+            data.new_montoutilizadoporoperacionbruto,
+          new_topeporlineacomercialusd:
+            data.new_topeporlineacomercialusd > 0
+              ? data.new_topeporlineacomercialusd
+              : 0,
         });
       }
     }
@@ -158,12 +206,14 @@ const LimitCard = ({ data, limiteGeneral }) => {
       }).format(amount);
     }
 
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("es-AR", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    })
+      .format(amount)
+      // .replace("$", "U$S");
   };
 
   const formatCompactCurrency = (amount, currency = "USD") => {
@@ -293,7 +343,7 @@ const LimitCard = ({ data, limiteGeneral }) => {
               fontWeight: 700,
               color: theme.palette.text.primary,
               offsetY: -15,
-              formatter: (val) => formatCurrency(val),
+              formatter: (val) => formatCurrency(val, "Pesos Argentinos"),
             },
             total: {
               show: true,
@@ -306,7 +356,7 @@ const LimitCard = ({ data, limiteGeneral }) => {
               formatter: (w) => {
                 const raw = w?.config?.series?.[0] ?? 0; // o w?.globals?.series?.[0]
                 const first = typeof raw === "number" ? raw : Number(raw) || 0;
-                return formatCurrency(first);
+                return formatCurrency(first, "Pesos Argentinos");
                 // const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
                 // return formatCurrency(total);
               },
@@ -323,7 +373,7 @@ const LimitCard = ({ data, limiteGeneral }) => {
         fontFamily: theme.typography.fontFamily,
       },
       y: {
-        formatter: (val) => formatCurrency(val),
+        formatter: (val) => formatCurrency(val, "Pesos Argentinos"),
       },
       custom: ({ series, seriesIndex, dataPointIndex, w }) => {
         const value = series[seriesIndex];
@@ -344,7 +394,7 @@ const LimitCard = ({ data, limiteGeneral }) => {
             <div style="font-weight: 700; font-size: 16px; color: ${
               seriesIndex === 0 ? "#10B981" : "#F59E0B"
             };">
-              ${formatCurrency(value)}
+              ${formatCurrency(value, "Pesos Argentinos")}
             </div>
             <div style="font-size: 12px; color: ${
               theme.palette.text.secondary
@@ -529,12 +579,27 @@ const LimitCard = ({ data, limiteGeneral }) => {
             >
               {formatCurrency(
                 limite.new_topeporlineacomercial,
-                limite._transactioncurrencyid_value
+                "Pesos Argentinos"
               )}
             </Typography>{" "}
             <Typography variant="body2" color="text.secondary">
               Divisa Original: {limite?._transactioncurrencyid_value || "N/A"}
             </Typography>
+            {limite?._transactioncurrencyid_value == "Dolares Americanos" && (
+              <Typography
+                fontWeight="black"
+                gutterBottom
+                sx={{
+                  color: isDark ? "#10B981" : "#2e7d32",
+                  fontSize: { xs: "1rem", md: "1.5rem" },
+                }}
+              >
+                {formatCurrency(
+                  limite.new_topeporlineacomercialusd,
+                  limite._transactioncurrencyid_value
+                )}
+              </Typography>
+            )}
             <Stack
               direction="row"
               spacing={2}
@@ -728,22 +793,41 @@ const LimitCard = ({ data, limiteGeneral }) => {
                     series={
                       limite?.new_lineatipodeoperacion_value == 100000000
                         ? [
-                            limite?.new_montodisponiblegeneral
-                              ? limite.new_montodisponiblegeneral
+                            limite?.new_montodisponiblegeneralbruto
+                              ? limite.new_montodisponiblegeneralbruto
                               : 0,
-                            limite?.new_montoutilizadogeneral
-                              ? limite.new_montoutilizadogeneral
+                            limite?.new_montoutilizadogeneralbruto
+                              ? limite.new_montoutilizadogeneralbruto
                               : 0,
                           ]
                         : [
-                            limite?.new_montodisponibleporoperacion
-                              ? limite.new_montodisponibleporoperacion
+                            limite?.new_montodisponibleporoperacionbruto
+                              ? limite.new_montodisponibleporoperacionbruto
                               : 0,
-                            limite?.new_montoutilizadoporoperacion
-                              ? limite.new_montoutilizadoporoperacion
+                            limite?.new_montoutilizadoporoperacionbruto
+                              ? limite.new_montoutilizadoporoperacionbruto
                               : 0,
                           ]
                     }
+                    // series={
+                    //   limite?.new_lineatipodeoperacion_value == 100000000
+                    //     ? [
+                    //         limite?.new_montodisponiblegeneral
+                    //           ? limite.new_montodisponiblegeneral
+                    //           : 0,
+                    //         limite?.new_montoutilizadogeneral
+                    //           ? limite.new_montoutilizadogeneral
+                    //           : 0,
+                    //       ]
+                    //     : [
+                    //         limite?.new_montodisponibleporoperacion
+                    //           ? limite.new_montodisponibleporoperacion
+                    //           : 0,
+                    //         limite?.new_montoutilizadoporoperacion
+                    //           ? limite.new_montoutilizadoporoperacion
+                    //           : 0,
+                    //       ]
+                    // }
                     options={chartOptions}
                   />
                 </Box>
@@ -793,18 +877,24 @@ const LimitCard = ({ data, limiteGeneral }) => {
                     }}
                   >
                     {limite?.new_lineatipodeoperacion_value == 100000000
-                      ? formatCurrency(limite?.new_montodisponiblegeneral)
-                      : formatCurrency(limite?.new_montodisponibleporoperacion)}
+                      ? formatCurrency(
+                          limite?.new_montodisponiblegeneralbruto,
+                          "Pesos Argentinos"
+                        )
+                      : formatCurrency(
+                          limite?.new_montodisponibleporoperacionbruto,
+                          "Pesos Argentinos"
+                        )}
                   </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={
                       limite.new_topeporlineacomercial > 0
                         ? limite?.new_lineatipodeoperacion_value == 100000000
-                          ? (limite?.new_montodisponiblegeneral /
+                          ? (limite?.new_montodisponiblegeneralbruto /
                               limite.new_topeporlineacomercial) *
                             100
-                          : (limite?.new_montodisponibleporoperacion /
+                          : (limite?.new_montodisponibleporoperacionbruto /
                               limite.new_topeporlineacomercial) *
                             100
                         : 0
@@ -866,18 +956,24 @@ const LimitCard = ({ data, limiteGeneral }) => {
                     }}
                   >
                     {limite?.new_lineatipodeoperacion_value == 100000000
-                      ? formatCurrency(limite?.new_montoutilizadogeneral)
-                      : formatCurrency(limite?.new_montoutilizadoporoperacion)}
+                      ? formatCurrency(
+                          limite?.new_montoutilizadogeneralbruto,
+                          "Pesos Argentinos"
+                        )
+                      : formatCurrency(
+                          limite?.new_montoutilizadoporoperacionbruto,
+                          "Pesos Argentinos"
+                        )}
                   </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={
                       limite.new_topeporlineacomercial > 0
                         ? limite?.new_lineatipodeoperacion_value == 100000000
-                          ? (limite?.new_montoutilizadogeneral /
+                          ? (limite?.new_montoutilizadogeneralbruto /
                               limite.new_topeporlineacomercial) *
                             100
-                          : (limite?.new_montoutilizadoporoperacion /
+                          : (limite?.new_montoutilizadoporoperacionbruto /
                               limite.new_topeporlineacomercial) *
                             100
                         : 0

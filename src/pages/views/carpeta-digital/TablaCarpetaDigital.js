@@ -16,6 +16,7 @@ const TablaCarpetaDigital = () => {
   const [modalData, setModalData] = useState(null);
 
   const handleOpenModal = (utilidad) => {
+    debugger
     setModalData(utilidad);
     setOpenCarpetaDigital(true);
   };

@@ -59,7 +59,11 @@ import {
     CalendarToday as CalendarIcon,
     Clear as ClearIcon,
     DateRange as DateRangeIcon,
+    Draw as DrawIcon,
+    CheckCircleOutline as CheckCircleOutlineIcon
 } from "@mui/icons-material"
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
+// import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import { useSettings } from "@/@core/hooks/useSettings";
 import { useRouter } from "next/router";
@@ -75,6 +79,8 @@ import useGetDocumentacionPorCuentaPendiente from "@/hooks/useGetDocumentacionPo
 import { CheckCircle, WarningAmber } from "@mui/icons-material";
 import Table from "@/@core/components/table/Table";
 import { columns_carperta_digital_dashboard_referidores } from "@/columns/columnsCarpetaDigital";
+import { columns_lineas } from "@/columns/columnsLimites";
+import NotificacionesCuentasReferidas from "./views/ui/inicio/NotificacionesCuentasReferidas";
 
 // Animated Background Component
 const AnimatedBackground = ({ isDark }) => {
@@ -309,7 +315,7 @@ const FiltersCard = ({
                                 {statusOptions?.map((option) => (
                                     <Tooltip
                                         key={option.value}
-                                        title={<Typography sx={{color: '#fff'}} fontSize={'0.9rem'}>{`Filtrar por ${option.label.toLowerCase()}. ${option.descEstado}`}</Typography>}
+                                        title={<Typography sx={{ color: '#fff' }} fontSize={'0.9rem'}>{`Filtrar por ${option.label.toLowerCase()}. ${option.descEstado}`}</Typography>}
                                         arrow>
                                         <Chip
                                             label={`${option.label} (${option.count})`}
@@ -338,6 +344,7 @@ const FiltersCard = ({
                                         />
                                     </Tooltip>
                                 ))}
+                                <NotificacionesCuentasReferidas />
                             </Stack>
                         </Grid>
                         {
@@ -393,6 +400,7 @@ const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig, limi
     const statusConfig = getStatusConfig(account?.new_estadodelsocio)
     const StatusIcon = statusConfig.icon
     const isActive = account.new_estadodelsocio !== 100000009
+    const esPrecalificacion = statusConfig?.label == "Activa" && account?.new_estadodelclienteactivo == 100000001
 
     return (
         <Grow in timeout={600} style={{ transitionDelay: `${index * 100}ms` }}>
@@ -522,12 +530,12 @@ const AccountCard = ({ account, index, viewMode, onSelect, getStatusConfig, limi
                                 justifyContent: viewMode === "grid" ? "center" : "flex-start"
                             }}>
                                 <Chip
-                                    icon={<StatusIcon />}
-                                    label={statusConfig.label}
+                                    icon={esPrecalificacion ? <AccessAlarmIcon /> : <StatusIcon />}
+                                    label={esPrecalificacion ? "Precalificación" : statusConfig.label}
                                     size="small"
                                     sx={{
                                         backgroundColor: statusConfig.bgColor,
-                                        color: statusConfig.borderColor,
+                                        color: `${esPrecalificacion ? theme.palette.warning.main : statusConfig.borderColor}`,
                                         border: `1px solid ${statusConfig.borderColor}`,
                                         fontWeight: 600,
                                         fontSize: "0.75rem",
@@ -729,7 +737,14 @@ const Index = () => {
         }
 
         if (statusFilter !== "all") {
-            filtered = filtered.filter((item) => item.new_estadodelsocio?.toString() === statusFilter)
+            if (statusFilter === "Recalificacion") {
+                filtered = filtered.filter((item) =>
+                    item.new_estadodelsocio === 100000000 &&
+                    item.new_estadodelclienteactivo === 100000001
+                )
+            } else {
+                filtered = filtered.filter((item) => item.new_estadodelsocio?.toString() === statusFilter)
+            }
         }
 
         return filtered
@@ -743,7 +758,7 @@ const Index = () => {
     const totalPages = Math.ceil(filteredData.length / itemsPerPage)
 
     const statusOptions = useMemo(() => [
-        { value: "all", label: "Todos los estados", count: referidos?.length || 0, descEstado: "" },
+        { value: "all", label: "Todas", count: referidos?.length || 0, descEstado: "" },
         {
             value: "100000002",
             label: "Inicial",
@@ -774,15 +789,21 @@ const Index = () => {
             count: referidos?.filter((r) => r.new_estadodelsocio === 100000000).length || 0,
             descEstado: "La pyme ya fue dada de alta correctamente. Puedes comenzar a referirle productos y operar de manera normal."
         },
+        {
+            value: "Recalificacion",
+            label: "Recalificación",
+            count: referidos?.filter((r) => r.new_estadodelsocio === 100000000 && r.new_estadodelclienteactivo === 100000001).length || 0,
+            descEstado: "Información solicitada a la pyme."
+        },
     ], [referidos])
 
     // Límites disponibles por cuenta (para mostrar en cada AccountCard)
-    const { disponibles: dispPorCuenta } = useGetDisponibleLimitesGeneral()
+    const { disponibles: dispPorCuenta, limitesInicio } = useGetDisponibleLimitesGeneral()
     const limiteDisponiblePorCuenta = useMemo(() => {
         const map = new Map()
             ; (dispPorCuenta || []).forEach(d => {
                 const accId = d?.new_cuenta_value
-                const val = Number(d?.new_montodisponiblegeneral) || 0
+                const val = Number(d?.new_montodisponiblegeneralbruto) || 0
                 if (accId) map.set(accId, (map.get(accId) || 0) + val)
             })
         return map
@@ -937,15 +958,22 @@ const Index = () => {
             },
             100000006: {
                 label: "Pendiente de firma",
-                icon: PersonAddIcon,
+                icon: DrawIcon,
                 color: "info",
                 bgColor: alpha(theme.palette.info.main, 0.1),
                 borderColor: theme.palette.info.main,
             },
             100000000: {
                 label: "Activa",
-                icon: CheckCircleIcon,
+                icon: CheckCircleOutlineIcon,
                 color: "success",
+                bgColor: alpha(theme.palette.success.main, 0.1),
+                borderColor: theme.palette.success.main,
+            },
+            "Recalificación": {
+                label: "Recalificación",
+                icon: ScheduleIcon,
+                lcolor: "warning",
                 bgColor: alpha(theme.palette.success.main, 0.1),
                 borderColor: theme.palette.success.main,
             },
@@ -1208,15 +1236,15 @@ const Index = () => {
                                     <CardHeader
                                         title="Detalle de documentos"
                                         subheader={documentacionProcesada.length ? `${documentacionProcesada.length} registros` : 'Sin registros'}
-                                        // action={
-                                        //     <Tooltip title="Actualizar">
-                                        //         <span>
-                                        //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
-                                        //                 <RefreshIcon fontSize="small" />
-                                        //             </IconButton>
-                                        //         </span>
-                                        //     </Tooltip>
-                                        // }
+                                    // action={
+                                    //     <Tooltip title="Actualizar">
+                                    //         <span>
+                                    //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
+                                    //                 <RefreshIcon fontSize="small" />
+                                    //             </IconButton>
+                                    //         </span>
+                                    //     </Tooltip>
+                                    // }
                                     />
                                     <CardContent sx={{ pt: 0, flexGrow: 1 }}>
                                         <Box sx={{ py: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1229,15 +1257,15 @@ const Index = () => {
                                     <CardHeader
                                         title="Detalle de documentos"
                                         subheader={documentacionProcesada.length ? `${documentacionProcesada.length} registros` : 'Sin registros'}
-                                        // action={
-                                        //     <Tooltip title="Actualizar">
-                                        //         <span>
-                                        //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
-                                        //                 <RefreshIcon fontSize="small" />
-                                        //             </IconButton>
-                                        //         </span>
-                                        //     </Tooltip>
-                                        // }
+                                    // action={
+                                    //     <Tooltip title="Actualizar">
+                                    //         <span>
+                                    //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
+                                    //                 <RefreshIcon fontSize="small" />
+                                    //             </IconButton>
+                                    //         </span>
+                                    //     </Tooltip>
+                                    // }
                                     />
                                     <CardContent sx={{ pt: 0, flexGrow: 1 }}>
                                         <Box sx={{ py: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1252,15 +1280,15 @@ const Index = () => {
                                     <CardHeader
                                         title="Detalle de documentos"
                                         subheader={documentacionProcesada.length ? `${documentacionProcesada.length} registros` : 'Sin registros'}
-                                        // action={
-                                        //     <Tooltip title="Actualizar">
-                                        //         <span>
-                                        //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
-                                        //                 <RefreshIcon fontSize="small" />
-                                        //             </IconButton>
-                                        //         </span>
-                                        //     </Tooltip>
-                                        // }
+                                    // action={
+                                    //     <Tooltip title="Actualizar">
+                                    //         <span>
+                                    //             <IconButton size="small" onClick={refetchDocumentacion} disabled={loadingDocumentacion}>
+                                    //                 <RefreshIcon fontSize="small" />
+                                    //             </IconButton>
+                                    //         </span>
+                                    //     </Tooltip>
+                                    // }
                                     />
                                     <CardContent sx={{ pt: 0, flexGrow: 1 }}>
                                         <Box sx={{ py: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1277,6 +1305,29 @@ const Index = () => {
                             />}
                         </Grid>
                     </Grid>
+                    <Slide in direction="up" timeout={1000}>
+                        <Typography
+                            sx={{
+                                fontSize: { xs: "1rem", md: "1.2rem" },
+                                color: alpha(theme.palette.primary.contrastText, 0.9),
+                                textAlign: "center",
+                                fontWeight: 500,
+                                mb: { xs: 1, xl: 4 },
+                                mt: { xs: 1, xl: 4 },
+                            }}
+                        >
+                            Límites por Línea
+                        </Typography>
+                    </Slide>
+                    <Box sx={{ backgroundColor: alpha(theme.palette.background.paper, 0.9), mt: 2, borderRadius: 4 }}>
+                        <Table
+                            addRow={false}
+                            data={limitesInicio?.length > 0 ? limitesInicio : []}
+                            columns={columns_lineas}
+                            canExport={true}
+                            exportFileName={`Limites`}
+                        />
+                    </Box>
                 </Box>
             </Container>
         </Box>
@@ -1361,7 +1412,7 @@ function GarantiasProximasOverview() {
     // Disponible General de Límites (hook nuevo)
     const { disponibles, loading: loadingLimites, error: errorLimites } = useGetDisponibleLimitesGeneral()
     const totalDisponibleGeneral = useMemo(() => {
-        return (disponibles || []).reduce((acc, it) => acc + (Number(it?.new_montodisponiblegeneral) || 0), 0)
+        return (disponibles || []).reduce((acc, it) => acc + (Number(it?.new_montodisponiblegeneralbruto) || 0), 0)
     }, [disponibles])
     const cantidadProductosLimite = useMemo(() => (disponibles || []).length, [disponibles])
     // Filtro por "vigencia hasta" para el gráfico de límites
@@ -1401,7 +1452,7 @@ function GarantiasProximasOverview() {
     const datosBarraLimites = useMemo(() => {
         return (disponiblesFiltradosLimites || []).map((d) => ({
             opcion: (d.new_cuenta.length > 18 ? `${d.new_cuenta?.substr(0, 18)}...` : d.new_cuenta) || d.new_name || 'Sin nombre',
-            cantidad: Number(d.new_montodisponiblegeneral) || 0,
+            cantidad: Number(d.new_montodisponiblegeneralbruto) || 0,
             filtro: 'Monto'
         }))
     }, [disponiblesFiltradosLimites])
@@ -1415,7 +1466,7 @@ function GarantiasProximasOverview() {
     }, [disponiblesFiltradosLimites])
     const opcionesBarraLimites = ['Monto']
     const totalDisponibleGeneralFiltrado = useMemo(() => {
-        return (disponiblesFiltradosLimites || []).reduce((acc, it) => acc + (Number(it?.new_montodisponiblegeneral) || 0), 0)
+        return (disponiblesFiltradosLimites || []).reduce((acc, it) => acc + (Number(it?.new_montodisponiblegeneralbruto) || 0), 0)
     }, [disponiblesFiltradosLimites])
     const cantidadProductosLimiteFiltrado = useMemo(() => (disponiblesFiltradosLimites || []).length, [disponiblesFiltradosLimites])
 

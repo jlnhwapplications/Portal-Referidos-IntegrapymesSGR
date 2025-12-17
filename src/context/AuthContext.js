@@ -19,6 +19,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { dataEncrpt } from '@/@core/utils/data-encrypt';
 import { obtenerMisReferidos } from '@/redux/Cuenta';
+import { obtenerEquipoUN } from '@/redux/UnidadDeNegocio';
 // ** Defaults
 const defaultProvider = {
   user: null,
@@ -44,6 +45,7 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(defaultProvider.loading)
   const [loadingReferidos, setLoadingReferidos] = useState(defaultProvider.loadingReferidos)
   const [token, setToken] = useState('')
+  const [equipoDeNotificaciones, setEquipoDeNotificaciones] = useState('')
   const [referido, setReferido] = useState({});
   const [referidos, setReferidos] = useState([]);
   const [retrieveReferidos, setRetrieveReferidos] = useState(false);
@@ -60,7 +62,6 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     dispatch(loginToken());
   }, []);
-
 
   useEffect(() => {
     if (window.localStorage.getItem("referido") != null) {
@@ -88,6 +89,22 @@ const AuthProvider = ({ children }) => {
           setReferidos([])
           setLoadingReferidos(false)
         })
+      if (equipoDeNotificaciones == '') {
+        dispatch(obtenerEquipoUN(token))
+          .then(data => {
+            if (data?.length > 0) {
+              const unidad = data[0]
+              if (unidad['_new_equipodenotificacionesonboarding_value']) {
+                setEquipoDeNotificaciones(unidad['_new_equipodenotificacionesonboarding_value'])
+              }
+            } else {
+              setEquipoDeNotificaciones('')
+            }
+          })
+          .catch(() => {
+            setEquipoDeNotificaciones('')
+          })
+      }
     }
   }, [user, token]);
 
@@ -154,10 +171,7 @@ const AuthProvider = ({ children }) => {
           });
         }
         dispatch(loginToken());
-        //   .then(() =>{
-        //     obtenerReferidores(accountID, token)
-        // }) // Dispatch de logintoken() para obtener el token
-        startRefreshTimer(); // Inicia el temporizador de actualización 
+        startRefreshTimer();
       } else {
         setUser(null);
         setToken(null);
@@ -243,7 +257,7 @@ const AuthProvider = ({ children }) => {
         setLoadingAuth(false);
         throw error
       }
-      
+
       if (respMail && respMail?.data.length > 0) {
         accountid = respMail.data[0].accountid;
         personeria = respMail.data[0].new_personeria
@@ -501,7 +515,8 @@ const AuthProvider = ({ children }) => {
     actualizarReferido,
     referidos,
     retrieveReferidos,
-    RefrescarReferidos
+    RefrescarReferidos,
+    equipoDeNotificaciones
   }
 
   return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>
