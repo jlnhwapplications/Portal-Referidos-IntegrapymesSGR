@@ -82,6 +82,7 @@ const QuickSearchToolbar = ({ value, onChange, clearSearch, canExport, addRow, t
               csvOptions={{
                 utf8WithBom: true,
                 allColumns: false,
+                ignoreValueFormatter: true,
                 shouldCellBeExported: (params) => params.field !== "__check__",
                 ...(exportFileName ? { fileName: exportFileName } : {}),
                 ...(exportColumnFields?.length ? { fields: exportColumnFields } : {})

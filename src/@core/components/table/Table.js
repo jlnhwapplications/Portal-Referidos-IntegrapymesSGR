@@ -40,14 +40,8 @@ const Table = ({ data, columns, name, addRow, toggle, canExport, description, ex
     return processedColumns
       .filter(column => !!column?.field)
       .filter(column => column.disableExport !== true)
-      .filter(column => {
-        const field = column.field;
-        if (column.hide) return false;
-        if (columnVisibilityModel[field] === false) return false;
-        return true;
-      })
       .map(column => column.field);
-  }, [processedColumns, columnVisibilityModel]);
+  }, [processedColumns]);
 
   useEffect(() => {
     if (!Array.isArray(columns) || columns.length === 0) {

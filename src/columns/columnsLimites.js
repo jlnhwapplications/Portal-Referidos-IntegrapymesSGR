@@ -52,13 +52,65 @@ function safeParseInt(value, defaultValue = null) {
 function safeParseFloat(value, defaultValue = null) {
     if (value === null || value === undefined) return defaultValue;
 
+    let normalized = value;
+    if (typeof normalized === "string") {
+        const cleaned = normalized.replace(/\s/g, "");
+        const hasComma = cleaned.includes(",");
+        const hasDot = cleaned.includes(".");
+
+        if (hasComma && hasDot) {
+            const lastComma = cleaned.lastIndexOf(",");
+            const lastDot = cleaned.lastIndexOf(".");
+            if (lastComma > lastDot) {
+                normalized = cleaned.replace(/\./g, "").replace(",", ".");
+            } else {
+                normalized = cleaned.replace(/,/g, "");
+            }
+        } else if (hasComma) {
+            normalized = /,\d{1,2}$/.test(cleaned)
+                ? cleaned.replace(",", ".")
+                : cleaned.replace(/,/g, "");
+        } else if (hasDot) {
+            normalized = /\.\d{1,2}$/.test(cleaned)
+                ? cleaned
+                : cleaned.replace(/\./g, "");
+        } else {
+            normalized = cleaned;
+        }
+    }
+
     // Convertir
-    const parsed = parseFloat(value);
+    const parsed = parseFloat(normalized);
 
     // Si no es un número válido → devolver defaultValue
     return isNaN(parsed) ? defaultValue : parsed;
 }
 
+function getMontoDisponible(row) {
+    return row?.new_lineatipodeoperacion == 100000000
+        ? row?.new_montodisponiblegeneralbruto
+        : row?.new_montodisponibleporoperacionbruto;
+}
+
+function getMontoUtilizado(row) {
+    return row?.new_lineatipodeoperacion == 100000000
+        ? row?.new_montoutilizadogeneralbruto
+        : row?.new_montoutilizadoporoperacionbruto;
+}
+
+function formatDateArgentina(value) {
+    if (!value) return "";
+    if (typeof value === "string") {
+        return value.replace(/\//g, "-");
+    }
+    if (value instanceof Date && !isNaN(value)) {
+        const day = String(value.getDate()).padStart(2, "0");
+        const month = String(value.getMonth() + 1).padStart(2, "0");
+        const year = value.getFullYear();
+        return `${day}-${month}-${year}`;
+    }
+    return "";
+}
 
 // Componente para celdas de texto mejoradas
 function EnhancedTextCell({ value, subtitle = null, icon = null, color = "text.primary" }) {
@@ -323,6 +375,7 @@ export const columns_lineas = [
         minWidth: 140,
         field: "new_topeporlineacomercial",
         headerName: "Tope por operación",
+        type: "number",
         align: "left",         // 👈 valores alineados a la izquierda
         headerAlign: "left",   // 👈 encabezado alineado a la izquierda
         valueGetter: ({ row }) => safeParseFloat(row?.new_topeporlineacomercial),
@@ -334,28 +387,37 @@ export const columns_lineas = [
         flex: 0.15,
         minWidth: 140,
         maxWidth: 180,
-        field: ({ row }) => row?.new_lineatipodeoperacion == 100000000 ? "new_montodisponiblegeneralbruto" : "new_montodisponibleporoperacionbruto",
+        field: "monto_disponible",
         headerName: "Monto disponible",
         type: "number",
         align: "left",         // 👈 valores alineados a la izquierda
         headerAlign: "left",   // 👈 encabezado alineado a la izquierda
-        valueGetter: ({ row }) => row?.new_lineatipodeoperacion == 100000000 ? safeParseFloat(row?.new_montodisponiblegeneralbruto) : safeParseFloat(row?.new_montodisponibleporoperacionbruto),
-        renderCell: ({ row }) => <MoneyCell amount={row?.new_lineatipodeoperacion == 100000000 ? row?.new_montodisponiblegeneralbruto : row?.new_montodisponibleporoperacionbruto}
-            currency={row?.transactioncurrencyid}
-            subtitle={row?.transactioncurrencyid} />,
+        valueGetter: ({ row }) => safeParseFloat(getMontoDisponible(row)),
+        renderCell: ({ row }) => (
+            <MoneyCell
+                amount={getMontoDisponible(row)}
+                currency={row?.transactioncurrencyid}
+                subtitle={row?.transactioncurrencyid}
+            />
+        ),
     },
     {
         flex: 0.15,
         minWidth: 140,
         maxWidth: 180,
-        field: ({ row }) => row?.new_lineatipodeoperacion == 100000000 ? "new_montoutilizadogeneralbruto" : "new_montoutilizadoporoperacionbruto",
+        field: "monto_utilizado",
         headerName: "Monto utilizado",
+        type: "number",
         align: "left",         // 👈 valores alineados a la izquierda
         headerAlign: "left",   // 👈 encabezado alineado a la izquierda}
-        valueGetter: ({ row }) => row?.new_lineatipodeoperacion == 100000000 ? safeParseFloat(row?.new_montoutilizadogeneralbruto) : safeParseFloat(row?.new_montoutilizadoporoperacionbruto),
-        renderCell: ({ row }) => <MoneyCell amount={row?.new_lineatipodeoperacion == 100000000 ? row?.new_montoutilizadogeneralbruto : row?.new_montoutilizadoporoperacionbruto}
-            currency={row?.transactioncurrencyid}
-            subtitle={row?.transactioncurrencyid} />,
+        valueGetter: ({ row }) => safeParseFloat(getMontoUtilizado(row)),
+        renderCell: ({ row }) => (
+            <MoneyCell
+                amount={getMontoUtilizado(row)}
+                currency={row?.transactioncurrencyid}
+                subtitle={row?.transactioncurrencyid}
+            />
+        ),
     },
     {
         field: "transactioncurrencyid",
@@ -368,12 +430,12 @@ export const columns_lineas = [
         minWidth: 160,
         field: "new_vigenciahasta",
         headerName: "Fecha Vencimiento",
-        type: "date",
+        type: "string",
         align: "left",         // 👈 valores alineados a la izquierda
         headerAlign: "left",   // 👈 encabezado alineado a la izquierda
-        valueGetter: ({ row }) => safeParseDate(row?.new_vigenciahasta),
-        renderCell: ({ row }) => <EnhancedTextCell
-            value={row?.new_vigenciahasta}
-        />,
+        valueGetter: ({ row }) => formatDateArgentina(row?.new_vigenciahasta),
+        renderCell: ({ value }) => (
+            <EnhancedTextCell value={value} />
+        ),
     },
 ]
