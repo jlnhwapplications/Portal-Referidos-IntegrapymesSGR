@@ -105,7 +105,7 @@ const SolicitudAltaPersonal = ({ personeria, theme }) => {
                         <CustomTextField
                             Component={TextField}
                             name="usuarioPortal"
-                            label="Usuario Portal"
+                            label="Email del Responsable"
                             rules={{ required: "Required!" }}
                             helperText="Ingresa tu email que usaras en el portal"
                             req="true"
